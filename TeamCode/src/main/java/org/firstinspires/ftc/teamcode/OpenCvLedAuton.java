@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name="OpenCvStandAlone", group ="Test")
-public class OpenCvStandAlone extends OpenCvCameraOpMode
+@Autonomous(name="OpenCvLedAuton", group ="Test")
+public class OpenCvLedAuton extends OpenCvCameraOpMode
 {
     @Override
     public void runOpMode()

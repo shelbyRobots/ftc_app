@@ -94,9 +94,9 @@ import java.util.Locale;
  */
 
 @SuppressWarnings("WeakerAccess")
-@Autonomous(name="ImageNav", group ="Concept")
+@Autonomous(name="OldImageNav", group ="Concept")
 //@Disabled
-public class ImageNav extends LinearOpMode {
+public class OldImageNav extends LinearOpMode {
 
     private static final String TAG = "SJH Image Tracker";
 
