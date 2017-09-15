@@ -55,6 +55,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.VvField;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 
 import java.util.ArrayList;
@@ -172,17 +173,17 @@ public class OldImageNav extends LinearOpMode {
 
         allTrackables.addAll(ftcImages);
 
-        redTools.setLocation(Field.redToolsLocationOnField);
-        RobotLog.ii(TAG, "Red Tools=%s", format(Field.redToolsLocationOnField));
+        redTools.setLocation(VvField.redToolsLocationOnField);
+        RobotLog.ii(TAG, "Red Tools=%s", format(redTools.getLocation()));
 
-        redGears.setLocation(Field.redToolsLocationOnField);
-        RobotLog.ii(TAG, "Red Gears=%s", format(Field.redGearsLocationOnField));
+        redGears.setLocation(VvField.redToolsLocationOnField);
+        RobotLog.ii(TAG, "Red Gears=%s", format(redGears.getLocation()));
 
-        blueWheels.setLocation(Field.blueWheelsLocationOnField);
-        RobotLog.ii(TAG, "Blue Wheels=%s", format(Field.blueWheelsLocationOnField));
+        blueWheels.setLocation(VvField.blueWheelsLocationOnField);
+        RobotLog.ii(TAG, "Blue Wheels=%s", format(blueWheels.getLocation()));
 
-        blueLegos.setLocation(Field.blueLegosLocationOnField);
-        RobotLog.ii(TAG, "Blue Legos=%s", format(Field.blueLegosLocationOnField));
+        blueLegos.setLocation(VvField.blueLegosLocationOnField);
+        RobotLog.ii(TAG, "Blue Legos=%s", format(blueLegos.getLocation()));
     }
 
     public void setupPhoneOnRobot()

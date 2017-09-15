@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.VvPoints;
 import org.firstinspires.ftc.teamcode.field.Points;
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
 import org.firstinspires.ftc.teamcode.image.BeaconFinder;
@@ -32,9 +33,9 @@ import hallib.HalDashboard;
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach"})
 @Autonomous(name="AutonShelby", group="Auton")
 //@Disabled
-public class FtcAutoShelby extends OpenCvCameraOpMode implements FtcMenu.MenuButtons
+public class VvAutoShelby extends OpenCvCameraOpMode implements FtcMenu.MenuButtons
 {
-    public FtcAutoShelby()
+    public VvAutoShelby()
     {
         super();
     }
@@ -127,7 +128,7 @@ public class FtcAutoShelby extends OpenCvCameraOpMode implements FtcMenu.MenuBut
         RobotLog.ii("SJH", "ALLIANCE %s", alliance);
         RobotLog.ii("SJH", "DELAY    %4.2f", delay);
 
-        Points pts = new Points(startPos, alliance, beaconChoice, parkChoice, useFly2Light);
+        Points pts = new VvPoints(startPos, alliance, beaconChoice, parkChoice, useFly2Light);
         pathSegs = pts.getSegments();
 
         initHdg = (int)(Math.round(pathSegs[0].getFieldHeading()));

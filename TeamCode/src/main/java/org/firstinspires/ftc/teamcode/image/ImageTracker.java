@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.VvField;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings("WeakerAccess, unused")
 public class ImageTracker
 {
     public ImageTracker()
@@ -90,17 +90,17 @@ public class ImageTracker
 
             allTrackables.addAll(vvImages);
 
-            redTools.setLocation(Field.redToolsLocationOnField);
-            RobotLog.ii(TAG, "Red Tools=%s", getLocString(Field.redToolsLocationOnField));
+            redTools.setLocation(VvField.redToolsLocationOnField);
+            RobotLog.ii(TAG, "Red Tools=%s", getLocString(redTools.getLocation()));
 
-            redGears.setLocation(Field.redGearsLocationOnField);
-            RobotLog.ii(TAG, "Red Gears=%s", getLocString(Field.redGearsLocationOnField));
+            redGears.setLocation(VvField.redGearsLocationOnField);
+            RobotLog.ii(TAG, "Red Gears=%s", getLocString(redGears.getLocation()));
 
-            blueWheels.setLocation(Field.blueWheelsLocationOnField);
-            RobotLog.ii(TAG, "Blue Wheels=%s", getLocString(Field.blueWheelsLocationOnField));
+            blueWheels.setLocation(VvField.blueWheelsLocationOnField);
+            RobotLog.ii(TAG, "Blue Wheels=%s", getLocString(blueWheels.getLocation()));
 
-            blueLegos.setLocation(Field.blueLegosLocationOnField);
-            RobotLog.ii(TAG, "Blue Legos=%s", getLocString(Field.blueLegosLocationOnField));
+            blueLegos.setLocation(VvField.blueLegosLocationOnField);
+            RobotLog.ii(TAG, "Blue Legos=%s", getLocString(blueLegos.getLocation()));
         }
 
         if (useRr)
