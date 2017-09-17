@@ -37,15 +37,11 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.external.navigation.VuMarkInstanceId;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
-import org.firstinspires.ftc.teamcode.image.BeaconFinder;
-import org.firstinspires.ftc.teamcode.image.ImageProcessor;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
+import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
 /**
@@ -85,83 +81,28 @@ public class ConceptVuMarkIdentification extends LinearOpMode
     @Override
     public void runOpMode()
     {
+        tracker = new ImageTracker(hardwareMap,
+                                   telemetry,
+                                   VuforiaInitializer.Challenge.RR);
 
-        /*
-         * To start up Vuforia, tell it the view that we wish to use for camera monitor (on the RC phone);
-         * If no camera monitor is desired, use the parameterless constructor instead (commented out below).
-         */
-        //ZZint cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        //ZZVuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-        // OR...  Do Not Activate the Camera Monitor View, to save power
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        /*
-         * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
-         * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
-         * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
-         * web site at https://developer.vuforia.com/license-manager.
-         *
-         * Vuforia license keys are always 380 characters long, and look as if they contain mostly
-         * random data. As an example, here is a example of a fragment of a valid key:
-         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
-         * Once you've obtained a license key, copy the string from the Vuforia web site
-         * and paste it in to your code onthe next line, between the double quotes.
-         */
-        //ZZparameters.vuforiaLicenseKey =
-        //ZZ        "AQgIvJ7/////AAAAGQSociXWO0kDvfP15zd4zOsS+fHJygDMLA" +
-        //ZZ                "1HhOJQ3FkeiPLGU6YW3ru+jzC6MGxM5tY1ajF4Y0plOpxhQGfS" +
-        //ZZ                "R4g3zFiP0IQavezWhGbjBCRMmYu8INy8KvoZ03crZe9wxxQJu9" +
-        //ZZ                "9KiNX3ZrbUevNXODKKzWyA9RqxxQHbJ3gpXoff4z1O9n211VOg" +
-        //ZZ                "EsJjrNZq8xJnznilyXwc8colJnZD/Adr6UmOzxoUGgaMrdPrlj" +
-        //ZZ                "McDJZU6uyoIrOjiv1G2r3iNjtd7LzKAANKrK/0IrO90MgRqQDr" +
-        //ZZ                "CAAJVHqqyyubMy8EqE5onzw/WFEcEwfQ6nolsNwYTEZb/JppU8" +
-        //ZZ                "9Q6DZmhz4FCT49shA+4PyNOzqsjhRC";
-
-        /*
-         * We also indicate which camera on the RC that we wish to use.
-         * Here we chose the back (HiRes) camera (for greater range), but
-         * for a competition robot, the front camera might be more convenient.
-         */
-        //ZZparameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        //ZZthis.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-
-        /**
-         * Load the data set containing the VuMarks for Relic Recovery. There's only one trackable
-         * in this data set: all three of the VuMarks in the game were created from this one template,
-         * but differ in their instance id information.
-         * @see VuMarkInstanceId
-         */
-        //ZZVuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-        //ZZVuforiaTrackable relicTemplate = relicTrackables.get(0);
-        //ZZrelicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
-
-        //ZZVuforia.setFrameFormat( PIXEL_FORMAT.RGB565, true );
-        //ZZvuforia.setFrameQueueCapacity(10);
-
-        tracker = new ImageTracker();
-
-        imgProc = new BeaconDetector();
-        bd = (BeaconDetector) imgProc;
-        bf = (BeaconFinder) imgProc;
+        //imgProc = new BeaconDetector();
+        //bd = (BeaconDetector) imgProc;
+        //bf = (BeaconFinder) imgProc;
 
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
         waitForStart();
 
-        //ZZrelicTrackables.activate();
-
-        //ZZOpenGLMatrix pose = OpenGLMatrix.identityMatrix();
-        //ZZOpenGLMatrix rawpose = OpenGLMatrix.identityMatrix();
         while (opModeIsActive())
         {
             ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             tracker.setActive(true);
 
             Point2d sensedBotPos = null;
-            double  sensedFldHdg;
+            double  sensedFldHdg = 0.0;
             Bitmap bmap = null;
-            while(sensedBotPos == null && itimer.milliseconds() < 10000)
+            int frm = 0;
+            while(sensedBotPos == null && itimer.milliseconds() < 1000)
             {
                 tracker.updateRobotLocationInfo();
                 sensedBotPos = tracker.getSensedPosition();
@@ -171,73 +112,35 @@ public class ConceptVuMarkIdentification extends LinearOpMode
                     curPos = sensedBotPos;
                     sensedFldHdg = tracker.getSensedFldHeading();
                     curHdg = sensedFldHdg;
-                    tracker.getImage();
+                    //rgbImage = tracker.getImage();
                     break;
                 }
+                frm++;
                 sleep(50);
             }
 
+            if ( sensedBotPos != null )
+            {
+                double t = itimer.seconds();
+                RobotLog.ii("SJH", "Senesed Pos: %s %5.2f %2.3f", sensedBotPos, sensedFldHdg, t);
+                RobotLog.ii("SJH", "IMG %s frame %d", tracker.getLocString(), frm);
+                telemetry.addData("SLOC", "SLOC: %s %4.1f", sensedBotPos, sensedFldHdg);
+                telemetry.addData("IMG", "%s  frame %d", tracker.getLocString(), frm);
+            }
+
+            tracker.setFrameQueueSize(10);
+            Bitmap rgbImage = tracker.getImage();
+
+            if(rgbImage == null) continue;
+            bd.setBitmap(rgbImage);
+            tracker.setFrameQueueSize(0);
             tracker.setActive(false);
-
-            /**
-             * See if any of the instances of {@link relicTemplate} are currently visible.
-             * {@link RelicRecoveryVuMark} is an enum which can have the following values:
-             * UNKNOWN, LEFT, CENTER, and RIGHT. When a VuMark is visible, something other than
-             * UNKNOWN will be returned by {@link RelicRecoveryVuMark#from(VuforiaTrackable)}.
-             */
-            //ZZRelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
-            //ZZif (vuMark != RelicRecoveryVuMark.UNKNOWN) {
-
-                /* Found an instance of the template. In the actual game, you will probably
-                 * loop until this condition occurs, then move on to act accordingly depending
-                 * on which VuMark was visible. */
-            //ZZ     telemetry.addData("VuMark", "%s visible", vuMark);
-
-                /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
-                 * it is perhaps unlikely that you will actually need to act on this pose information, but
-                 * we illustrate it nevertheless, for completeness. */
-            //ZZ     pose = ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).getPose();
-            //ZZ     telemetry.addData("Pose", format(pose));
-
-            //ZZ     rawpose = ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).getRawPose();
-
-                /* We further illustrate how to decompose the pose into useful rotational and
-                 * translational components */
-            //ZZ     if (pose != null) {
-            //ZZ         VectorF trans = pose.getTranslation();
-            //ZZ         Orientation rot = Orientation.getOrientation(
-            //ZZ                 pose,
-            //ZZ                 AxesReference.EXTRINSIC,
-            //ZZ                 AxesOrder.XYZ,
-            //ZZ                 AngleUnit.DEGREES);
-
-            // Extract the X, Y, and Z components of the offset of the target relative to the robot
-            //ZZ         double tX = trans.get(0);
-            //ZZ         double tY = trans.get(1);
-            //ZZ         double tZ = trans.get(2);
-
-            // Extract the rotational components of the target relative to the robot
-            //ZZ         double rX = rot.firstAngle;
-            //ZZ         double rY = rot.secondAngle;
-            //ZZ         double rZ = rot.thirdAngle;
-
-            //ZZ         RobotLog.dd("SJH", "Trans: %10.4f %10.4f %10.4f", tX, tY, tZ);
-            //ZZ         RobotLog.dd("SJH", "Rot:   %10.4f %10.4f %10.4f", rX, rY, rZ);
-            //ZZ     }
-            //ZZ }
-            //ZZ else {
-            //ZZ     telemetry.addData("VuMark", "not visible");
-
-            //ZZ     telemetry.addData("Trackable",
-            //ZZ        ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).isVisible() ?
-            //ZZ        "is visible" : "not visible");
-            //ZZ}
 
             telemetry.update();
 
             //ZZimgProc.startSensing();
 
-            //ZZbd.setBitMap(retImg);
+            //ZZbd.setBitmap(rgbImage);
 
             //ZZBeaconFinder.BeaconSide bs = bd.getRedPosSide();
             //ZZRobotLog.dd("SJH", "Redside = " + bs);
@@ -245,33 +148,7 @@ public class ConceptVuMarkIdentification extends LinearOpMode
 
             sleep(10);
         }
-    }
-
-
-    public void doStuff()
-    {
-        RobotLog.ii("SJH", "FIND BEACON ORDER!!!");
-        int timeout = 1000;
-        BeaconFinder.LightOrder ord = BeaconFinder.LightOrder.UNKNOWN;
-        ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-
-        tracker.setFrameQueueSize(10);
-        tracker.setActive(true);
-        while  ((ord == BeaconFinder.LightOrder.UNKNOWN ||
-                         ord == BeaconFinder.LightOrder.RED_RED ||
-                         ord == BeaconFinder.LightOrder.BLUE_BLUE) &&
-                        itimer.milliseconds() < timeout)
-        {
-            Bitmap bmap = tracker.getImage();
-            if(bmap != null)
-            {
-                bd.setBitmap(bmap);
-                ord = bd.getLightOrder();
-            }
-            sleep(50);
-        }
         tracker.setActive(false);
-        tracker.setFrameQueueSize(0);
     }
 
     String format(OpenGLMatrix transformationMatrix) {
@@ -295,9 +172,9 @@ public class ConceptVuMarkIdentification extends LinearOpMode
     private static Point2d curPos = null;
     private static double  curHdg = 0.0;
 
-    private ImageProcessor imgProc = null;
-    private BeaconDetector bd;
-    private BeaconFinder bf;
+    //private ImageProcessor imgProc = null;
+    private BeaconDetector bd = new BeaconDetector();
+    //private BeaconFinder bf;
     private Bitmap rgbImage = null;
     private VuforiaLocalizer.CloseableFrame frame = null;
 }

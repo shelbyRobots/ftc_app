@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
 import org.firstinspires.ftc.teamcode.image.BeaconFinder;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
+import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
@@ -170,7 +171,9 @@ public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
         hardwareMap.logDevices();
         robot.init(this);
 
-        tracker = new ImageTracker();
+        tracker = new ImageTracker(hardwareMap,
+                                   telemetry,
+                                   VuforiaInitializer.Challenge.VV);
 
         doMenus();
 
