@@ -173,7 +173,8 @@ public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
 
         tracker = new ImageTracker(hardwareMap,
                                    telemetry,
-                                   VuforiaInitializer.Challenge.VV);
+                                   VuforiaInitializer.Challenge.VV,
+                                   true);
 
         doMenus();
 

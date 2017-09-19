@@ -1,19 +1,18 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.LedDetector;
-import org.firstinspires.ftc.teamcode.image.OpenCvCameraOpMode;
 
 @Autonomous(name="OpenCvLedAuton", group ="Test")
-public class OpenCvLedAuton extends OpenCvCameraOpMode
+public class OpenCvLedAuton extends LinearOpMode
 {
     @Override
     public void runOpMode()
     {
-        initOpenCv();
-
-        imgProc = new LedDetector();
+        Detector imgProc = new LedDetector(hardwareMap, true, true);
         imgProc.setTelemetry(telemetry);
 
         waitForStart();
@@ -22,9 +21,8 @@ public class OpenCvLedAuton extends OpenCvCameraOpMode
 
         while(opModeIsActive())
         {
-            if(newImage)
+            if(imgProc.isNewImageReady())
             {
-                newImage = false;
                 imgProc.logDebug();
                 imgProc.logTelemetry();
             }
@@ -33,6 +31,6 @@ public class OpenCvLedAuton extends OpenCvCameraOpMode
 
         imgProc.stopSensing();
 
-        cleanupCamera();
+        imgProc.cleanupCamera();
     }
 }

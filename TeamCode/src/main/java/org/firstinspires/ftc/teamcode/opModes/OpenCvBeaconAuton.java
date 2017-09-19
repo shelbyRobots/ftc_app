@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
-import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
 import org.firstinspires.ftc.teamcode.image.BeaconFinder;
-import org.firstinspires.ftc.teamcode.image.OpenCvCameraOpMode;
+import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.DataLogger;
@@ -17,17 +18,19 @@ import java.util.Date;
  * Core OpMode class containing most OpenCV functionality
  */
 @SuppressWarnings("WeakerAccess")
-@Autonomous(name="OpenCVAuton", group ="Test")
-public class OpenCVAuton extends OpenCvCameraOpMode
+@Autonomous(name="OpenCvBeaconAuton", group ="Test")
+public class OpenCvBeaconAuton extends LinearOpMode
 {
     private final static double L_DN_PUSH_POS = 1.0;
     private final static double R_DN_PUSH_POS = 0.0;
     private final static double L_UP_PUSH_POS = 0.0;
     private final static double R_UP_PUSH_POS = 1.0;
 
-    private BeaconFinder bd;
+    private BeaconFinder bf;
     private ShelbyBot robot = new ShelbyBot();
     private Drivetrain drvTrn = new Drivetrain();
+
+    protected Detector bd = null;
 
     private boolean useMotor  = false;
     private boolean gyroReady = false;
@@ -61,16 +64,13 @@ public class OpenCVAuton extends OpenCvCameraOpMode
 
     public void runOpMode()
     {
-        initOpenCv();
-
         setupLogger();
         drvTrn.setDataLogger(dl);
         drvTrn.setOpMode( this );
 
-        flipImage = false;
+        bd = new BeaconDetector();
+        bf = (BeaconFinder) bd;
 
-        imgProc = new BeaconDetector();
-        bd = (BeaconFinder) imgProc;
 
         if ( useMotor ) {
             robot.init(this);
@@ -78,7 +78,7 @@ public class OpenCVAuton extends OpenCvCameraOpMode
             gyroReady = robot.calibrateGyro();
         }
 
-        imgProc.setTelemetry(telemetry);
+        bd.setTelemetry(telemetry);
 
         waitForStart();
 
@@ -100,21 +100,25 @@ public class OpenCVAuton extends OpenCvCameraOpMode
             robot.gyro.resetZAxisIntegrator();
         }
 
-        imgProc.startSensing();
+        bd.startSensing();
 
         sleep( 200 );
 
         while(opModeIsActive())
         {
-            imgProc.logDebug();
-            imgProc.logTelemetry();
+            if(bd.isNewImageReady())
+            {
+                bd.logDebug();
+                bd.logTelemetry();
+            }
+            telemetry.update();
 
             if (useMotor)
             {
                 if ( follow ) {
-                    if ( bd.getBeaconConf() > 0.25 && bd.getBeaconPosZ() > 12.0 ) {
-                        zOff = 1.0 - bd.getBeaconPosZ() / 24.0;
-                        xOff = bd.getBeaconPosX();
+                    if ( bf.getBeaconConf() > 0.25 && bf.getBeaconPosZ() > 12.0 ) {
+                        zOff = 1.0 - bf.getBeaconPosZ() / 24.0;
+                        xOff = bf.getBeaconPosX();
                         robot.rightMotor.setPower( baseSpeed + zOff * xOff * 0.0025 );
                         robot.leftMotor.setPower( baseSpeed - zOff * xOff * 0.0025 );
                     } else {
@@ -146,8 +150,8 @@ public class OpenCVAuton extends OpenCvCameraOpMode
                             cHdg = robot.getGyroFhdg() % 90;
                             hErr = Math.abs( cHdg ) < 45 ? cHdg : Math.signum( cHdg ) * ( 90 - Math.abs( cHdg ) );
 
-                            xPos = bd.getBeaconPosX();
-                            zPos = bd.getBeaconPosZ();
+                            xPos = bf.getBeaconPosX();
+                            zPos = bf.getBeaconPosZ();
 
                             nOff = zPos * Math.tan( Math.toRadians( hErr ) );
                             nPos = xPos + nOff;
@@ -236,8 +240,8 @@ public class OpenCVAuton extends OpenCvCameraOpMode
 
                     if ( beaconStep != "WAIT ") {
 
-                        blueSide = bd.getBluePosSide();
-                        redSide = bd.getRedPosSide();
+                        blueSide = bf.getBluePosSide();
+                        redSide = bf.getRedPosSide();
 
                         // Good when the beacon is in view enough or at least
                         // some driving done.
@@ -278,7 +282,7 @@ public class OpenCVAuton extends OpenCvCameraOpMode
             sleep( 10 );
         }
 
-        imgProc.stopSensing();
-        cleanupCamera();
+        bd.stopSensing();
+        bd.cleanupCamera();
     }
 }

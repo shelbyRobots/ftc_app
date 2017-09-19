@@ -19,7 +19,9 @@ public interface ImageProcessor
 
     public void setImage( Mat img );
     public void setBitmap(Bitmap rgbImage);
-    public void snapImage(int imgNum);
-    public void saveImage(int imgNum);
+    public void saveImage(Mat img);
+    public void saveImage();
+    public boolean isNewImageReady();
+    public void cleanupCamera();
     public Mat draw();
 }

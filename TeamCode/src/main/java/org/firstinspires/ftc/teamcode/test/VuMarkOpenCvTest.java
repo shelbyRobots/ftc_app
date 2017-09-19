@@ -35,75 +35,49 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
+import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
+import org.firstinspires.ftc.teamcode.image.LedDetector;
 import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
-/**
- * This OpMode illustrates the basics of using the Vuforia engine to determine
- * the identity of Vuforia VuMarks encountered on the field. The code is structured as
- * a LinearOpMode. It shares much structure with {@link ConceptVuforiaNavigation}; we do not here
- * duplicate the core Vuforia documentation found there, but rather instead focus on the
- * differences between the use of Vuforia for navigation vs VuMark identification.
- *
- * @see ConceptVuforiaNavigation
- * @see VuforiaLocalizer
- * @see VuforiaTrackableDefaultListener
- * see  ftc_app/doc/tutorial/FTC_FieldCoordinateSystemDefinition.pdf
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
- *
- * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
- * is explained in {@link ConceptVuforiaNavigation}.
- */
-
 @Autonomous(name="Concept: VuMark Id", group ="Concept")
 //@Disabled
-public class ConceptVuMarkIdentification extends LinearOpMode
+public class VuMarkOpenCvTest extends LinearOpMode
 {
-
-    public static final String TAG = "Vuforia VuMark Sample";
-
-    OpenGLMatrix lastLocation = null;
-
-//    /**
-//     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
-//     * localization engine.
-//     */
-    //ZZVuforiaLocalizer vuforia;
+    public static final String TAG = "SJH_VuMark";
 
     @Override
     public void runOpMode()
     {
         tracker = new ImageTracker(hardwareMap,
                                    telemetry,
-                                   VuforiaInitializer.Challenge.RR);
+                                   VuforiaInitializer.Challenge.RR,
+                                   false);
 
-        //imgProc = new BeaconDetector();
-        //bd = (BeaconDetector) imgProc;
-        //bf = (BeaconFinder) imgProc;
+        //bd = new BeaconDetector();
+        ld = new LedDetector();
 
         telemetry.addData(">", "Press Play to start");
         telemetry.update();
         waitForStart();
 
-        while (opModeIsActive())
+        RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
+        tracker.setActive(true);
+        while (opModeIsActive() && key == RelicRecoveryVuMark.UNKNOWN)
         {
             ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-            tracker.setActive(true);
 
             Point2d sensedBotPos = null;
             double  sensedFldHdg = 0.0;
             Bitmap bmap = null;
             int frm = 0;
-            while(sensedBotPos == null && itimer.milliseconds() < 1000)
-            {
+            //while(sensedBotPos == null && itimer.milliseconds() < 1000)
+            //{
                 tracker.updateRobotLocationInfo();
                 sensedBotPos = tracker.getSensedPosition();
 
@@ -112,12 +86,13 @@ public class ConceptVuMarkIdentification extends LinearOpMode
                     curPos = sensedBotPos;
                     sensedFldHdg = tracker.getSensedFldHeading();
                     curHdg = sensedFldHdg;
+                    key = tracker.getKeyLoc();
                     //rgbImage = tracker.getImage();
-                    break;
+            //        break;
                 }
                 frm++;
-                sleep(50);
-            }
+            //    sleep(50);
+            //}
 
             if ( sensedBotPos != null )
             {
@@ -128,26 +103,32 @@ public class ConceptVuMarkIdentification extends LinearOpMode
                 telemetry.addData("IMG", "%s  frame %d", tracker.getLocString(), frm);
             }
 
-            tracker.setFrameQueueSize(10);
+            telemetry.update();
+
+        }
+
+        RobotLog.ii(TAG, "KEY : " + key);
+        tracker.setActive(false);
+        tracker.setFrameQueueSize(10);
+        ld.startSensing();
+
+        while(opModeIsActive())
+        {
             Bitmap rgbImage = tracker.getImage();
 
             if(rgbImage == null) continue;
-            bd.setBitmap(rgbImage);
-            tracker.setFrameQueueSize(0);
-            tracker.setActive(false);
-
+            ld.setBitmap(rgbImage);
+            ld.logDebug();
+            ld.logTelemetry();
             telemetry.update();
-
-            //ZZimgProc.startSensing();
-
-            //ZZbd.setBitmap(rgbImage);
+            sleep(100);
 
             //ZZBeaconFinder.BeaconSide bs = bd.getRedPosSide();
             //ZZRobotLog.dd("SJH", "Redside = " + bs);
-            //ZZimgProc.stopSensing();
-
-            sleep(10);
         }
+        ld.stopSensing();
+        ld.cleanupCamera();
+        tracker.setFrameQueueSize(0);
         tracker.setActive(false);
     }
 
@@ -160,8 +141,6 @@ public class ConceptVuMarkIdentification extends LinearOpMode
     private int width, height;
 
     private static final int FRAME_SIZE = 16;
-//    private static final int FRAME_SIZE = 8;
-//    private static final int FRAME_SIZE = 64;
 
     private static final int FRAME_WIDTH = 3 * FRAME_SIZE;
     private static final int FRAME_HEIGHT = 4 * FRAME_SIZE;
@@ -172,9 +151,9 @@ public class ConceptVuMarkIdentification extends LinearOpMode
     private static Point2d curPos = null;
     private static double  curHdg = 0.0;
 
-    //private ImageProcessor imgProc = null;
-    private BeaconDetector bd = new BeaconDetector();
-    //private BeaconFinder bf;
+    //private ImageProcessor bd = null;
+    private BeaconDetector bd;
+    private Detector ld;
     private Bitmap rgbImage = null;
     private VuforiaLocalizer.CloseableFrame frame = null;
 }

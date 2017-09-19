@@ -1,9 +1,8 @@
 package org.firstinspires.ftc.teamcode.image;
 
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -15,11 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class LedDetector implements ImageProcessor
+public class LedDetector extends Detector implements ImageProcessor
 {
+    private Mat showImg;
     private Mat hsvImage;
     private Mat zonedImg;
-    private Mat showImg;
 
     private Mat hchy;
     private Mat outMat;
@@ -38,40 +37,23 @@ public class LedDetector implements ImageProcessor
     private List<Rect> leds = new ArrayList<>();
     //private RingBuffer beaconConfBuf = new RingBuffer(20);
 
-    private boolean sensingActive = false;
-    private boolean firstCalcsDone = false;
-
     private int numLeds = 0;
-
-    private Telemetry telemetry = null;
-
     private int skipCnt = 0;
     private static final int SKIP = 50;
 
-    static
-    {
-        if (!OpenCVLoader.initDebug())
-        {
-            RobotLog.ee("SJH", "OpenCVLoader error");
-        }
-    }
+    private static String TAG = "SJH_LedDetector";
 
     @SuppressWarnings("WeakerAccess")
-    public LedDetector() {}
+    public LedDetector()
+    {
+    }
+
+    public LedDetector(HardwareMap hardwareMap, boolean useCamera, boolean configView)
+    {
+        super(hardwareMap, useCamera, configView);
+    }
 
     @Override
-    public void startSensing()
-    {
-        firstCalcsDone = false;
-        sensingActive = true;
-    }
-
-    public void stopSensing()
-    {
-        firstCalcsDone = false;
-        sensingActive = false;
-    }
-
     public void setImage( Mat img )
     {
         // Convert to HSV colorspace to make it easier to
@@ -89,16 +71,7 @@ public class LedDetector implements ImageProcessor
         firstCalcsDone = true;
     }
 
-    public void snapImage(int imgNum)
-    {
-        //Implement later
-    }
-
-    public void saveImage(int imgNum)
-    {
-        //Implement later
-    }
-
+    @Override
     public Mat draw()
     {
         if(outMat == null) outMat = hsvImage.clone();
@@ -116,12 +89,7 @@ public class LedDetector implements ImageProcessor
 
     public void logDebug()
     {
-        RobotLog.ii("SJH", "Num LEDs: %4d", numLeds);
-    }
-
-    public void setTelemetry(Telemetry telemetry)
-    {
-        this.telemetry = telemetry;
+        RobotLog.ii(TAG, "Num LEDs: %4d", numLeds);
     }
 
     public void logTelemetry()
@@ -191,12 +159,12 @@ public class LedDetector implements ImageProcessor
             leds.add(bounded_box);
             numLeds++;
 
-            int ledX = (int)(bounded_box.x + bounded_box.width/2);
-            int ledY = (int)(bounded_box.y + bounded_box.height/2);
+            int ledX = bounded_box.x + bounded_box.width/2;
+            int ledY = bounded_box.y + bounded_box.height/2;
 
             if(skipCnt % SKIP == 0)
             {
-                RobotLog.ii("SJH", "LED at %5d, %5d", ledX, ledY);
+                RobotLog.ii(TAG, "LED at %5d, %5d", ledX, ledY);
             }
         }
     }

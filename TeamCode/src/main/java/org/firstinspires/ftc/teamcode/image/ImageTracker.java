@@ -22,7 +22,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
 import java.util.ArrayList;
@@ -35,21 +34,25 @@ public class ImageTracker
 {
     public ImageTracker(HardwareMap hardwareMap,
                         Telemetry telemetry,
-                        VuforiaInitializer.Challenge challenge)
+                        VuforiaInitializer.Challenge challenge,
+                        boolean configureLayout)
     {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         this.challenge = challenge;
+        this.configureLayout = configureLayout;
         setupVuforia();
     }
 
     private void setupVuforia()
     {
-        vInit = new VuforiaInitializer();
-        vuforia = vInit.getLocalizer(hardwareMap, useScreen);
+        vInit = new VuforiaInitializer(hardwareMap, configureLayout);
+        vuforia = vInit.getLocalizer(useScreen);
 
         trackables = vInit.setupTrackables(challenge);
     }
+
+    public RelicRecoveryVuMark getKeyLoc() {return keyLoc;}
 
     @SuppressWarnings("unused")
     public OpenGLMatrix getRobotLocation()
@@ -135,9 +138,11 @@ public class ImageTracker
                 {
                     keyLoc = RelicRecoveryVuMark.from(trackable);
                     RobotLog.ii("SJH", "VuMark KEY = " + keyLoc);
-                    getImagePose(trackable, true);
-                    getImagePose(trackable, false);
+                    OpenGLMatrix rawPose = getImagePose(trackable, true);
+                    OpenGLMatrix pose = getImagePose(trackable, false);
                     telemetry.addData("VuMark", keyLoc);
+                    RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
+                    RobotLog.dd(TAG, "   Pose: " + format(rawPose));
                     if (breakOnVumarkFound) vInit.setActive(false);
                 }
 
@@ -176,6 +181,13 @@ public class ImageTracker
                     currYaw);
         }
         return locStr;
+    }
+
+    String format(OpenGLMatrix transformationMatrix)
+    {
+        return (transformationMatrix != null) ?
+                       transformationMatrix.formatAsTransform() :
+                       "null";
     }
 
     public Bitmap getImage()
@@ -326,4 +338,5 @@ public class ImageTracker
     private Bitmap rgbImage = null;
     private HardwareMap hardwareMap = null;
     private Telemetry telemetry = null;
+    private boolean configureLayout = false;
 }

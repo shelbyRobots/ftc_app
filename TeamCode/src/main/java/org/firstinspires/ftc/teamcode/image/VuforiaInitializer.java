@@ -29,6 +29,8 @@ public class VuforiaInitializer
     private VuforiaLocalizer.Parameters parameters;
     private static boolean initialized = false;
 
+    private HardwareMap hardwareMap;
+
     private VuforiaTrackables trackables;
     private List<VuforiaTrackable> allTrackables = new ArrayList<>();
 
@@ -42,11 +44,17 @@ public class VuforiaInitializer
         RR
     }
 
-    VuforiaInitializer()
+    VuforiaInitializer(HardwareMap hardwareMap, boolean configureLayout)
     {
+        this.hardwareMap = hardwareMap;
+        if(configureLayout)
+        {
+            LayoutModifier lmod = new LayoutModifier(hardwareMap);
+            lmod.configureViewLayout();
+        }
     }
 
-    VuforiaLocalizer getLocalizer(HardwareMap hardwareMap, boolean useScreen)
+    VuforiaLocalizer getLocalizer(boolean useScreen)
     {
         if(initialized && vuforia !=null) return vuforia;
 
@@ -165,12 +173,12 @@ public class VuforiaInitializer
         if(active)
         {
             trackables.activate();
-            vuforia.setFrameQueueCapacity(NUM_FRAME_IMAGES);
+            //vuforia.setFrameQueueCapacity(NUM_FRAME_IMAGES);
         }
         else
         {
             trackables.deactivate();
-            vuforia.setFrameQueueCapacity(0);
+            //vuforia.setFrameQueueCapacity(0);
         }
     }
 

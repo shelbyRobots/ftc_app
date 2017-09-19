@@ -75,7 +75,8 @@ public class OldImageNav extends LinearOpMode {
     private ImageTracker tracker;
 
     private Bitmap rgbImage = null;
-    private BeaconDetector detector = new BeaconDetector();
+    private Detector detector = new BeaconDetector();
+    private BeaconFinder bf = (BeaconFinder)detector;
 
     private ElapsedTime timer = new ElapsedTime();
 
@@ -306,7 +307,8 @@ public class OldImageNav extends LinearOpMode {
     {
         tracker = new ImageTracker(hardwareMap,
                                    telemetry,
-                                   VuforiaInitializer.Challenge.VV);
+                                   VuforiaInitializer.Challenge.VV,
+                                   true);
 //        setupTrackables();
 //        setupPhoneOnRobot();
 
@@ -360,14 +362,15 @@ public class OldImageNav extends LinearOpMode {
 //            tracker.setFrameQueueSize(0);
 //            tracker.setActive(false);
 //
-//            RobotLog.ii("SJH", "Beacon Color: " + detector.getLightOrder());
-//            telemetry.addData("Beacon Color: ", detector.getLightOrder());
+//            RobotLog.ii("SJH", "Beacon Color: " + bf.getLightOrder());
+//            telemetry.addData("Beacon Color: ", bf.getLightOrder());
 //
 //            telemetry.update();
 //            idle();
 //        }
 //        tracker.setActive(false);
 
+        detector.cleanupCamera();
     }
 
     /**

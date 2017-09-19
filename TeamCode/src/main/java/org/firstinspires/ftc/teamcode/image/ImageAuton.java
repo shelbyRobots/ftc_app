@@ -165,7 +165,8 @@ public class ImageAuton extends LinearOpMode {
     {
         tracker = new ImageTracker(hardwareMap,
                                    telemetry,
-                                   VuforiaInitializer.Challenge.VV);
+                                   VuforiaInitializer.Challenge.VV,
+                                   true);
 
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start tracking");
@@ -193,6 +194,8 @@ public class ImageAuton extends LinearOpMode {
             idle();
         }
         tracker.setActive(false);
+
+        bd.cleanupCamera();
     }
 
     /**

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGampad;
 
-@TeleOp(name="Telop Tank", group="Tele")
+@TeleOp(name="Telop Driver", group="Tele")
 //@Disabled
 public class Teleop_Driver extends LinearOpMode
 {
@@ -26,8 +26,7 @@ public class Teleop_Driver extends LinearOpMode
         robot.init(this);
 
         if (robot.leftMotor  != null &&
-            robot.rightMotor != null &&
-            robot.gyro       != null)
+            robot.rightMotor != null)
         {
             robot.leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -42,8 +41,8 @@ public class Teleop_Driver extends LinearOpMode
 
         double curLpushPos = L_DN_PUSH_POS;
         double curRpushPos = R_DN_PUSH_POS;
-        robot.rpusher.setPosition(curRpushPos);
-        robot.lpusher.setPosition(curLpushPos);
+        if(robot.rpusher != null) robot.rpusher.setPosition(curRpushPos);
+        if(robot.lpusher != null) robot.lpusher.setPosition(curLpushPos);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -88,20 +87,23 @@ public class Teleop_Driver extends LinearOpMode
             switch (driveType)
             {
                 case TANK_DRIVE:
-                    robot.leftMotor.setPower(left);
-                    robot.rightMotor.setPower(right);
+                    if(robot.leftMotor  != null) robot.leftMotor.setPower(left);
+                    if(robot.rightMotor != null) robot.rightMotor.setPower(right);
                     break;
 
                 case ARCADE_DRIVE:
-                    robot.leftMotor.setPower(speed + turn);
-                    robot.rightMotor.setPower(speed - turn);
+                    if(robot.leftMotor  != null) robot.leftMotor.setPower(speed + turn);
+                    if(robot.rightMotor != null) robot.rightMotor.setPower(speed - turn);
                     break;
 
                 case CAR_DRIVE:
-                    robot.leftMotor.setPower(((1 - Math.abs(turn))  * speed +
+                    if(robot.leftMotor != null)
+                        robot.leftMotor.setPower(((1 - Math.abs(turn))  * speed +
                                               (1 - Math.abs(speed)) * turn  +
                                               turn + speed) / 2);
-                    robot.rightMotor.setPower(((1 - Math.abs(turn))  * speed -
+
+                    if(robot.rightMotor  != null)
+                        robot.rightMotor.setPower(((1 - Math.abs(turn))  * speed -
                                                (1 - Math.abs(speed)) * turn  -
                                                turn + speed) / 2);
                     break;
@@ -141,7 +143,7 @@ public class Teleop_Driver extends LinearOpMode
                 {
                     curRpushPos = R_UP_PUSH_POS;
                 }
-                robot.rpusher.setPosition(curRpushPos);
+                if(robot.rpusher != null) robot.rpusher.setPosition(curRpushPos);
             }
 
             if(toggle_lpusher)
@@ -154,7 +156,7 @@ public class Teleop_Driver extends LinearOpMode
                 {
                     curLpushPos = L_UP_PUSH_POS;
                 }
-                robot.lpusher.setPosition(curLpushPos);
+                if(robot.lpusher != null) robot.lpusher.setPosition(curLpushPos);
             }
 
             if(toggle_float)
@@ -163,16 +165,16 @@ public class Teleop_Driver extends LinearOpMode
                     zeroPwr = DcMotor.ZeroPowerBehavior.FLOAT;
                 else
                     zeroPwr = DcMotor.ZeroPowerBehavior.BRAKE;
-                robot.leftMotor.setZeroPowerBehavior(zeroPwr);
-                robot.rightMotor.setZeroPowerBehavior(zeroPwr);
+                if(robot.leftMotor  != null) robot.leftMotor.setZeroPowerBehavior(zeroPwr);
+                if(robot.rightMotor != null) robot.rightMotor.setZeroPowerBehavior(zeroPwr);
             }
 
             if(auto_shoot)
             {
                 RobotLog.ii("SJH", "AUTOSHOOT");
-                robot.shotmotor1.setPower(shoot_scale);
-                robot.shotmotor2.setPower(shoot_scale);
-                robot.sweepMotor.setPower(-1.0);
+                if(robot.shotmotor1 != null) robot.shotmotor1.setPower(shoot_scale);
+                if(robot.shotmotor2 != null) robot.shotmotor2.setPower(shoot_scale);
+                if(robot.sweepMotor != null) robot.sweepMotor.setPower(-1.0);
                 dtrn.driveDistance(35.0, 0.8, Drivetrain.Direction.REVERSE);
                 while(opModeIsActive() && dtrn.isBusy())
                 {
@@ -184,13 +186,13 @@ public class Teleop_Driver extends LinearOpMode
                 if(use_auto_shoot)
                 {
                     sleep(500);
-                    robot.sweepMotor.setPower(-1.0);
-                    robot.elevMotor.setPower(-1.0);
+                    if(robot.sweepMotor != null) robot.sweepMotor.setPower(-1.0);
+                    if(robot.elevMotor != null) robot.elevMotor.setPower(-1.0);
                     sleep(1500);
-                    robot.shotmotor1.setPower(0);
-                    robot.shotmotor2.setPower(0);
-                    robot.sweepMotor.setPower(0);
-                    robot.elevMotor.setPower(0);
+                    if(robot.shotmotor1 != null) robot.shotmotor1.setPower(0);
+                    if(robot.shotmotor2 != null) robot.shotmotor2.setPower(0);
+                    if(robot.sweepMotor != null) robot.sweepMotor.setPower(0);
+                    if(robot.elevMotor != null) robot.elevMotor.setPower(0);
                     RobotLog.ii("SJH", "DONE AUTOSHOOT");
                 }
             }
@@ -234,8 +236,8 @@ public class Teleop_Driver extends LinearOpMode
 
     private void shooter_motors(double speed)
     {
-        robot.shotmotor1.setPower(speed);
-        robot.shotmotor2.setPower(speed);
+        if(robot.shotmotor1 != null) robot.shotmotor1.setPower(speed);
+        if(robot.shotmotor2 != null) robot.shotmotor2.setPower(speed);
     }
 
     private enum TELEOP_DRIVE_TYPE
