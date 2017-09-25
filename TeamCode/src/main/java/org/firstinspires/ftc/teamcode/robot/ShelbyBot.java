@@ -17,6 +17,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * This is NOT an opmode.
  *
@@ -67,19 +71,77 @@ public class ShelbyBot
         this.op = op;
         this.hwMap = op.hardwareMap;
         // Define and Initialize Motors
-        leftMotor   = hwMap.dcMotor.get("leftdrive");
-        rightMotor  = hwMap.dcMotor.get("rightdrive");
-        elevMotor   = hwMap.dcMotor.get("elevmotor");
-        sweepMotor  = hwMap.dcMotor.get("sweepmotor");
-        shotmotor1  = hwMap.dcMotor.get("leftshooter");
-        shotmotor2  = hwMap.dcMotor.get("rightshooter");
-        lpusher     = hwMap.servo.get("lpusher");
-        rpusher     = hwMap.servo.get("rpusher");
 
-        gyro        = (ModernRoboticsI2cGyro)hwMap.gyroSensor.get("gyro");
-        colorSensor = (ModernRoboticsI2cColorSensor)hwMap.colorSensor.get("color");
+        Map<String, Boolean> capMap = new HashMap<>();
+        capMap.put("drivetrain", false);
+        capMap.put("shooter",    false);
+        capMap.put("collector",  false);
+        capMap.put("pusher",     false);
+        capMap.put("sensor",     false);
 
-        dim = hwMap.deviceInterfaceModule.get("dim");
+        try  //Drivetrain
+        {
+            leftMotor = hwMap.dcMotor.get("leftdrive");
+            rightMotor = hwMap.dcMotor.get("rightdrive");
+            capMap.put("drivetrain", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //Collector
+        {
+            elevMotor = hwMap.dcMotor.get("elevmotor");
+            sweepMotor = hwMap.dcMotor.get("sweepmotor");
+            capMap.put("collector", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //Shooters
+        {
+            shotmotor1 = hwMap.dcMotor.get("leftshooter");
+            shotmotor2 = hwMap.dcMotor.get("rightshooter");
+            capMap.put("shooter", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //Pushers
+        {
+            lpusher = hwMap.servo.get("lpusher");
+            rpusher = hwMap.servo.get("rpusher");
+            capMap.put("pusher", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //I2C and DAIO
+        {
+            dim = hwMap.deviceInterfaceModule.get("dim");
+
+            gyro = (ModernRoboticsI2cGyro) hwMap.gyroSensor.get("gyro");
+            colorSensor = (ModernRoboticsI2cColorSensor) hwMap.colorSensor.get("color");
+            capMap.put("sensor", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        Iterator it = capMap.entrySet().iterator();
+        while (it.hasNext())
+        {
+            Map.Entry pair = (Map.Entry) it.next();
+            System.out.println(pair.getKey() + " = " + pair.getValue());
+        }
 
         // FORWARD for CCW drive shaft rotation if using AndyMark motors
         // REVERSE for  CW drive shaft rotation if using AndyMark motors

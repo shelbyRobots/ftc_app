@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.image;
 import android.graphics.Bitmap;
 import android.os.Environment;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -34,12 +34,13 @@ public abstract class Detector implements ImageProcessor
 
     Detector()
     {
-        this(null, false, false);
+        this(true, true);
     }
 
-    Detector(HardwareMap hardwareMap, boolean useCamera, boolean configView)
+    Detector(boolean configLayout, boolean useCamera)
     {
-        ocvInit = new OpenCvInitializer(hardwareMap, useCamera, configView);
+        CommonUtil com = CommonUtil.getInstance();
+        ocvInit = com.getOcvInit();
         ocvInit.setImageProcessor(this);
     }
 

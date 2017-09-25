@@ -85,9 +85,9 @@ public class BeaconDetector extends Detector implements BeaconFinder, ImageProce
     {
     }
 
-    public BeaconDetector(HardwareMap hardwareMap, boolean useCamera, boolean configView)
+    public BeaconDetector(boolean configLayout, boolean useCamera)
     {
-        super(hardwareMap, useCamera, configView);
+        super(configLayout, useCamera);
     }
 
     @Override

@@ -6,11 +6,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.DataLogger;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
 import java.util.Locale;
 
+@SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal"})
 public class Drivetrain
 {
     public Drivetrain()
@@ -33,6 +35,9 @@ public class Drivetrain
         curLpower = lPwr;
         curRpower = rPwr;
 
+        RobotLog.dd("SJH", "MOVE: speedThreads " + useSpeedThreads +
+                    " gangMotors " + gangMotors +
+                    " lpwr " + lPwr + " rpwr " + rPwr );
         if(!gangMotors)
         {
             if(useSpeedThreads)
@@ -641,19 +646,12 @@ public class Drivetrain
         this.startHdg = startHdg;
     }
 
-    public void setOpMode(LinearOpMode op)
-    {
-        this.op = op;
-    }
-
-    public void setDataLogger(DataLogger dl)
-    {
-        this.dl = dl;
-    }
-
     public void init(ShelbyBot robot)
     {
         RobotLog.ii("SJH", "CPI: %5.2f", CPI);
+        com = CommonUtil.getInstance();
+        op = com.getLinearOpMode();
+        dl = com.getDataLogger();
         frame = 0;
         this.robot  = robot;
 
@@ -886,7 +884,7 @@ public class Drivetrain
 
     public void logStartValues(String note)
     {
-        if(logData)
+        if(logData && dl != null)
         {
             dl.addField("BEGIN " + note);
             dl.addField(frame);
@@ -1137,7 +1135,7 @@ public class Drivetrain
     {
         double ldt = logDataTimer.time();
         boolean expired = ldt > logTime;
-        if(logData && (expired || force))
+        if(logData && dl != null && (expired || force))
         {
             if(expired) logTime = ldt + logDataTimeout;
             if(force) logTime = 0;
@@ -1201,7 +1199,7 @@ public class Drivetrain
     private double startHdg = 0.0;
 
     public int frame   = 0;
-    //private LinearOpMode lom;
+
     private ElapsedTime period  = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private ElapsedTime rt = new ElapsedTime();
     private ElapsedTime ptmr = new ElapsedTime();
@@ -1259,7 +1257,9 @@ public class Drivetrain
     private double minSpeed = 0.08;
     private double minGyroTurnSpeed = 0.10;
 
-    private LinearOpMode op = null;
+    private CommonUtil com;
+    private LinearOpMode op;
+    private DataLogger   dl;
 
     private boolean usePosStop = true;
     private boolean doStopAndReset = false;
@@ -1273,7 +1273,7 @@ public class Drivetrain
 
     private ElapsedTime gyroFrameTime = new ElapsedTime();
     private ElapsedTime datalogtimer = new ElapsedTime();
-    private DataLogger dl;
+
     private boolean logData = true;
     private double logDataTimeout = 5;
     public ElapsedTime logDataTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);

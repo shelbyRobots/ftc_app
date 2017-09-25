@@ -18,10 +18,6 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
-/**
- * Created by crazy on 1/21/2017.
- */
-
 public abstract class VisionOpModeCore extends LinearOpMode implements CameraBridgeViewBase.CvCameraViewListener2 {
     private static final int initialMaxSize = 1000;
     public static JavaCameraView openCVCamera;

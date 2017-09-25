@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class DataLogger {
@@ -18,45 +20,65 @@ public class DataLogger {
     private long msBase;
     private long nsBase;
     private boolean lineStart = false;
+    private boolean logData   = false;
 
     private String timeFormat = "%.3f";
     private char fs = ',';
     private char nl = '\n';
 
+    public DataLogger()
+    {
+        this("date");
+    }
+
     public DataLogger(String fileName)
     {
-        sb = new StringBuilder(128);
-        //String directoryPath  = "/sdcard/FIRST/DataLogger";
-        String directoryPath  = Environment.getExternalStorageDirectory().getPath() +
-                                        "/FIRST/DataLogger";
-        String filePath       = directoryPath + "/" + fileName + ".csv";
-
-        File fDir = new File(directoryPath);
-        // Create directory if it does not exist
-        if(!fDir.isDirectory() && !fDir.mkdirs())
+        if(fileName.equals("date"))
         {
+            Date day = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(day);
+            fileName = String.format(Locale.US, "%d%d%d_%02d%02d",
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH),
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE));
+        }
+
+        if(logData)
+        {
+            sb = new StringBuilder(128);
+            //String directoryPath  = "/sdcard/FIRST/DataLogger";
+            String directoryPath  = Environment.getExternalStorageDirectory().getPath() +
+                                            "/FIRST/DataLogger";
+            String filePath       = directoryPath + "/" + fileName + ".csv";
+
+            File fDir = new File(directoryPath);
+            // Create directory if it does not exist
+            if (!fDir.isDirectory() && !fDir.mkdirs())
+            {
                 RobotLog.ee("SJH", "Could not create directory " + directoryPath);
-        }
+            }
 
-        try
-        {
-            writer = new FileWriter(filePath);
-            bw = new BufferedWriter(writer);
-        }
-        catch (IOException e)
-        {
-            RobotLog.ee("SJH", "Could not create file " + filePath);
-        }
+            try
+            {
+                writer = new FileWriter(filePath);
+                bw = new BufferedWriter(writer);
+            } catch (IOException e)
+            {
+                RobotLog.ee("SJH", "Could not create file " + filePath);
+            }
 
-        msBase = System.currentTimeMillis();
-        nsBase = System.nanoTime();
-        try
-        {
-            bw.append("sec, d ms");
-        }
-        catch (IOException e)
-        {
-            RobotLog.ee("SJH", "Could not write header");
+            msBase = System.currentTimeMillis();
+            nsBase = System.nanoTime();
+            try
+            {
+                bw.append("sec, d ms");
+            } catch (IOException e)
+            {
+                RobotLog.ee("SJH", "Could not write header");
+            }
         }
     }
 
@@ -70,8 +92,8 @@ public class DataLogger {
     {
         try
         {
-            bw.append(sb);
-            sb.delete(0, sb.length());
+            if(bw != null) bw.append(sb);
+            if(sb != null) sb.delete(0, sb.length());
         }
         catch (IOException e)
         {
@@ -105,8 +127,8 @@ public class DataLogger {
     {
         try
         {
-            bw.close();
-            writer.close();
+            if(bw != null) bw.close();
+            if(writer != null) writer.close();
         }
         catch (IOException e)
         {

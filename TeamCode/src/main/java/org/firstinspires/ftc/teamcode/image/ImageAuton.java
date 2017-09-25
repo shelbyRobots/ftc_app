@@ -43,6 +43,8 @@ import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
 //import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -50,8 +52,8 @@ import org.firstinspires.ftc.teamcode.util.Point2d;
 @SuppressWarnings("WeakerAccess")
 @Autonomous(name="ImageAuton", group ="Test")
 //@Disabled
-public class ImageAuton extends LinearOpMode {
-
+public class ImageAuton extends InitLinearOpMode
+{
     private static final String TAG = "SJH Image Auton";
 
     // Vuforia units are mm = units used in XML for the trackables
@@ -60,6 +62,8 @@ public class ImageAuton extends LinearOpMode {
 
     private VectorF currPos = new VectorF(0.0f, 0.0f, 0.0f);
     private OpenGLMatrix lastLocation = null;
+
+    private CommonUtil com = CommonUtil.getInstance();
 
     private BeaconDetector bd = new BeaconDetector();
     private BeaconFinder   bf = (BeaconFinder) bd;
@@ -163,10 +167,8 @@ public class ImageAuton extends LinearOpMode {
     @Override
     public void runOpMode()
     {
-        tracker = new ImageTracker(hardwareMap,
-                                   telemetry,
-                                   VuforiaInitializer.Challenge.VV,
-                                   true);
+        initCommon(this, false, true, false, true);
+        tracker = new ImageTracker(VuforiaInitializer.Challenge.VV);
 
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start tracking");

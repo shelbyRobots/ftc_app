@@ -31,19 +31,20 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.util.DataLogger;
+import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
+import org.firstinspires.ftc.teamcode.util.DataLogger;
 
 import java.util.Date;
 
 @Autonomous(name="Auto Drive By Gyro", group="Test")
 //@Disabled
-public class AutoDriveByGyro_Linear extends LinearOpMode {
+public class AutoDriveByGyro_Linear extends InitLinearOpMode
+{
 
     /* Declare OpMode members. */
     ShelbyBot robot   = new ShelbyBot();
@@ -63,7 +64,6 @@ public class AutoDriveByGyro_Linear extends LinearOpMode {
     static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
 
     private ElapsedTime datalogtimer = new ElapsedTime();
-    private DataLogger dl;
     private boolean logData = true;
     private boolean gyroReady = false;
     private boolean colorOn = false;
@@ -82,6 +82,7 @@ public class AutoDriveByGyro_Linear extends LinearOpMode {
     @Override
     public void runOpMode()
     {
+        initCommon(this, false, false, false, false);
         robot.init(this);
 
         if (logData)

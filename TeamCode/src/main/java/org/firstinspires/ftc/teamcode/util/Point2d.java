@@ -16,6 +16,13 @@ public class Point2d
         this(new String("PT" + numpts++), x, y);
     }
 
+    public Point2d(float[] fltarr) {this((double)fltarr[0], (double)fltarr[1]);}
+
+    public Point2d(String name, float[] fltarr)
+    {
+        this(name, (double)fltarr[0], (double)fltarr[1]);
+    }
+
     public double distance(Point2d tgtPt)
     {
         double sq_dist = (tgtPt.x - x)*(tgtPt.x -x) + (tgtPt.y - y)*(tgtPt.y - y);

@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
-import android.widget.TextView;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
-import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.field.Points;
 import org.firstinspires.ftc.teamcode.field.VvPoints;
@@ -18,42 +13,32 @@ import org.firstinspires.ftc.teamcode.image.BeaconFinder;
 import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
-import org.firstinspires.ftc.teamcode.util.DataLogger;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 import ftclib.FtcChoiceMenu;
 import ftclib.FtcMenu;
 import ftclib.FtcValueMenu;
-import hallib.HalDashboard;
 
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach"})
 @Autonomous(name="AutonShelby", group="Auton")
 //@Disabled
-public class VvAutoShelby extends LinearOpMode implements FtcMenu.MenuButtons
+public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButtons
 {
     public VvAutoShelby()
     {
         super();
     }
 
-    public static HalDashboard getDashboard()
-    {
-        return dashboard;
-    }
-
     private void initRobot()
     {
         telemetry.addData("_","PLEASE WAIT - STARTING");
         telemetry.update();
-        dashboard = HalDashboard.createInstance(telemetry);
 
-        FtcRobotControllerActivity act = (FtcRobotControllerActivity)(hardwareMap.appContext);
-        dashboard.setTextView((TextView)act.findViewById(R.id.textOpMode));
+        initCommon(this, false, true, true, true);
+
         setup();
     }
 
@@ -92,30 +77,24 @@ public class VvAutoShelby extends LinearOpMode implements FtcMenu.MenuButtons
         if(drvTrn != null) drvTrn.cleanup();
         //for(int i = 1; i <= numBeacons; i++) bd.saveImage(i);
         bd.cleanupCamera();
-        dl.closeDataLogger();
-        dashboard.clearDisplay();
     }
 
     private void setup()
     {
         dashboard.displayPrintf(2, "STATE: %s", "INITIALIZING - PLEASE WAIT FOR MENU");
         RobotLog.ii("SJH", "SETUP");
-        hardwareMap.logDevices();
 
         robot.init(this);
 
         drvTrn.init(robot);
-        drvTrn.setOpMode(this);
         drvTrn.setUseSpeedThreads(false);
         drvTrn.setRampUp(false);
 
-        bd = new BeaconDetector(hardwareMap, true, true);
+        bd = new BeaconDetector(true, false);
         bf = (BeaconFinder) bd;
 
         doMenus();
-
         setupLogger();
-        drvTrn.setDataLogger(dl);
 
         dl.addField("Start: " + startPos.toString());
         dl.addField("Push: " + beaconChoice.toString());
@@ -1196,17 +1175,6 @@ public class VvAutoShelby extends LinearOpMode implements FtcMenu.MenuButtons
     {
         if (logData)
         {
-            Date day = new Date();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(day);
-            String dayStr = String.format(Locale.US, "%d%d%d_%02d%02d_%s",
-                    cal.get(Calendar.YEAR),
-                    cal.get(Calendar.MONTH),
-                    cal.get(Calendar.DAY_OF_MONTH),
-                    cal.get(Calendar.HOUR_OF_DAY),
-                    cal.get(Calendar.MINUTE),
-                    alliance.toString() + "_auton");
-            dl = new DataLogger(dayStr);
             dl.addField("NOTE");
             dl.addField("FRAME");
             dl.addField("Gyro");
@@ -1264,8 +1232,6 @@ public class VvAutoShelby extends LinearOpMode implements FtcMenu.MenuButtons
     private static Team team = Team.SNOWMAN;
     private static double DEF_SHT_PWR = 0.85;
 
-    private static HalDashboard dashboard = null;
-
     private int RED_THRESH = 15;
     private int GRN_THRESH = 15;
     private int BLU_THRESH = 15;
@@ -1277,9 +1243,6 @@ public class VvAutoShelby extends LinearOpMode implements FtcMenu.MenuButtons
     private boolean useImageLoc  = false;
 
     private boolean firstInState = true;
-
-    private DataLogger dl;
-    private boolean logData = true;
 
     private int postSleep = 150;
 

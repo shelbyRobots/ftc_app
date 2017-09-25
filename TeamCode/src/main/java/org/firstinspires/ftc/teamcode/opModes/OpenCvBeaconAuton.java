@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -10,17 +9,16 @@ import org.firstinspires.ftc.teamcode.image.BeaconFinder;
 import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
-import org.firstinspires.ftc.teamcode.util.DataLogger;
-
-import java.util.Date;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 
 /**
  * Core OpMode class containing most OpenCV functionality
  */
 @SuppressWarnings("WeakerAccess")
 @Autonomous(name="OpenCvBeaconAuton", group ="Test")
-public class OpenCvBeaconAuton extends LinearOpMode
+public class OpenCvBeaconAuton extends InitLinearOpMode
 {
+    private CommonUtil com = CommonUtil.getInstance();
     private final static double L_DN_PUSH_POS = 1.0;
     private final static double R_DN_PUSH_POS = 0.0;
     private final static double L_UP_PUSH_POS = 0.0;
@@ -36,15 +34,10 @@ public class OpenCvBeaconAuton extends LinearOpMode
     private boolean gyroReady = false;
     private boolean follow    = false;
 
-    private DataLogger dl;
-    private boolean logData = true;
-
     private void setupLogger()
     {
-        if (logData)
+        if(logData)
         {
-            Date day = new Date();
-            dl = new DataLogger(day.toString() + "autonomousData");
             dl.addField("NOTE");
             dl.addField("FRAME");
             dl.addField("Gyro");
@@ -64,9 +57,8 @@ public class OpenCvBeaconAuton extends LinearOpMode
 
     public void runOpMode()
     {
+        initCommon(this, true, false, false, true);
         setupLogger();
-        drvTrn.setDataLogger(dl);
-        drvTrn.setOpMode( this );
 
         bd = new BeaconDetector();
         bf = (BeaconFinder) bd;

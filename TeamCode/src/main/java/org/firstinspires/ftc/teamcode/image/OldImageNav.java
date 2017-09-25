@@ -305,10 +305,7 @@ public class OldImageNav extends LinearOpMode {
     @Override
     public void runOpMode()
     {
-        tracker = new ImageTracker(hardwareMap,
-                                   telemetry,
-                                   VuforiaInitializer.Challenge.VV,
-                                   true);
+        tracker = new ImageTracker(VuforiaInitializer.Challenge.VV);
 //        setupTrackables();
 //        setupPhoneOnRobot();
 

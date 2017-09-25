@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.image;
 
+import android.app.Activity;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.vuforia.HINT;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
@@ -17,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.field.VvField;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,26 +48,23 @@ public class VuforiaInitializer
         RR
     }
 
-    VuforiaInitializer(HardwareMap hardwareMap, boolean configureLayout)
+    public VuforiaInitializer()
     {
-        this.hardwareMap = hardwareMap;
-        if(configureLayout)
-        {
-            LayoutModifier lmod = new LayoutModifier(hardwareMap);
-            lmod.configureViewLayout();
-        }
     }
 
-    VuforiaLocalizer getLocalizer(boolean useScreen)
+    public VuforiaLocalizer getLocalizer(boolean useScreen)
     {
         if(initialized && vuforia !=null) return vuforia;
 
-        VuforiaLocalizer.Parameters parameters = getParameters(hardwareMap, useScreen);
+        VuforiaLocalizer.Parameters parameters = getParameters(useScreen);
 
         vuforia = ClassFactory.createVuforiaLocalizer(parameters);
         //Set the image sets to allow getting frames from vuforia
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
         vuforia.setFrameQueueCapacity(NUM_FRAME_IMAGES);
+
+        Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS,4);
+
         RobotLog.ii("SJH", "Vuforia LicKey: " + parameters.vuforiaLicenseKey);
 
         initialized = true;
@@ -71,11 +72,12 @@ public class VuforiaInitializer
         return vuforia;
     }
 
-    private VuforiaLocalizer.Parameters getParameters(HardwareMap hardwareMap, boolean useScreen)
+    private VuforiaLocalizer.Parameters getParameters(boolean useScreen)
     {
-        int viewId = hardwareMap.appContext.getResources()
-                             .getIdentifier("cameraMonitorViewId", "id",
-                                     hardwareMap.appContext.getPackageName());
+        CommonUtil com = CommonUtil.getInstance();
+        Activity act = com.getActivity();
+        String pName = act.getPackageName();
+        int viewId = com.getCameraMonitorViewId();
 
         //int viewId = com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId;
 

@@ -2,14 +2,12 @@ package org.firstinspires.ftc.teamcode.image;
 
 
 import android.app.Activity;
-import android.content.res.Resources;
-import android.view.View;
 import android.view.ViewGroup;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
@@ -21,19 +19,17 @@ import org.opencv.core.Mat;
 @SuppressWarnings("unused")
 public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListener2
 {
+    private CommonUtil com = CommonUtil.getInstance();
     private boolean newImage = false;
     private ImageProcessor imgProc = null;
     private static JavaCameraView openCVCamera = null;
 
-    private HardwareMap hardwareMap;
     private Activity act = null;
 
-    private Resources rsrcs;
-    private String pName;
-
     private boolean flipImage           = false;
-    private boolean configureLayout     = true;
     private boolean addJavaCameraView   = true;
+    private static boolean loaded       = false;
+    private static boolean loading      = false;
     private static boolean initialized  = false;
     private static boolean initializing = false;
 
@@ -45,45 +41,22 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
     public  static boolean isInitializing() {return initializing;}
     private static boolean isInitialized()  {return initialized;}
 
-    public OpenCvInitializer(boolean configureLayout)
+    public OpenCvInitializer(boolean addJavaCameraView)
     {
-        this(null, configureLayout, false);
-    }
-
-    public OpenCvInitializer(HardwareMap hardwareMap,
-                             boolean configureLayout,
-                             boolean addJavaCameraView)
-    {
-        this.hardwareMap = hardwareMap;
-        this.configureLayout   = configureLayout;
         this.addJavaCameraView = addJavaCameraView;
 
-        if(hardwareMap != null)
-        {
-            act = (Activity) hardwareMap.appContext;
-            rsrcs = hardwareMap.appContext.getResources();
-            pName = hardwareMap.appContext.getPackageName();
-        }
+        act = com.getActivity();
 
         initOpenCv();
     }
 
-    private int getId(String vName)
+    public void setupCameraView()
     {
-        return rsrcs.getIdentifier(vName, "id", pName);
-    }
-
-    private void configureViewLayout()
-    {
-        if(!configureLayout || hardwareMap == null) return;
-        RobotLog.dd("SJH", "OpenCvLoad: configuring layout");
-        LayoutModifier lmod = new LayoutModifier(hardwareMap);
-        lmod.configureViewLayout();
-    }
-
-    private void setupCameraView()
-    {
-        if(!addJavaCameraView || hardwareMap == null) return;
+        if(!loaded || !addJavaCameraView || openCVCamera != null)
+        {
+            RobotLog.dd("SJH", "OpenCvLoad: JCV not requested or already setup");
+            return;
+        }
 
         RobotLog.dd("SJH", "OpenCvLoad: setting up JCV");
         class CameraRunnable implements Runnable
@@ -92,22 +65,24 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
             private JavaCameraView getJcv() { return jcv; }
 
             public void run() {
-                RobotLog.dd("SJH", "Configuring Layout");
+                RobotLog.dd("SJH", "Setting up JavaCameraView");
 
                 //Add a JavaCameraView child to cameraMonitorView
-                ViewGroup vg = act.findViewById(getId("cameraMonitorViewId"));
+                ViewGroup vg = act.findViewById(com.getCameraMonitorViewId());
 
                 jcv = new JavaCameraView(act, CameraBridgeViewBase.CAMERA_ID_BACK);
                 jcv.setMaxFrameSize(480, 320);
 
                 ViewGroup.LayoutParams vglop =
                         new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                          ViewGroup.LayoutParams.MATCH_PARENT);
+                                                   ViewGroup.LayoutParams.MATCH_PARENT);
                 jcv.setLayoutParams(vglop);
                 vg.addView(jcv, 0);
             }
         }
 
+        initializing = true;
+        initialized = false;
         CameraRunnable mr = new CameraRunnable();
         act.runOnUiThread(mr);
 
@@ -135,74 +110,69 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
         RobotLog.dd("SJH", "OpenCvLoad: enabling view");
         openCVCamera.enableView();
         RobotLog.dd("SJH", "OpenCvLoad: called enableView");
+
+        initializing = false;
+        initialized  = true;
     }
 
     private void setup()
     {
-        configureViewLayout();
         setupCameraView();
     }
 
     private void initOpenCv()
     {
-        if(initialized || initializing)
+        if(loaded || loading)
         {
-            RobotLog.dd("SJH", "OpenCV already initialized");
+            RobotLog.dd("SJH", "OpenCV already loaded");
+            //setup();
             return;
         }
 
-        initializing = true;
+        loading = true;
 
-        BaseLoaderCallback mLoaderCallback = null;
-
-        if(hardwareMap != null)
+        BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(act)
         {
-            mLoaderCallback = new BaseLoaderCallback(hardwareMap.appContext)
+            @Override
+            public void onManagerConnected(int status)
             {
-                @Override
-                public void onManagerConnected(int status)
+                switch (status)
                 {
-                    switch (status)
+                    case LoaderCallbackInterface.SUCCESS:
                     {
-                        case LoaderCallbackInterface.SUCCESS:
-                        {
-                            setup();
-                        }
-                        break;
-                        default:
-                        {
-                            RobotLog.dd("SJH", "OpenCvLoad: FAILURE");
-                            super.onManagerConnected(status);
-                        }
-                        break;
+                        RobotLog.ii("SJH", "OpenCVLoad: SUCCESS");
+                        initialized = true;
+                        initialized = false;
+                        //setup();
                     }
+                    break;
+                    default:
+                    {
+                        RobotLog.dd("SJH", "OpenCvLoad: FAILURE");
+                        super.onManagerConnected(status);
+                    }
+                    break;
                 }
-            };
-        }
+            }
+        };
 
         //Try loading ocv libraries from within app pkg
         if (!OpenCVLoader.initDebug())
         {
             RobotLog.dd("SJH", "OpenCvLoad: Could not load from app - trying OpenCV manager");
             //Try loading using OpenCv manager
-            if(hardwareMap != null)
-            {
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0,
-                        hardwareMap.appContext,
-                        mLoaderCallback);
-            }
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0,
+                    act, mLoaderCallback);
         } else
         {
             RobotLog.ii("SJH", "OpenCVLoader loaded from app pkg");
-            setup();
+            //setup();
         }
-
-        initializing = false;
-        initialized  = true;
     }
 
     public void cleanupCamera()
     {
+        com.restoreLayout();
         if (openCVCamera != null)
         {
             RobotLog.dd("SJH", "cleanupCamera");

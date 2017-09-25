@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.image;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -12,6 +12,8 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import hallib.HalDashboard;
 
 
 public class LedDetector extends Detector implements ImageProcessor
@@ -41,6 +43,8 @@ public class LedDetector extends Detector implements ImageProcessor
     private int skipCnt = 0;
     private static final int SKIP = 50;
 
+    private HalDashboard dashboard;
+
     private static String TAG = "SJH_LedDetector";
 
     @SuppressWarnings("WeakerAccess")
@@ -48,9 +52,11 @@ public class LedDetector extends Detector implements ImageProcessor
     {
     }
 
-    public LedDetector(HardwareMap hardwareMap, boolean useCamera, boolean configView)
+    public LedDetector(boolean configView, boolean useCamera)
     {
-        super(hardwareMap, useCamera, configView);
+        super(configView, useCamera);
+
+        dashboard = CommonUtil.getInstance().getDashboard();
     }
 
     @Override
@@ -95,8 +101,9 @@ public class LedDetector extends Detector implements ImageProcessor
     public void logTelemetry()
     {
         if(telemetry == null) return;
+        dashboard.displayPrintf(4,"LEDS: %4d", getNumLEDs());
 
-        telemetry.addData("#LEDs", "%4d", getNumLEDs());
+        //telemetry.addData("#LEDs", "%4d", getNumLEDs());
     }
 
     public synchronized int getNumLEDs() { return numLeds; }

@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode.test;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -43,31 +42,35 @@ import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
 import org.firstinspires.ftc.teamcode.image.LedDetector;
 import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
+import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Point2d;
+
+import hallib.HalDashboard;
 
 @Autonomous(name="Concept: VuMark Id", group ="Concept")
 //@Disabled
-public class VuMarkOpenCvTest extends LinearOpMode
+public class VuMarkOpenCvTest extends InitLinearOpMode
 {
     public static final String TAG = "SJH_VuMark";
 
     @Override
-    public void runOpMode()
+    public void runOpMode() throws InterruptedException
     {
-        tracker = new ImageTracker(hardwareMap,
-                                   telemetry,
-                                   VuforiaInitializer.Challenge.RR,
-                                   false);
+        initCommon(this, true, true, false, true);
+        CommonUtil com = CommonUtil.getInstance();
+        super.runOpMode();
+        tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
 
         //bd = new BeaconDetector();
-        ld = new LedDetector();
+        ld = new LedDetector(true, false);
 
-        telemetry.addData(">", "Press Play to start");
         telemetry.update();
         waitForStart();
 
         RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
         tracker.setActive(true);
+        RobotLog.dd("SJH", "Finding VuMark first");
         while (opModeIsActive() && key == RelicRecoveryVuMark.UNKNOWN)
         {
             ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -99,8 +102,8 @@ public class VuMarkOpenCvTest extends LinearOpMode
                 double t = itimer.seconds();
                 RobotLog.ii("SJH", "Senesed Pos: %s %5.2f %2.3f", sensedBotPos, sensedFldHdg, t);
                 RobotLog.ii("SJH", "IMG %s frame %d", tracker.getLocString(), frm);
-                telemetry.addData("SLOC", "SLOC: %s %4.1f", sensedBotPos, sensedFldHdg);
-                telemetry.addData("IMG", "%s  frame %d", tracker.getLocString(), frm);
+                dashboard.displayPrintf(1, "SLOC: %s %4.1f", sensedBotPos, sensedFldHdg);
+                dashboard.displayPrintf(2, "IMG", "%s  frame %d", tracker.getLocString(), frm);
             }
 
             telemetry.update();
@@ -108,8 +111,12 @@ public class VuMarkOpenCvTest extends LinearOpMode
         }
 
         RobotLog.ii(TAG, "KEY : " + key);
+        dashboard.displayPrintf(0, "KEY: " + key);
+        RobotLog.dd("SJH", "Turn off image tracker");
         tracker.setActive(false);
-        tracker.setFrameQueueSize(10);
+        RobotLog.dd("SJH", "Set qsize to get frames");
+        tracker.setFrameQueueSize(1);
+        RobotLog.dd("SJH", "Start LD sensing");
         ld.startSensing();
 
         while(opModeIsActive())
@@ -126,10 +133,13 @@ public class VuMarkOpenCvTest extends LinearOpMode
             //ZZBeaconFinder.BeaconSide bs = bd.getRedPosSide();
             //ZZRobotLog.dd("SJH", "Redside = " + bs);
         }
+        RobotLog.dd("SJH", "Out of LED loop - stop sensing");
         ld.stopSensing();
+        RobotLog.dd("SJH", " cleanupCamera");
         ld.cleanupCamera();
+        RobotLog.dd("SJH", " stop sensing");
         tracker.setFrameQueueSize(0);
-        tracker.setActive(false);
+        RobotLog.dd("SJH", "ByeBye");
     }
 
     String format(OpenGLMatrix transformationMatrix) {
