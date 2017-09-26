@@ -1171,6 +1171,15 @@ public class Drivetrain
 
     enum MotorSide {LEFT, RIGHT}
 
+    public enum DrivetrainType
+    {
+        NONE,
+        WCD_6_2X20,
+        WCD_6_2X40,
+        RWD_2_2X40,
+        HWD_4_4X40
+    }
+
     private static double DRV_TUNER = 1.00;
     private final static double TRN_TUNER = 1.0;
     private final static double TURN_TOLERANCE = 2.0;

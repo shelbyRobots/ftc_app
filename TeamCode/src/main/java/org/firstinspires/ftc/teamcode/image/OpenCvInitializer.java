@@ -125,7 +125,6 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
         if(loaded || loading)
         {
             RobotLog.dd("SJH", "OpenCV already loaded");
-            //setup();
             return;
         }
 
@@ -141,9 +140,8 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
                     case LoaderCallbackInterface.SUCCESS:
                     {
                         RobotLog.ii("SJH", "OpenCVLoad: SUCCESS");
-                        initialized = true;
-                        initialized = false;
-                        //setup();
+                        loaded = true;
+                        loading = false;
                     }
                     break;
                     default:
@@ -166,7 +164,7 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
         } else
         {
             RobotLog.ii("SJH", "OpenCVLoader loaded from app pkg");
-            //setup();
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
     }
 

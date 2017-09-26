@@ -13,7 +13,7 @@ public class Point2d
 
     public Point2d(double x, double y)
     {
-        this(new String("PT" + numpts++), x, y);
+        this("PT" + numpts++, x, y);
     }
 
     public Point2d(float[] fltarr) {this((double)fltarr[0], (double)fltarr[1]);}
@@ -37,7 +37,7 @@ public class Point2d
         return Math.toDegrees(seg2FldHdg - seg1FldHdg);
     }
 
-    public String getName() { return name; };
+    public String getName() { return name; }
 
     public double getX()
     {

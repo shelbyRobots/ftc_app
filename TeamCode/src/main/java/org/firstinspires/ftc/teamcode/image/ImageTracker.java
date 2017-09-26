@@ -144,7 +144,7 @@ public class ImageTracker
                     List<Point2d>  trackablePixCorners =
                             getTrackableCornersInCamera(rawPose);
                     List<Point2d> jewelBoxPixCorners =
-                            getJewelBoxCornersInCamera(rawPose);
+                            getJewelBoxCornersInCamera(rawPose, false);
                             //getCropCorners(trackablePixCorners);
                    Bitmap jewelImg = getCroppedImage(jewelBoxPixCorners, fullPic);
 
@@ -432,7 +432,7 @@ public class ImageTracker
         return trackablePixelCorners;
     }
 
-    private List<Point2d> getJewelBoxCornersInCamera(OpenGLMatrix rawPose)
+    private List<Point2d> getJewelBoxCornersInCamera(OpenGLMatrix rawPose, boolean bothJewels)
     {
         Matrix34F rawPoseMx = new Matrix34F();
         OpenGLMatrix poseTransposed = rawPose.transposed();
@@ -445,7 +445,6 @@ public class ImageTracker
         if (poseTransposed == null) return null;
         rawPoseMx.setData(Arrays.copyOfRange(poseTransposed.getData(), 0, 12));
 
-        //OKAY - different approach to account for angle of camera
         //The jewels will lie roughly along the line of the tracker
         //picture bottom.  The center of the left jewel
         //will be ~ at the lower right corner.
@@ -453,13 +452,20 @@ public class ImageTracker
         //"left" of the corner.  The right edge of the right jewel
         //will be 1 jewel radius + 6" beyond the end of the line.
         //The jewels will be +/- radius perpindicular to the line.
+        //According to RR manual part 2, the bottom of the image is
+        //1.5" above the floor, and tiles are 5/8" thick.
+        //So, bottom of jewel sitting on tiles will be 5/8"
+        //above floor.  1.5" trackable bottom - 5/8" jewel bottom
+        //= -7/8"
 
+        double tileToTrackableBottom = 1.5 - 0.625;
         double jewelRadius   = 3.75/2.0 * MM_PER_INCH;
         double jewelCtrToCtr = 6.0      * MM_PER_INCH;
         double jewelLeft   =  TARGET_WIDTH/2 - jewelRadius;
         double jewelRight  =  TARGET_WIDTH/2 + jewelCtrToCtr + jewelRadius;
-        double jewelBottom = -TARGET_HEIGHT/2 - jewelRadius;
-        double jewelTop    = -TARGET_HEIGHT/2 + jewelRadius;
+        if(!bothJewels) jewelRight = jewelLeft + 2*jewelRadius;
+        double jewelBottom = -TARGET_HEIGHT/2 - tileToTrackableBottom ;
+        double jewelTop    =  jewelBottom + 2*jewelBottom;
         List<Vec3F> jewelCorners = Arrays.asList(
                 new Vec3F((float)jewelLeft,  (float)jewelTop,    0.0f),
                 new Vec3F((float)jewelRight, (float)jewelTop,    0.0f),
@@ -519,6 +525,7 @@ public class ImageTracker
     private static final String TAG = "SJH ImageTracker";
 
     //Note: asset file has 304mm x 224mm (12"x8.8")for RR !?!?
+    //Need to figure out what xml coordinates really mean
     private static final int TARGET_WIDTH = 127 * 2;
     private static final int TARGET_HEIGHT = 92 * 2;
 

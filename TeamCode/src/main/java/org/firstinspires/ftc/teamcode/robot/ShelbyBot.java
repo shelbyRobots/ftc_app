@@ -52,8 +52,8 @@ public class ShelbyBot
 
     public final static int    ENCODER_CPR = 1120;     //Encoder Counts per Revolution
 
-    private static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
-    private static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
+    public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
 
     public boolean gyroReady = false;
 

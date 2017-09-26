@@ -100,7 +100,7 @@ public class LedDetector extends Detector implements ImageProcessor
 
     public void logTelemetry()
     {
-        if(telemetry == null) return;
+        //if(telemetry == null) return;
         dashboard.displayPrintf(4,"LEDS: %4d", getNumLEDs());
 
         //telemetry.addData("#LEDs", "%4d", getNumLEDs());

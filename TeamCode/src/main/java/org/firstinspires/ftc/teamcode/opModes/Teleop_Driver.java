@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -37,6 +38,11 @@ public class Teleop_Driver extends InitLinearOpMode
         dashboard.displayText(0, "Hello Driver");
 
         robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        if(dtrnType == Drivetrain.DrivetrainType.RWD_2_2X40)
+        {
+            robot.LEFT_DIR = DcMotorSimple.Direction.REVERSE;
+            robot.RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
+        }
 
         double curLpushPos = L_DN_PUSH_POS;
         double curRpushPos = R_DN_PUSH_POS;
