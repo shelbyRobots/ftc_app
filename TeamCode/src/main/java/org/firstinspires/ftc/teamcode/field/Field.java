@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 
 @SuppressWarnings("unused")
-public class Field
+public abstract class Field
 {
     public enum Alliance {BLUE, RED}
 

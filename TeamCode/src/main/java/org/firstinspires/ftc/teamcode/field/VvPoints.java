@@ -123,7 +123,7 @@ public class VvPoints extends Points
                     Field.ParkChoice parkChoice,
                     boolean useFly2Light)
     {
-        super(startPos, alliance, pushChoice, parkChoice);
+        super(startPos, alliance);
         this.useFly2Light = useFly2Light;
     }
 
@@ -197,7 +197,7 @@ public class VvPoints extends Points
         return null;
     }
 
-    private Point2d convertRtoB(Point2d rpt)
+    protected Point2d convertRtoB(Point2d rpt)
     {
         double bx = -rpt.getY();
         double by = -rpt.getX();
@@ -279,6 +279,9 @@ public class VvPoints extends Points
     private Point2d DP1 = new Point2d("DP1", DFNPTHX, DFNPTHY);
 
     private boolean            useFly2Light = false;
+
+    Field.BeaconChoice pushChoice = Field.BeaconChoice.NEAR;
+    Field.ParkChoice   parkChoice = Field.ParkChoice.CENTER_PARK;
 }
 
 

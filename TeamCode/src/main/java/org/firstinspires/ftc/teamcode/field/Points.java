@@ -18,14 +18,10 @@ public abstract class Points
     }
 
     Points(Field.StartPos startPos,
-           Field.Alliance alliance,
-           Field.BeaconChoice pushChoice,
-           Field.ParkChoice parkChoice)
+           Field.Alliance alliance)
     {
         this.startPos     = startPos;
         this.alliance     = alliance;
-        this.pushChoice   = pushChoice;
-        this.parkChoice   = parkChoice;
 
         Vector<Point2d> pts = initPoints();
         Vector<Point2d> points;
@@ -120,7 +116,7 @@ public abstract class Points
         return null;
     }
 
-    private Point2d convertRtoB(Point2d rpt)
+    protected Point2d convertRtoB(Point2d rpt)
     {
         double bx = -rpt.getY();
         double by = -rpt.getX();
@@ -156,8 +152,6 @@ public abstract class Points
     private Vector<Segment.TargetType> ttypes = new Vector<>(MAX_SEGMENTS);
 
     Field.StartPos     startPos   = Field.StartPos.START_A_SWEEPER;
-    Field.BeaconChoice pushChoice = Field.BeaconChoice.NEAR;
-    Field.ParkChoice   parkChoice = Field.ParkChoice.CENTER_PARK;
     Field.Alliance     alliance   = Field.Alliance.RED;
 
 }
