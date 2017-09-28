@@ -80,14 +80,8 @@ public class BeaconDetector extends Detector implements BeaconFinder, ImageProce
 
     private static String TAG = "SJH_BeaconDetector";
 
-    @SuppressWarnings("WeakerAccess")
     public BeaconDetector()
     {
-    }
-
-    public BeaconDetector(boolean configLayout, boolean useCamera)
-    {
-        super(configLayout, useCamera);
     }
 
     @Override

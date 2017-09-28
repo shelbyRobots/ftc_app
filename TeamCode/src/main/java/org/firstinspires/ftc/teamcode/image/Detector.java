@@ -34,14 +34,11 @@ public abstract class Detector implements ImageProcessor
 
     Detector()
     {
-        this(true, true);
-    }
-
-    Detector(boolean configLayout, boolean useCamera)
-    {
         CommonUtil com = CommonUtil.getInstance();
         ocvInit = com.getOcvInit();
+        RobotLog.dd("SJH_LEDA", "Setting ocvInit image processor in Detector??");
         ocvInit.setImageProcessor(this);
+        RobotLog.dd("SJH_LEDA", "Back from Setting ocvInit image processor");
     }
 
     @Override

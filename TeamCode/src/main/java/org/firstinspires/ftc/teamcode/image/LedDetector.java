@@ -47,15 +47,8 @@ public class LedDetector extends Detector implements ImageProcessor
 
     private static String TAG = "SJH_LedDetector";
 
-    @SuppressWarnings("WeakerAccess")
     public LedDetector()
     {
-    }
-
-    public LedDetector(boolean configView, boolean useCamera)
-    {
-        super(configView, useCamera);
-
         dashboard = CommonUtil.getInstance().getDashboard();
     }
 
