@@ -11,7 +11,7 @@ public class OpenCvLedAuton extends InitLinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        initCommon(this, false, true, false, true);
+        initCommon(this, false, true, false, false);
         super.runOpMode();
         Detector imgProc = new LedDetector();
         imgProc.setTelemetry(telemetry);

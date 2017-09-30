@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.image;
 
 
 import android.app.Activity;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -19,12 +20,8 @@ import org.opencv.core.Mat;
 @SuppressWarnings("unused")
 public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListener2
 {
-    private CommonUtil com = CommonUtil.getInstance();
-    private boolean newImage = false;
     private ImageProcessor imgProc = null;
-    private static JavaCameraView openCVCamera = null;
-
-    private Activity act = null;
+    private static CameraBridgeViewBase openCVCamera = null;
 
     private boolean flipImage           = false;
     private boolean addJavaCameraView   = true;
@@ -41,62 +38,77 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
     public  static boolean isInitializing() {return initializing;}
     private static boolean isInitialized()  {return initialized;}
 
+    private final static String TAG = "SJH_OCVI";
+
+    static
+    {
+        RobotLog.dd(TAG, "Calling initOpenCv");
+        initOpenCv();
+    }
+
     public OpenCvInitializer(boolean addJavaCameraView)
     {
         this.addJavaCameraView = addJavaCameraView;
-
-        act = com.getActivity();
-
-        RobotLog.dd("SJH_OCVI", "Calling initOpenCv");
-        initOpenCv();
     }
 
     public void setupCameraView()
     {
-        if(!addJavaCameraView || openCVCamera != null)
+        if(openCVCamera != null)
         {
-            RobotLog.dd("SJH", "OpenCvLoad: JCV not requested or already setup");
+            RobotLog.dd(TAG, "OCVI_setupCameraView: JCV already setup - just update");
+            CommonUtil.getInstance().setVisibility(openCVCamera, View.VISIBLE);
+            if(addJavaCameraView)
+            {
+                openCVCamera.enableView();
+                RobotLog.dd(TAG, "Set cameraViewListener");
+                openCVCamera.setCvCameraViewListener(this);
+            }
             return;
         }
 
-        RobotLog.dd("SJH", "OpenCvLoad: setting up JCV");
+        RobotLog.dd(TAG, "OpenCvLoad: setting up JCV");
         class CameraRunnable implements Runnable
         {
-            private JavaCameraView jcv = null;
-            private JavaCameraView getJcv() { return jcv; }
+            private CameraBridgeViewBase jcv = null;
+            private CameraBridgeViewBase getJcv() { return jcv; }
+            private CommonUtil com = CommonUtil.getInstance();
+            private Activity act = com.getActivity();
+            private int camMonViewId = com.getCameraMonitorViewId();
 
             public void run() {
-                RobotLog.dd("SJH", "Setting up JavaCameraView in thread");
+                RobotLog.dd(TAG, "Setting up JavaCameraView in thread");
 
                 //Add a JavaCameraView child to cameraMonitorView
-                ViewGroup vg = act.findViewById(com.getCameraMonitorViewId());
+                ViewGroup vg = act.findViewById(camMonViewId);
 
-                RobotLog.dd("SJH_OCVI", "Creating JavaCameraView");
+                RobotLog.dd(TAG, "Creating JavaCameraView");
                 jcv = new JavaCameraView(act, CameraBridgeViewBase.CAMERA_ID_BACK);
-                RobotLog.dd("SJH_OCVI", "setMaxFrameSize");
+                RobotLog.dd(TAG, "setMaxFrameSize");
                 jcv.setMaxFrameSize(480, 320);
 
 
+                //ViewGroup.LayoutParams.MATCH_PARENT
                 ViewGroup.LayoutParams vglop =
-                        new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                   ViewGroup.LayoutParams.MATCH_PARENT);
+                        new ViewGroup.LayoutParams(480,
+                                                   320);
 
-                RobotLog.dd("SJH_OCVI", "setLayoutParams");
+                RobotLog.dd(TAG, "setLayoutParams");
                 jcv.setLayoutParams(vglop);
-                RobotLog.dd("SJH_OCVI", "Adding jcv to cameraMonitorView");
+                RobotLog.dd(TAG, "Adding jcv to cameraMonitorView");
                 vg.addView(jcv, 0);
             }
         }
 
         initializing = true;
         initialized = false;
-        RobotLog.dd("SJH_OCVI", "Creating runnable instance");
+        RobotLog.dd(TAG, "Creating runnable instance");
         CameraRunnable mr = new CameraRunnable();
-        RobotLog.dd("SJH_OCVI", "Running on UI thread");
-        act.runOnUiThread(mr);
-        RobotLog.dd("SJH_OCVI", "Started thread");
+        RobotLog.dd(TAG, "Running on UI thread");
 
-        JavaCameraView jcv = null;
+        CommonUtil.getInstance().getActivity().runOnUiThread(mr);
+        RobotLog.dd(TAG, "Started thread");
+
+        CameraBridgeViewBase jcv = null;
         ElapsedTime jtimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         while(jcv == null && jtimer.milliseconds() < 5000)
         {
@@ -105,39 +117,41 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
 
         if(jcv == null)
         {
-            RobotLog.ww("SJH", "JavaCameraView not created");
+            RobotLog.ww(TAG, "JavaCameraView not created");
             return;
         }
 
-        RobotLog.dd("SJH_OCVI", "Got JavaCameraView");
+        RobotLog.dd(TAG, "Got JavaCameraView");
 
         openCVCamera = jcv;
-        RobotLog.dd("SJH_OCVI", "Set visible JavaCameraView");
+        RobotLog.dd(TAG, "Set visible JavaCameraView");
         openCVCamera.setVisibility(CameraBridgeViewBase.VISIBLE);
-        RobotLog.dd("SJH_OCVI", "Set cameraViewListener");
+        RobotLog.dd(TAG, "Set cameraViewListener");
         openCVCamera.setCvCameraViewListener(this);
 
-        openCVCamera = jcv;
-        openCVCamera.setVisibility(CameraBridgeViewBase.VISIBLE);
-        openCVCamera.setCvCameraViewListener(this);
+        openCVCamera.enableFpsMeter();
 
         width = openCVCamera.getMeasuredWidth();
         height = openCVCamera.getMeasuredHeight();
-        RobotLog.ii("SJH", "CAMERA %d x %d", width, height);
+        RobotLog.ii(TAG, "CAMERA %d x %d", width, height);
 
-        RobotLog.dd("SJH", "OpenCvLoad: enabling view");
+        RobotLog.dd(TAG, "OpenCvLoad: enabling view");
         openCVCamera.enableView();
-        RobotLog.dd("SJH", "OpenCvLoad: called enableView");
+        RobotLog.dd(TAG, "OpenCvLoad: called enableView");
 
         initializing = false;
         initialized  = true;
     }
 
-    private void initOpenCv()
+    private static void initOpenCv()
     {
+        //initOpenCv loads OpenCV libraries needed for image analysis
+        //This should only need to be done once per
+        //RobotController run
+        CommonUtil loccom = CommonUtil.getInstance();
         if(loaded)
         {
-            RobotLog.dd("SJH", "OpenCV already loaded");
+            RobotLog.dd(TAG, "OpenCV already loaded");
             return;
         }
 
@@ -146,7 +160,7 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
             ElapsedTime loadTimer = new ElapsedTime();
             while(loading && loadTimer.seconds() < 2)
             {
-                RobotLog.dd("SJH", "OpenCV still loading");
+                RobotLog.dd(TAG, "OpenCV still loading");
                 try
                 {
                     Thread.sleep(2);
@@ -157,10 +171,10 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
             }
         }
 
-        RobotLog.dd("SJH_OCVI", "Creating LoaderCallback");
+        RobotLog.dd(TAG, "Creating LoaderCallback");
         loading = true;
 
-        BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(act)
+        BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(loccom.getActivity())
         {
             @Override
             public void onManagerConnected(int status)
@@ -169,14 +183,14 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
                 {
                     case LoaderCallbackInterface.SUCCESS:
                     {
-                        RobotLog.ii("SJH", "OpenCVLoad: SUCCESS");
+                        RobotLog.ii(TAG, "OpenCVLoad: SUCCESS");
                         loaded = true;
                         loading = false;
                     }
                     break;
                     default:
                     {
-                        RobotLog.dd("SJH", "OpenCvLoad: FAILURE");
+                        RobotLog.dd(TAG, "OpenCvLoad: FAILURE");
                         super.onManagerConnected(status);
                     }
                     break;
@@ -184,85 +198,86 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
             }
         };
 
-        RobotLog.dd("SJH_OCVI", "Loading OpenCV - static first");
+        RobotLog.dd(TAG, "Loading OpenCV - static first");
         //Try loading ocv libraries from within app pkg
         if (!OpenCVLoader.initDebug())
         {
-            RobotLog.dd("SJH", "OpenCvLoad: Could not load from app - trying OpenCV manager");
+            RobotLog.dd(TAG, "OpenCvLoad: Could not load from app - trying OpenCV manager");
             //Try loading using OpenCv manager
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0,
-                    act, mLoaderCallback);
+                    loccom.getActivity(), mLoaderCallback);
         } else
         {
-            RobotLog.ii("SJH", "OpenCVLoader loaded from app pkg");
+            RobotLog.ii(TAG, "OpenCVLoader loaded from app pkg");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
 
-        RobotLog.dd("SJH_OCVI", "OpenCv loaded");
+        RobotLog.dd(TAG, "OpenCv loaded");
     }
 
     public void cleanupCamera()
     {
+        CommonUtil com = CommonUtil.getInstance();
         com.restoreLayout();
         if (openCVCamera != null)
         {
-            RobotLog.dd("SJH", "cleanupCamera");
-            RobotLog.dd("SJH_OCVI", "Disable view");
+            RobotLog.dd(TAG, "cleanupCamera");
+            RobotLog.dd(TAG, "Disable view");
             openCVCamera.disableView();
-            //RobotLog.dd("SJH_OCVI", "Disconnect camera");
+            //RobotLog.dd(TAG, "Disconnect camera");
             //openCVCamera.disconnectCamera();
-            com.removeView(openCVCamera);
+            com.setVisibility(openCVCamera, View.GONE);
+            //com.removeView(openCVCamera);
             initialized = false;
         }
     }
 
     public void setFlipImage(boolean flipImage) {this.flipImage = flipImage;}
 
-    public void setImageProcessor(ImageProcessor imgProc)
+    /*package-private*/ void setImageProcessor(ImageProcessor imgProc)
     {
         this.imgProc = imgProc;
-        RobotLog.dd("SJH_ocvInit", "Image Processor = " + this.imgProc.getName());
+        RobotLog.dd(TAG, "Image Processor = " + this.imgProc.getName());
     }
 
     public ImageProcessor getImageProcessor() { return imgProc; }
 
-    public boolean isNewImageReady()
-    {
-        boolean newImageReady = newImage;
-        newImage = false;
-        return newImageReady;
-    }
-
     @Override
     public void onCameraViewStarted(int width, int height)
     {
-        RobotLog.ii("SJH", "CAMERA VIEW STARTED %4dx%4d", width, height);
+        RobotLog.ii(TAG, "CAMERA VIEW STARTED %4dx%4d", width, height);
+        if (openCVCamera != null)
+        {
+            RobotLog.dd(TAG, "ocv started - enable view");
+            //openCVCamera.enableView();
+            CommonUtil.getInstance().setVisibility(openCVCamera, View.VISIBLE);
+        }
     }
 
     @Override
     public void onCameraViewStopped()
     {
-        RobotLog.ii("SJH", "CAMERA VIEW STOPPED");
+        RobotLog.ii(TAG, "CAMERA VIEW STOPPED");
         if(imgProc != null)
         {
-            RobotLog.dd("SJH_OCVI", "ocv stopped - stop Sensing");
+            RobotLog.dd(TAG, "ocv stopped - stop Sensing");
             imgProc.stopSensing();
         }
 
         if (openCVCamera != null)
         {
-            RobotLog.dd("SJH_OCVI", "ocv stopped - disable view");
+            RobotLog.dd(TAG, "ocv stopped - disable view");
             openCVCamera.disableView();
+            CommonUtil.getInstance().setVisibility(openCVCamera, View.GONE);
         }
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame)
     {
-        RobotLog.dd("SJH_OCVI", "onCameraFrame");
+        RobotLog.dd(TAG, "onCameraFrame");
 
         Mat rgb = inputFrame.rgba();
-        newImage = true;
 
         Mat rtrnImage = rgb;
 

@@ -83,6 +83,8 @@ public class LedDetector extends Detector implements ImageProcessor
             Imgproc.rectangle( outMat, ledRect.tl(), ledRect.br(), new Scalar(0,255,0), 4 );
         }
 
+        newImage = true;
+
         return outMat;
     }
 
@@ -93,10 +95,7 @@ public class LedDetector extends Detector implements ImageProcessor
 
     public void logTelemetry()
     {
-        //if(telemetry == null) return;
         dashboard.displayPrintf(4,"LEDS: %4d", getNumLEDs());
-
-        //telemetry.addData("#LEDs", "%4d", getNumLEDs());
     }
 
     public synchronized int getNumLEDs() { return numLeds; }

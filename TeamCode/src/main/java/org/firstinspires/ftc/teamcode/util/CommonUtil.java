@@ -36,12 +36,12 @@ public class CommonUtil
     private static final int topLayoutViewId = R.id.entire_screen;
 
     private boolean cfgLayout = false;
+    private boolean layoutModified = false;
     private boolean logData   = false;
 
     private boolean useOpenCV  = false;
     private boolean useManualFedOpenCv = false;
     private boolean useOcvCamera = false;
-    private boolean openCvInitialized  = false;
     private OpenCvInitializer ocvInit;
 
     private boolean useVuforia = false;
@@ -147,10 +147,9 @@ public class CommonUtil
     private void initOpenCV()
     {
         RobotLog.dd("SJH_COM", "initOpenCV: " +
-                    " openCvInitialized: " + openCvInitialized +
                     " useOpenCV: " + useOpenCV +
                     " useOcvCamera: " + useOcvCamera);
-        if(openCvInitialized || !useOpenCV) return;
+        if(!useOpenCV) return;
 
         RobotLog.dd("SJH_LEDA", "Creating new OpenCvInitializer");
         ocvInit = new OpenCvInitializer(useOcvCamera);
@@ -160,18 +159,16 @@ public class CommonUtil
         {
             setupImageLayout();
         }
-
-        openCvInitialized = true;
     }
 
     private void initOpenCvCamera()
     {
         RobotLog.dd("SJH_COM", "initOpenCvCamera: " +
-                    " openCvInitialized: " + openCvInitialized +
                     " useOpenCV: " + useOpenCV +
                     " useOcvCamera: " + useOcvCamera +
                     " ocvInit null: " + (ocvInit == null ? "true" : "false"));
-        if(!useOcvCamera || ocvInit == null) return;
+        //if(!useOcvCamera || ocvInit == null) return;
+        if(ocvInit == null) return;
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         ocvInit.setupCameraView();
     }
@@ -217,6 +214,7 @@ public class CommonUtil
         return act;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public Context getContext()
     {
         return h.appContext;
@@ -256,6 +254,19 @@ public class CommonUtil
             @Override
             public void run() {
                 group.addView(v);
+            }
+        });
+    }
+
+    public void setVisibility(final View v, final int visibility)
+    {
+        final Activity act = getActivity();
+
+        act.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run() {
+                v.setVisibility(visibility);
             }
         });
     }
@@ -307,14 +318,14 @@ public class CommonUtil
 
     private void setupImageLayout()
     {
-        if(!cfgLayout) return;
+        if(!cfgLayout || layoutModified) return;
 
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         final Activity act = getActivity();
 
         class LayoutRunnable implements Runnable
         {
-            private boolean layoutConfigured = false;
+            private boolean layoutConfigured = layoutModified;
             private boolean getLayoutConfigured() { return layoutConfigured; }
             @Override
             public void run()
@@ -358,17 +369,21 @@ public class CommonUtil
                 e.printStackTrace();
             }
         }
+
+        layoutModified = true;
     }
 
     public void restoreLayout()
     {
-        if(!cfgLayout) return;
+        if(!cfgLayout || !layoutModified) return;
         final Activity act = getActivity();
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         RobotLog.dd("SJH_IMG", "Restoring Layout");
 
-        act.runOnUiThread(new Runnable()
+        class LayoutRunnable implements Runnable
         {
+            private boolean layoutConfigured = layoutModified;
+            private boolean getLayoutConfigured() { return layoutConfigured; }
             @Override
             public void run()
             {
@@ -377,7 +392,25 @@ public class CommonUtil
                 {
                     top.getChildAt(v).setVisibility(View.VISIBLE);
                 }
+                layoutConfigured = false;
             }
-        });
+        }
+
+        LayoutRunnable lrun = new LayoutRunnable();
+        act.runOnUiThread(lrun);
+
+        ElapsedTime layoutTimer = new ElapsedTime();
+        while(lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
+        {
+            try
+            {
+                Thread.sleep(5);
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        layoutModified = false;
     }
 }

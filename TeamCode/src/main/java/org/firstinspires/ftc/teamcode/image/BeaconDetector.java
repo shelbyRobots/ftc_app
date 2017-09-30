@@ -562,6 +562,8 @@ public class BeaconDetector extends Detector implements BeaconFinder, ImageProce
         Imgproc.drawContours( out, white_blobs, -1, new Scalar(255,255,255), 2 );
         Imgproc.drawContours( out, black_blobs, -1, new Scalar(0,0,0), 2 );
 
+        newImage = true;
+
         return out;
     }
 
