@@ -151,7 +151,7 @@ public abstract class Points
     private Vector<Double> tuners = new Vector<>(MAX_SEGMENTS);
     private Vector<Segment.TargetType> ttypes = new Vector<>(MAX_SEGMENTS);
 
-    Field.StartPos     startPos   = Field.StartPos.START_A_SWEEPER;
+    Field.StartPos     startPos   = Field.StartPos.START_1;
     Field.Alliance     alliance   = Field.Alliance.RED;
 
 }
