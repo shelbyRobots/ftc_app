@@ -40,6 +40,8 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
         telemetry.update();
 
         initCommon(this, true, false, false, true);
+
+        bd = new BeaconDetector();
         dashboard = com.getDashboard();
 
         setup();
@@ -744,7 +746,7 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
     private Drivetrain drvTrn = new Drivetrain();
 
     private ImageTracker tracker;
-    private BeaconDetector bd = new BeaconDetector();
+    private BeaconDetector bd;
     private ButtonSide bSide = ButtonSide.UNKNOWN;
 
     private static Point2d curPos;

@@ -23,25 +23,33 @@ public abstract class Detector implements ImageProcessor
     boolean sensingActive = false;
     boolean firstCalcsDone = false;
 
-    protected Mat showImg;
+    /* package-private */ boolean newImage = false;
+
+    /* package-private */ Mat showImg;
     private Mat cvImage;
     private OpenCvInitializer ocvInit = null;
     protected Telemetry telemetry = null;
+    private static String dateStr;
 
     private static String TAG = "SJH_Detector";
 
-    int imgNum = 0;
+    private static int imgNum = 0;
 
     Detector()
     {
-        this(true, true);
-    }
-
-    Detector(boolean configLayout, boolean useCamera)
-    {
         CommonUtil com = CommonUtil.getInstance();
         ocvInit = com.getOcvInit();
+        RobotLog.dd(TAG, "Setting ocvInit image processor in Detector??");
         ocvInit.setImageProcessor(this);
+        RobotLog.dd(TAG, "Back from Setting ocvInit image processor");
+
+        Calendar cal = Calendar.getInstance();
+        int dom = cal.get(Calendar.DATE);
+        int mon = cal.get(Calendar.MONTH);
+        int yr  = cal.get(Calendar.YEAR);
+        int hr  = cal.get(Calendar.HOUR_OF_DAY);
+        int min = cal.get(Calendar.MINUTE);
+        dateStr = String.format(Locale.US,"%4d%02d%02d_%02d%02d", yr, mon, dom, hr, min);
     }
 
     @Override
@@ -98,13 +106,6 @@ public abstract class Detector implements ImageProcessor
     public void saveImage(Mat img)
     {
         if(img == null) return;
-        Calendar cal = Calendar.getInstance();
-        int dom = cal.get(Calendar.DATE);
-        int mon = cal.get(Calendar.MONTH);
-        int yr  = cal.get(Calendar.YEAR);
-        int hr  = cal.get(Calendar.HOUR_OF_DAY);
-        int min = cal.get(Calendar.MINUTE);
-        String dateStr = String.format(Locale.US,"%4d%02d%02d_%02d%02d", yr, mon, dom, hr, min);
         String fileName = TAG + "_" + imgNum++ + "_" + dateStr + ".bmp";
 
         Bitmap bmp = null;
@@ -115,7 +116,7 @@ public abstract class Detector implements ImageProcessor
         }
         catch (Exception e)
         {
-            RobotLog.ee("SJH", e.getMessage());
+            RobotLog.ee(TAG, e.getMessage());
         }
 
         String directoryPath  = Environment.getExternalStorageDirectory().getPath() +
@@ -127,7 +128,11 @@ public abstract class Detector implements ImageProcessor
         try
         {
             out = new FileOutputStream(dest);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+            if(bmp != null)
+            {
+                // bmp is your Bitmap instance
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            }
             // PNG is a lossless format, the compression factor (100) is ignored
 
         }
@@ -161,7 +166,9 @@ public abstract class Detector implements ImageProcessor
 
     public boolean isNewImageReady()
     {
-        return ocvInit.isNewImageReady();
+        boolean newImageReady = newImage;
+        newImage = false;
+        return newImageReady;
     }
 
     public void cleanupCamera()

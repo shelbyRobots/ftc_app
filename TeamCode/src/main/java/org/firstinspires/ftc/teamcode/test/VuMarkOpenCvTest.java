@@ -63,7 +63,9 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
 
         //bd = new BeaconDetector();
-        ld = new LedDetector(true, false);
+        RobotLog.dd("SJH_LEDA", "Creating new LedDetector");
+        ld = new LedDetector();
+        RobotLog.dd("SJH_LEDA", "Back from Creating new LedDetector");
 
         telemetry.update();
         waitForStart();
@@ -136,8 +138,8 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
         RobotLog.dd("SJH", "Out of LED loop - stop sensing");
         ld.stopSensing();
         RobotLog.dd("SJH", " cleanupCamera");
-        ld.cleanupCamera();
-        RobotLog.dd("SJH", " stop sensing");
+        //ld.
+        RobotLog.dd("SJH", " frameQueue 0");
         tracker.setFrameQueueSize(0);
         RobotLog.dd("SJH", "ByeBye");
     }

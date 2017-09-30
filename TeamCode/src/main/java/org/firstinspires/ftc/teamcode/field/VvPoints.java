@@ -124,6 +124,8 @@ public class VvPoints extends Points
                     boolean useFly2Light)
     {
         super(startPos, alliance);
+        this.parkChoice = parkChoice;
+        this.pushChoice = pushChoice;
         this.useFly2Light = useFly2Light;
     }
 

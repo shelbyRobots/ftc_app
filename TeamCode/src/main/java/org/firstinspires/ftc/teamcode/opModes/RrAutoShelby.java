@@ -22,7 +22,7 @@ import ftclib.FtcMenu;
 import ftclib.FtcValueMenu;
 
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach"})
-@Autonomous(name="AutonShelby", group="Auton")
+@Autonomous(name="RrAutoShelby", group="Auton")
 //@Disabled
 public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButtons
 {
@@ -74,7 +74,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setUseSpeedThreads(false);
         drvTrn.setRampUp(false);
 
-        bd = new BeaconDetector(true, false);
+        bd = new BeaconDetector();
         bf = (BeaconFinder) bd;
 
         doMenus();

@@ -80,14 +80,8 @@ public class BeaconDetector extends Detector implements BeaconFinder, ImageProce
 
     private static String TAG = "SJH_BeaconDetector";
 
-    @SuppressWarnings("WeakerAccess")
     public BeaconDetector()
     {
-    }
-
-    public BeaconDetector(boolean configLayout, boolean useCamera)
-    {
-        super(configLayout, useCamera);
     }
 
     @Override
@@ -567,6 +561,8 @@ public class BeaconDetector extends Detector implements BeaconFinder, ImageProce
         Imgproc.drawContours( out, red_blobs, -1, new Scalar(255,0,0), 2 );
         Imgproc.drawContours( out, white_blobs, -1, new Scalar(255,255,255), 2 );
         Imgproc.drawContours( out, black_blobs, -1, new Scalar(0,0,0), 2 );
+
+        newImage = true;
 
         return out;
     }

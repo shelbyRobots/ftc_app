@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
@@ -35,13 +36,12 @@ public class CommonUtil
     private static final int topLayoutViewId = R.id.entire_screen;
 
     private boolean cfgLayout = false;
+    private boolean layoutModified = false;
     private boolean logData   = false;
 
     private boolean useOpenCV  = false;
     private boolean useManualFedOpenCv = false;
     private boolean useOcvCamera = false;
-    private boolean openCvInitialized  = false;
-    private boolean openCvCameraInitialized = false;
     private OpenCvInitializer ocvInit;
 
     private boolean useVuforia = false;
@@ -75,7 +75,7 @@ public class CommonUtil
         this.useManualFedOpenCv = useManualFedOpenCv;
         this.cfgLayout  = cfgLayout;
 
-        this.useOcvCamera = useOpenCV && !useManualFedOpenCv;
+        this.useOcvCamera = useOpenCV && !useManualFedOpenCv && !useVuforia;
 
         CommonUtil.o = o;
         initOpModeProps();
@@ -146,24 +146,31 @@ public class CommonUtil
 
     private void initOpenCV()
     {
-        if(openCvInitialized || !useOpenCV) return;
+        RobotLog.dd("SJH_COM", "initOpenCV: " +
+                    " useOpenCV: " + useOpenCV +
+                    " useOcvCamera: " + useOcvCamera);
+        if(!useOpenCV) return;
 
-        if(cfgLayout)
+        RobotLog.dd("SJH_LEDA", "Creating new OpenCvInitializer");
+        ocvInit = new OpenCvInitializer(useOcvCamera);
+        RobotLog.dd("SJH_LEDA", "Back from Creating new OpenCvInitializer");
+
+         if(cfgLayout)
         {
             setupImageLayout();
         }
-
-        ocvInit = new OpenCvInitializer(useOcvCamera);
-
-        openCvInitialized = true;
     }
 
     private void initOpenCvCamera()
     {
-        if(!useOcvCamera || ocvInit == null || !openCvCameraInitialized) return;
+        RobotLog.dd("SJH_COM", "initOpenCvCamera: " +
+                    " useOpenCV: " + useOpenCV +
+                    " useOcvCamera: " + useOcvCamera +
+                    " ocvInit null: " + (ocvInit == null ? "true" : "false"));
+        //if(!useOcvCamera || ocvInit == null) return;
+        if(ocvInit == null) return;
+        setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         ocvInit.setupCameraView();
-
-        openCvCameraInitialized = true;
     }
 
     public HardwareMap getHardwareMap()
@@ -207,6 +214,7 @@ public class CommonUtil
         return act;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public Context getContext()
     {
         return h.appContext;
@@ -246,6 +254,19 @@ public class CommonUtil
             @Override
             public void run() {
                 group.addView(v);
+            }
+        });
+    }
+
+    public void setVisibility(final View v, final int visibility)
+    {
+        final Activity act = getActivity();
+
+        act.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run() {
+                v.setVisibility(visibility);
             }
         });
     }
@@ -297,12 +318,15 @@ public class CommonUtil
 
     private void setupImageLayout()
     {
-        if(!cfgLayout) return;
-        final Activity act = getActivity();
-        setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        if(!cfgLayout || layoutModified) return;
 
-        act.runOnUiThread(new Runnable()
+        setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        final Activity act = getActivity();
+
+        class LayoutRunnable implements Runnable
         {
+            private boolean layoutConfigured = layoutModified;
+            private boolean getLayoutConfigured() { return layoutConfigured; }
             @Override
             public void run()
             {
@@ -327,19 +351,39 @@ public class CommonUtil
                     ViewParent vp = vw.getParent();
                     vw = (ViewGroup)vp;
                 }
+                layoutConfigured = true;
             }
-        });
+        }
+
+        LayoutRunnable lrun = new LayoutRunnable();
+        act.runOnUiThread(lrun);
+
+        ElapsedTime layoutTimer = new ElapsedTime();
+        while(!lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
+        {
+            try
+            {
+                Thread.sleep(5);
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        layoutModified = true;
     }
 
     public void restoreLayout()
     {
-        if(!cfgLayout) return;
+        if(!cfgLayout || !layoutModified) return;
         final Activity act = getActivity();
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         RobotLog.dd("SJH_IMG", "Restoring Layout");
 
-        act.runOnUiThread(new Runnable()
+        class LayoutRunnable implements Runnable
         {
+            private boolean layoutConfigured = layoutModified;
+            private boolean getLayoutConfigured() { return layoutConfigured; }
             @Override
             public void run()
             {
@@ -348,7 +392,25 @@ public class CommonUtil
                 {
                     top.getChildAt(v).setVisibility(View.VISIBLE);
                 }
+                layoutConfigured = false;
             }
-        });
+        }
+
+        LayoutRunnable lrun = new LayoutRunnable();
+        act.runOnUiThread(lrun);
+
+        ElapsedTime layoutTimer = new ElapsedTime();
+        while(lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
+        {
+            try
+            {
+                Thread.sleep(5);
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        layoutModified = false;
     }
 }

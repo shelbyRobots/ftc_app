@@ -65,8 +65,8 @@ public class ImageAuton extends InitLinearOpMode
 
     private CommonUtil com = CommonUtil.getInstance();
 
-    private BeaconDetector bd = new BeaconDetector();
-    private BeaconFinder   bf = (BeaconFinder) bd;
+    private BeaconDetector bd;
+    private BeaconFinder   bf;
     private ImageTracker tracker;
 
     private ElapsedTime timer = new ElapsedTime();
@@ -167,8 +167,11 @@ public class ImageAuton extends InitLinearOpMode
     @Override
     public void runOpMode()
     {
-        initCommon(this, false, true, false, true);
+        initCommon(this, true, true, false, true);
         tracker = new ImageTracker(VuforiaInitializer.Challenge.VV);
+
+        bd = new BeaconDetector();
+        bf = (BeaconFinder) bd;
 
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start tracking");
