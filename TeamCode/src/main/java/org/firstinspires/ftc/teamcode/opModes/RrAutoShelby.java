@@ -54,7 +54,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private void stopMode()
     {
         if(drvTrn != null) drvTrn.cleanup();
-        //for(int i = 1; i <= numBeacons; i++) bd.saveImage(i);
         bd.cleanupCamera();
     }
 
