@@ -1,23 +1,24 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
-import com.qualcomm.robotcore.util.RobotLog;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
-import org.firstinspires.ftc.teamcode.util.ManagedGampad;
+import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
-@TeleOp(name="Telop Tank", group="Tele")
+@TeleOp(name="Telop Driver", group="Tele")
 //@Disabled
-public class Teleop_Driver extends LinearOpMode
+public class Teleop_Driver extends InitLinearOpMode
 {
     @Override
     public void runOpMode() throws InterruptedException
     {
+        initCommon(this, false, false, false, false);
         Input_Shaper ishaper = new Input_Shaper();
         DcMotor.ZeroPowerBehavior zeroPwr = DcMotor.ZeroPowerBehavior.FLOAT;
         double shoot_scale = 0.75;
@@ -26,8 +27,7 @@ public class Teleop_Driver extends LinearOpMode
         robot.init(this);
 
         if (robot.leftMotor  != null &&
-            robot.rightMotor != null &&
-            robot.gyro       != null)
+            robot.rightMotor != null)
         {
             robot.leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -35,18 +35,30 @@ public class Teleop_Driver extends LinearOpMode
         }
 
         // Send telemetry message to signify robot waiting;
-        telemetry.addData("Say", "Hello Driver");
-        telemetry.update();
+        dashboard.displayText(0, "Hello Driver");
 
         robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        if(dtrnType == Drivetrain.DrivetrainType.RWD_2_2X40)
+        {
+            robot.LEFT_DIR = DcMotorSimple.Direction.REVERSE;
+            robot.RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
+        }
 
         double curLpushPos = L_DN_PUSH_POS;
         double curRpushPos = R_DN_PUSH_POS;
-        robot.rpusher.setPosition(curRpushPos);
-        robot.lpusher.setPosition(curLpushPos);
+        if(robot.rpusher != null) robot.rpusher.setPosition(curRpushPos);
+        if(robot.lpusher != null) robot.lpusher.setPosition(curLpushPos);
 
         // Wait for the game to start (driver presses PLAY)
-        waitForStart();
+        //waitForStart();
+        while(!isStarted())
+        {
+            gpad1.update();
+            gpad2.update();
+            gpad1.log(1);
+            gpad2.log(2);
+            Thread.sleep(50);
+        }
 
         boolean toggle = false;
         // run until the end of the match (driver presses STOP)
@@ -57,55 +69,77 @@ public class Teleop_Driver extends LinearOpMode
 
             boolean use_auto_shoot = false;
 
-            boolean toggle_run_mode = gpad1.just_pressed(ManagedGampad.Button.X);
-            boolean invert_drive_dir = gpad1.just_pressed(ManagedGampad.Button.Y);
-            boolean toggle_rpusher = gpad1.just_pressed(ManagedGampad.Button.R_TRIGGER);
-            boolean toggle_lpusher = gpad1.just_pressed(ManagedGampad.Button.L_TRIGGER);
-            boolean toggle_float = gpad1.just_pressed(ManagedGampad.Button.B);
-            boolean decr_shoot_scale = gpad2.just_pressed(ManagedGampad.Button.D_DOWN);
-            boolean incr_shoot_scale = gpad2.just_pressed(ManagedGampad.Button.D_UP);
-            boolean toggle_shoot_mtr = gpad2.just_pressed(ManagedGampad.Button.R_TRIGGER);
-            boolean toggle_bshoot_mtr = gpad2.just_pressed(ManagedGampad.Button.L_TRIGGER);
-            boolean auto_shoot = gpad2.just_pressed(ManagedGampad.Button.L_BUMP);
+            boolean toggle_run_mode   = gpad1.just_pressed(ManagedGamepad.Button.X);
+            boolean invert_drive_dir  = gpad1.just_pressed(ManagedGamepad.Button.Y);
+            boolean toggle_rpusher    = gpad1.just_pressed(ManagedGamepad.Button.R_TRIGGER);
+            boolean toggle_lpusher    = gpad1.just_pressed(ManagedGamepad.Button.L_TRIGGER);
+            boolean toggle_float      = gpad1.just_pressed(ManagedGamepad.Button.B);
+            boolean decr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+            boolean incr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+            boolean toggle_shoot_mtr  = gpad2.just_pressed(ManagedGamepad.Button.R_TRIGGER);
+            boolean toggle_bshoot_mtr = gpad2.just_pressed(ManagedGamepad.Button.L_TRIGGER);
+            boolean auto_shoot        = gpad2.just_pressed(ManagedGamepad.Button.L_BUMP);
 
-            double shooter = gpad2.value(ManagedGampad.AnalogInput.R_TRIGGER_VAL);
-            double bkwr_shooter = gpad2.value(ManagedGampad.AnalogInput.L_TRIGGER_VAL);
-            double elev = gpad2.value(ManagedGampad.AnalogInput.L_STICK_Y);
-            double sweep = gpad2.value(ManagedGampad.AnalogInput.R_STICK_Y);
-            robot.elevMotor.setPower(elev);
-            robot.sweepMotor.setPower(sweep);
+            double left         = -gpad1.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+            double right        = -gpad1.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+            double turn         =  gpad1.value(ManagedGamepad.AnalogInput.R_STICK_X);
+            double shooter      =  gpad2.value(ManagedGamepad.AnalogInput.R_TRIGGER_VAL);
+            double bkwr_shooter =  gpad2.value(ManagedGamepad.AnalogInput.L_TRIGGER_VAL);
+            double elev         =  gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+            double sweep        =  gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+
+            int shotmotor1Pos = 0;
+            int shotmotor2Pos = 0;
+            DcMotor.ZeroPowerBehavior zeroPowBeh = DcMotor.ZeroPowerBehavior.UNKNOWN;
+
+            if(robot.shotmotor1 != null) robot.shotmotor1.getCurrentPosition();
+            if(robot.shotmotor2 != null) robot.shotmotor2.getCurrentPosition();
+            if(robot.leftMotor  != null) zeroPowBeh = robot.leftMotor.getZeroPowerBehavior();
+
+            if(robot.elevMotor  != null) robot.elevMotor.setPower(elev);
+            if(robot.sweepMotor != null) robot.sweepMotor.setPower(sweep);
 
             // Run wheels in tank mode
             // (note: The joystick goes negative when pushed forwards, so negate it)
-            double left = -gpad1.value(ManagedGampad.AnalogInput.L_STICK_Y);
-            double right = -gpad2.value(ManagedGampad.AnalogInput.R_STICK_Y);
-            left = ishaper.shape(left);
+
+            dashboard.displayPrintf(0, "TMODE " + driveType);
+            dashboard.displayPrintf(1, "L_IN " + left);
+            dashboard.displayPrintf(2, "R_IN " + right);
+            left  = ishaper.shape(left);
             right = ishaper.shape(right);
+            dashboard.displayPrintf(3, "L_SHP " + left);
+            dashboard.displayPrintf(4, "R_SHP " + right);
 
             double speed = -right;
-            double turn = gpad1.value(ManagedGampad.AnalogInput.R_STICK_X);
 
             switch (driveType)
             {
                 case TANK_DRIVE:
-                    robot.leftMotor.setPower(left);
-                    robot.rightMotor.setPower(right);
+                    if(robot.leftMotor  != null) left  = left;
+                    if(robot.rightMotor != null) right = right;
                     break;
 
                 case ARCADE_DRIVE:
-                    robot.leftMotor.setPower(speed + turn);
-                    robot.rightMotor.setPower(speed - turn);
+                    if(robot.leftMotor  != null) left  = speed + turn;
+                    if(robot.rightMotor != null) right = speed - turn;
                     break;
 
                 case CAR_DRIVE:
-                    robot.leftMotor.setPower(((1 - Math.abs(turn))  * speed +
-                                              (1 - Math.abs(speed)) * turn  +
-                                              turn + speed) / 2);
-                    robot.rightMotor.setPower(((1 - Math.abs(turn))  * speed -
-                                               (1 - Math.abs(speed)) * turn  -
-                                               turn + speed) / 2);
+                    if(robot.leftMotor != null)
+                        left =((1 - Math.abs(turn)) * speed +
+                               (1 - Math.abs(speed)) * turn  +
+                               turn + speed) / 2;
+
+                    if(robot.rightMotor  != null)
+                        right = ((1 - Math.abs(turn))  * speed -
+                                (1 - Math.abs(speed)) * turn  -
+                                turn + speed) / 2;
                     break;
             }
+            dashboard.displayPrintf(5, "L_OUT " + left);
+            dashboard.displayPrintf(6, "R_OUT " + right);
+            robot.leftMotor.setPower(left);
+            robot.rightMotor.setPower(right);
 
             if(decr_shoot_scale)      shoot_scale -= 0.05;
             else if(incr_shoot_scale) shoot_scale += 0.05;
@@ -141,7 +175,7 @@ public class Teleop_Driver extends LinearOpMode
                 {
                     curRpushPos = R_UP_PUSH_POS;
                 }
-                robot.rpusher.setPosition(curRpushPos);
+                if(robot.rpusher != null) robot.rpusher.setPosition(curRpushPos);
             }
 
             if(toggle_lpusher)
@@ -154,7 +188,7 @@ public class Teleop_Driver extends LinearOpMode
                 {
                     curLpushPos = L_UP_PUSH_POS;
                 }
-                robot.lpusher.setPosition(curLpushPos);
+                if(robot.lpusher != null) robot.lpusher.setPosition(curLpushPos);
             }
 
             if(toggle_float)
@@ -163,16 +197,16 @@ public class Teleop_Driver extends LinearOpMode
                     zeroPwr = DcMotor.ZeroPowerBehavior.FLOAT;
                 else
                     zeroPwr = DcMotor.ZeroPowerBehavior.BRAKE;
-                robot.leftMotor.setZeroPowerBehavior(zeroPwr);
-                robot.rightMotor.setZeroPowerBehavior(zeroPwr);
+                if(robot.leftMotor  != null) robot.leftMotor.setZeroPowerBehavior(zeroPwr);
+                if(robot.rightMotor != null) robot.rightMotor.setZeroPowerBehavior(zeroPwr);
             }
 
             if(auto_shoot)
             {
                 RobotLog.ii("SJH", "AUTOSHOOT");
-                robot.shotmotor1.setPower(shoot_scale);
-                robot.shotmotor2.setPower(shoot_scale);
-                robot.sweepMotor.setPower(-1.0);
+                if(robot.shotmotor1 != null) robot.shotmotor1.setPower(shoot_scale);
+                if(robot.shotmotor2 != null) robot.shotmotor2.setPower(shoot_scale);
+                if(robot.sweepMotor != null) robot.sweepMotor.setPower(-1.0);
                 dtrn.driveDistance(35.0, 0.8, Drivetrain.Direction.REVERSE);
                 while(opModeIsActive() && dtrn.isBusy())
                 {
@@ -184,13 +218,13 @@ public class Teleop_Driver extends LinearOpMode
                 if(use_auto_shoot)
                 {
                     sleep(500);
-                    robot.sweepMotor.setPower(-1.0);
-                    robot.elevMotor.setPower(-1.0);
+                    if(robot.sweepMotor != null) robot.sweepMotor.setPower(-1.0);
+                    if(robot.elevMotor != null) robot.elevMotor.setPower(-1.0);
                     sleep(1500);
-                    robot.shotmotor1.setPower(0);
-                    robot.shotmotor2.setPower(0);
-                    robot.sweepMotor.setPower(0);
-                    robot.elevMotor.setPower(0);
+                    if(robot.shotmotor1 != null) robot.shotmotor1.setPower(0);
+                    if(robot.shotmotor2 != null) robot.shotmotor2.setPower(0);
+                    if(robot.sweepMotor != null) robot.sweepMotor.setPower(0);
+                    if(robot.elevMotor != null) robot.elevMotor.setPower(0);
                     RobotLog.ii("SJH", "DONE AUTOSHOOT");
                 }
             }
@@ -200,7 +234,7 @@ public class Teleop_Driver extends LinearOpMode
                 robot.invertDriveDir();
             }
 
-            if(toggle_run_mode)
+            if(toggle_run_mode && robot.leftMotor != null && robot.rightMotor != null)
             {
                 DcMotor.RunMode currMode = robot.leftMotor.getMode();
                 if(currMode == DcMotor.RunMode.RUN_USING_ENCODER)
@@ -215,17 +249,10 @@ public class Teleop_Driver extends LinearOpMode
                 }
             }
 
-            telemetry.addData("left : ",  "%.2f", left);
-            telemetry.addData("right : ", "%.2f", right);
-            telemetry.addData("elev : ", elev);
-            telemetry.addData("sweep : ",  sweep);
-            telemetry.addData("shooters", "%.2f", shooter);
-            telemetry.addData("shooters", "%.2f", bkwr_shooter);
-            telemetry.addData("shoot_scale", "%.2f", shoot_scale);
-            telemetry.addData("SHT1CNT", "%5d", robot.shotmotor1.getCurrentPosition());
-            telemetry.addData("SHT2CNT", "%5d", robot.shotmotor2.getCurrentPosition());
-            telemetry.addData("zmode", "%s", robot.leftMotor.getZeroPowerBehavior());
-            telemetry.update();
+//            dashboard.displayPrintf(7, "shoot_scale", "%.2f", shoot_scale);
+//            dashboard.displayPrintf(8, "SHT1CNT", "%5d", shotmotor1Pos);
+//            dashboard.displayPrintf(9, "SHT2CNT", "%5d", shotmotor2Pos);
+//            dashboard.displayPrintf(10, "zmode", "%s", zeroPowBeh);
 
             // Pause for metronome tick.
             robot.waitForTick(10);
@@ -234,8 +261,8 @@ public class Teleop_Driver extends LinearOpMode
 
     private void shooter_motors(double speed)
     {
-        robot.shotmotor1.setPower(speed);
-        robot.shotmotor2.setPower(speed);
+        if(robot.shotmotor1 != null) robot.shotmotor1.setPower(speed);
+        if(robot.shotmotor2 != null) robot.shotmotor2.setPower(speed);
     }
 
     private enum TELEOP_DRIVE_TYPE
@@ -254,6 +281,4 @@ public class Teleop_Driver extends LinearOpMode
 
     private ShelbyBot robot = new ShelbyBot();
     private Drivetrain dtrn = new Drivetrain();
-    private ManagedGampad gpad1 = new ManagedGampad(gamepad1);
-    private ManagedGampad gpad2 = new ManagedGampad(gamepad2);
 }

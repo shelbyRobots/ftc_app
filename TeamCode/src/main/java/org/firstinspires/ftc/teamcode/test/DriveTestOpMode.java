@@ -69,12 +69,9 @@ public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
         robot.init(this);
 
         drvTrn.init(robot);
-        drvTrn.setOpMode(this);
 
         doMenus();
-
         setupLogger();
-        drvTrn.setDataLogger(dl);
 
         dtu = new DriveTestUtil(robot, this, drvTrn, dl);
 
@@ -278,7 +275,6 @@ public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
     public void stopMode()
     {
         if(drvTrn != null) drvTrn.stopAndReset();
-        dl.closeDataLogger();
     }
 
     private void setupLogger()

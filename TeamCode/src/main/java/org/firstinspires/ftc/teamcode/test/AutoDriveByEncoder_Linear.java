@@ -32,21 +32,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode.test;
 
-import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.teamcode.util.DataLogger;
+import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
-
-import java.util.Date;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
+import org.firstinspires.ftc.teamcode.util.DataLogger;
 
 @Autonomous(name="Auto Drive By Encoder", group="Test")
 //@Disabled
-public class AutoDriveByEncoder_Linear extends LinearOpMode
+public class AutoDriveByEncoder_Linear extends InitLinearOpMode
 {
+    private CommonUtil com = CommonUtil.getInstance();
     private ElapsedTime runtime = new ElapsedTime();
     private ShelbyBot robot = new ShelbyBot();
 
@@ -61,7 +61,6 @@ public class AutoDriveByEncoder_Linear extends LinearOpMode
     static final double TURN_SPEED = 0.5;
 
     private ElapsedTime datalogtimer = new ElapsedTime();
-    private DataLogger dl;
     private boolean logData = true;
     private boolean gyroReady = false;
     private boolean colorOn = false;
@@ -77,10 +76,10 @@ public class AutoDriveByEncoder_Linear extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
+        initCommon(this, false, false, false, false);
         if (logData)
         {
-            Date day = new Date();
-            dl = new DataLogger(day.toString() + "autonomousData");
+            dl = com.getDataLogger();
             dl.addField("Gyro");
             dl.addField("LENC");
             dl.addField("RENC");
@@ -125,8 +124,6 @@ public class AutoDriveByEncoder_Linear extends LinearOpMode
             }
             sleep(50);
         }
-
-        //dl.closeDataLogger();
 
         waitForStart();
         robot.gyro.resetZAxisIntegrator();

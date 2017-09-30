@@ -1,17 +1,12 @@
 package org.firstinspires.ftc.teamcode.image;
 
-import android.graphics.Bitmap;
-import android.os.Environment;
-
-import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.RingBuffer;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -20,17 +15,13 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 
-public class BeaconDetector implements BeaconFinder, ImageProcessor
+@SuppressWarnings("unused")
+public class BeaconDetector extends Detector implements BeaconFinder, ImageProcessor
 {
     private final static double MIN_COLOR_ZONE_AREA = 0.2;// fraction of total image area
     private final static double IMAGE_WIDTH = 480.0;
@@ -42,8 +33,6 @@ public class BeaconDetector implements BeaconFinder, ImageProcessor
     private Mat tmpHsvImg;
     private Mat tmp1Img;
     private Mat maskImg;
-    private Mat showImg;
-    private Mat cvImage;
     private Mat onesImg;
     private Mat zeroImg;
     private Mat white;
@@ -89,39 +78,24 @@ public class BeaconDetector implements BeaconFinder, ImageProcessor
     private boolean sensingActive = false;
     private boolean firstCalcsDone = false;
 
-    static
-    {
-        if (!OpenCVLoader.initDebug()) {
-            RobotLog.ee("SJH", "OpenCVLoader error"); //Handle opencv loader issue
-        }
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    public BeaconDetector(Mat img ) {
-        this();
-        setImage( img );
-    }
+    private static String TAG = "SJH_BeaconDetector";
 
     public BeaconDetector()
     {
     }
 
-    public void startSensing() {
+    @Override
+    public void startSensing()
+    {
+        super.startSensing();
         beaconConfBuf.clear();
         beaconPosXBuf.clear();
         beaconPosZBuf.clear();
         redPosSide  = BeaconSide.UNKNOWN;
         bluePosSide = BeaconSide.UNKNOWN;
-
-        firstCalcsDone = false;
-        sensingActive = true;
     }
 
-    public void stopSensing() {
-        firstCalcsDone = false;
-        sensingActive = false;
-    }
-
+    @Override
     public void setImage( Mat img )
     {
         // Convert to HSV colorspace to make it easier to
@@ -144,95 +118,11 @@ public class BeaconDetector implements BeaconFinder, ImageProcessor
         if ( !sensingActive ) return;
         findColors();
         firstCalcsDone = true;
-
-    }
-
-    public void snapImage(int imgNum)
-    {
-        if(imgNum == 1)
-        {
-            if(becn1snap == null) becn1snap = showImg.clone();
-            else showImg.copyTo(becn1snap);
-        }
-
-        if(imgNum == 2)
-        {
-            if(becn1snap == null) becn1snap = showImg.clone();
-            else showImg.copyTo(becn1snap);
-        }
-    }
-
-    public void saveImage(int imgNum)
-    {
-        Calendar cal = Calendar.getInstance();
-        int dom = cal.get(Calendar.DATE);
-        int mon = cal.get(Calendar.MONTH);
-        int yr  = cal.get(Calendar.YEAR);
-        int hr  = cal.get(Calendar.HOUR_OF_DAY);
-        int min = cal.get(Calendar.MINUTE);
-        String dateStr = String.format(Locale.US,"%4d%02d%02d_%02d%02d", yr, mon, dom, hr, min);
-        String fileName = "beacon" + imgNum + "_" + dateStr + ".bmp";
-        Mat outImg = null;
-        if(imgNum == 1)
-        {
-            outImg = becn1snap;
-        }
-        if(imgNum == 2)
-        {
-            outImg = becn2snap;
-        }
-
-        if(outImg == null) return;
-        Bitmap bmp = null;
-        try
-        {
-            bmp = Bitmap.createBitmap(outImg.cols(), outImg.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(outImg, bmp);
-        }
-        catch (Exception e)
-        {
-            RobotLog.ee("SJH", e.getMessage());
-        }
-
-        String directoryPath  = Environment.getExternalStorageDirectory().getPath() +
-                                        "/FIRST/DataLogger";
-        String filePath       = directoryPath + "/" + fileName ;
-
-        File dest = new File(filePath);
-        FileOutputStream out = null;
-        try
-        {
-            out = new FileOutputStream(dest);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-            // PNG is a lossless format, the compression factor (100) is ignored
-
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            RobotLog.ee("SJH", e.getMessage());
-        }
-        finally
-        {
-            try
-            {
-                if (out != null)
-                {
-                    out.close();
-                    RobotLog.ii("SJH", "ImageSaved: " + fileName);
-                }
-            }
-            catch (IOException e)
-            {
-                RobotLog.ee("SJH", e.getMessage());
-                e.printStackTrace();
-            }
-        }
     }
 
     public void logDebug()
     {
-        RobotLog.ii("SJH", "CONF: %5.2f, X: %5.2f, Z: %5.2f, RED: %s, BLUE: %s",
+        RobotLog.ii(TAG, "CONF: %5.2f, X: %5.2f, Z: %5.2f, RED: %s, BLUE: %s",
                 beaconConf,
                 beaconPosX,
                 beaconPosZ,
@@ -250,11 +140,6 @@ public class BeaconDetector implements BeaconFinder, ImageProcessor
         telemetry.addData( "RED", "%s",  getRedPosSide() );
         telemetry.addData( "BLUE", "%s", getBluePosSide() );
         telemetry.update();
-    }
-
-    public void setTelemetry(Telemetry telemetry)
-    {
-        this.telemetry = telemetry;
     }
 
     public synchronized BeaconSide getRedPosSide() { return redPosSide; }
@@ -282,7 +167,7 @@ public class BeaconDetector implements BeaconFinder, ImageProcessor
         double rb_ratio_factor =
                 Math.pow( Range.clip( 0.4 - ( red_rt + blue_rt ) / 2, -0.4, 0.4 ) * 2.5, 2 );
 
-        //RobotLog.ii("SJH", "scoreFit beac_apsect_factor %4.3f" +
+        //RobotLog.ii(TAG, "scoreFit beac_apsect_factor %4.3f" +
         //           "wb_ratio_factor %4.3f rb_ratio_factor %4.3f",
         //        beac_aspect_factor, wb_ratio_factor, rb_ratio_factor);
 
@@ -677,24 +562,10 @@ public class BeaconDetector implements BeaconFinder, ImageProcessor
         Imgproc.drawContours( out, white_blobs, -1, new Scalar(255,255,255), 2 );
         Imgproc.drawContours( out, black_blobs, -1, new Scalar(0,0,0), 2 );
 
+        newImage = true;
+
         return out;
     }
-
-    public void setBitmap(Bitmap rgbImage)
-    {
-        if(rgbImage == null) return;
-
-        int cvt = CvType.CV_8UC1;
-        int inHeight = rgbImage.getHeight();
-        int inWidth  = rgbImage.getWidth();
-
-        if (cvImage == null)  cvImage  = new Mat(inHeight, inWidth, cvt);
-        if (hsvImg == null) hsvImg = new Mat(inHeight, inWidth, cvt);
-
-        Utils.bitmapToMat(rgbImage, cvImage);
-        setImage(cvImage);
-    }
-
 
     public LightOrder getLightOrder() {
         return LightOrder.UNKNOWN;

@@ -1,22 +1,25 @@
 
 package org.firstinspires.ftc.teamcode.robot;
 
-import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This is NOT an opmode.
@@ -49,11 +52,10 @@ public class ShelbyBot
 
     public final static int    ENCODER_CPR = 1120;     //Encoder Counts per Revolution
 
-    final static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
-    final static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
+    public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
 
     public boolean gyroReady = false;
-    int lastRawGyroHdg = 0;
 
     /* local OpMode members. */
     private ElapsedTime period  = new ElapsedTime();
@@ -69,19 +71,77 @@ public class ShelbyBot
         this.op = op;
         this.hwMap = op.hardwareMap;
         // Define and Initialize Motors
-        leftMotor   = hwMap.dcMotor.get("leftdrive");
-        rightMotor  = hwMap.dcMotor.get("rightdrive");
-        elevMotor   = hwMap.dcMotor.get("elevmotor");
-        sweepMotor  = hwMap.dcMotor.get("sweepmotor");
-        shotmotor1  = hwMap.dcMotor.get("leftshooter");
-        shotmotor2  = hwMap.dcMotor.get("rightshooter");
-        lpusher     = hwMap.servo.get("lpusher");
-        rpusher     = hwMap.servo.get("rpusher");
 
-        gyro        = (ModernRoboticsI2cGyro)hwMap.gyroSensor.get("gyro");
-        colorSensor = (ModernRoboticsI2cColorSensor)hwMap.colorSensor.get("color");
+        Map<String, Boolean> capMap = new HashMap<>();
+        capMap.put("drivetrain", false);
+        capMap.put("shooter",    false);
+        capMap.put("collector",  false);
+        capMap.put("pusher",     false);
+        capMap.put("sensor",     false);
 
-        dim = hwMap.deviceInterfaceModule.get("dim");
+        try  //Drivetrain
+        {
+            leftMotor = hwMap.dcMotor.get("leftdrive");
+            rightMotor = hwMap.dcMotor.get("rightdrive");
+            capMap.put("drivetrain", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //Collector
+        {
+            elevMotor = hwMap.dcMotor.get("elevmotor");
+            sweepMotor = hwMap.dcMotor.get("sweepmotor");
+            capMap.put("collector", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //Shooters
+        {
+            shotmotor1 = hwMap.dcMotor.get("leftshooter");
+            shotmotor2 = hwMap.dcMotor.get("rightshooter");
+            capMap.put("shooter", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //Pushers
+        {
+            lpusher = hwMap.servo.get("lpusher");
+            rpusher = hwMap.servo.get("rpusher");
+            capMap.put("pusher", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        try  //I2C and DAIO
+        {
+            dim = hwMap.deviceInterfaceModule.get("dim");
+
+            gyro = (ModernRoboticsI2cGyro) hwMap.gyroSensor.get("gyro");
+            colorSensor = (ModernRoboticsI2cColorSensor) hwMap.colorSensor.get("color");
+            capMap.put("sensor", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        Iterator it = capMap.entrySet().iterator();
+        while (it.hasNext())
+        {
+            Map.Entry pair = (Map.Entry) it.next();
+            System.out.println(pair.getKey() + " = " + pair.getValue());
+        }
 
         // FORWARD for CCW drive shaft rotation if using AndyMark motors
         // REVERSE for  CW drive shaft rotation if using AndyMark motors
@@ -290,6 +350,7 @@ public class ShelbyBot
         PUSHER
     }
 
+    @SuppressWarnings("unused")
     private int getColorPort()
     {
         return colorPort;
@@ -341,23 +402,23 @@ public class ShelbyBot
 
     //NOTE:  Notes reference center of bot on ground as bot coord frame origin.
     //However, it seems logical to use the center of the rear axis (pivot point)
-    public static final float MM_PER_INCH     = 25.4f;
+    private static final float MM_PER_INCH     = 25.4f;
     public static final float BOT_WIDTH               = 16.8f; //Vehicle width at rear wheels
     public static final float BOT_LENGTH      = 18.0f;
 
     //Distance from ctr of rear wheel to tail
     public static final float REAR_OFFSET             = 9.0f;
     public static final float FRNT_OFFSET             = BOT_LENGTH - REAR_OFFSET;
-    public static final float CAMERA_X_IN_BOT = 12.5f  * MM_PER_INCH;
-    public static final float CAMERA_Y_IN_BOT = 0f; //12.5f * MM_PER_INCH;
-    public static final float CAMERA_Z_IN_BOT = 0f; //15.5f * MM_PER_INCH;
+    private static final float CAMERA_X_IN_BOT = 0.0f  * MM_PER_INCH;
+    private static final float CAMERA_Y_IN_BOT = 0.0f; //12.5f * MM_PER_INCH;
+    private static final float CAMERA_Z_IN_BOT = 0.0f; //15.5f * MM_PER_INCH;
 
     private int colorPort = 0;
-    public DriveDir ddir = DriveDir.UNKNOWN;
+    private DriveDir ddir = DriveDir.UNKNOWN;
     public DriveDir calibrationDriveDir = DriveDir.UNKNOWN;
     private HardwareMap hwMap = null;
 
-    public boolean colorEnabled = false;
+    boolean colorEnabled = false;
 
     private int initHdg = 0;
 
@@ -371,7 +432,7 @@ public class ShelbyBot
     //translate 0 in bot x, half bot length in bot y, and ~11" in bot z
     public static final OpenGLMatrix phoneOrientation = Orientation.getRotationMatrix(
             AxesReference.EXTRINSIC, AxesOrder.XYZ, //ZXY
-            AngleUnit.DEGREES, 0, 90, 0);
+            AngleUnit.DEGREES, 0, 0, 0);
 
     public static final OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
             .translation(CAMERA_X_IN_BOT, CAMERA_Y_IN_BOT, CAMERA_Z_IN_BOT)

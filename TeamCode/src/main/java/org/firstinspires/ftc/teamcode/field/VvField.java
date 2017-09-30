@@ -10,10 +10,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 @SuppressWarnings("unused")
 public class VvField extends Field
 {
-    public static final float[] toolsPos  = {W_WALL_X,  3.0f*12, IMAGE_Z};
-    public static final float[] gearsPos  = {W_WALL_X, -1.0f*12, IMAGE_Z};
-    public static final float[] wheelsPos = { 1.0f*12, N_WALL_Y, IMAGE_Z};
-    public static final float[] legosPos  = {-3.0f*12, N_WALL_Y, IMAGE_Z};
+    private static final float[] toolsPos  = {W_WALL_X,  3.0f*12, IMAGE_Z};
+    private static final float[] gearsPos  = {W_WALL_X, -1.0f*12, IMAGE_Z};
+    private static final float[] wheelsPos = { 1.0f*12, N_WALL_Y, IMAGE_Z};
+    private static final float[] legosPos  = {-3.0f*12, N_WALL_Y, IMAGE_Z};
     //static final float[] legosPos  = {0.0f*12, 0.0f, 0.0f};
 
     private static final float[] toolsRot  = {90.0f, 0.0f, 90.0f};
@@ -27,8 +27,12 @@ public class VvField extends Field
     private static final float[] wheelsPosMm = scaleArr(wheelsPos, MM_PER_INCH);
     private static final float[] legosPosMm  = scaleArr(legosPos,  MM_PER_INCH);
 
-    public static final OpenGLMatrix redToolsLocationOnField   = genMatrix(toolsPosMm,  toolsRot);
-    public static final OpenGLMatrix redGearsLocationOnField   = genMatrix(gearsPosMm,  gearsRot);
-    public static final OpenGLMatrix blueWheelsLocationOnField = genMatrix(wheelsPosMm, wheelsRot);
-    public static final OpenGLMatrix blueLegosLocationOnField  = genMatrix(legosPosMm,  legosRot);
+    public static final OpenGLMatrix redToolsLocationOnField   =
+            genMatrix(toolsPosMm,  toolsRot);
+    public static final OpenGLMatrix redGearsLocationOnField   =
+            genMatrix(gearsPosMm,  gearsRot);
+    public static final OpenGLMatrix blueWheelsLocationOnField =
+            genMatrix(wheelsPosMm, wheelsRot);
+    public static final OpenGLMatrix blueLegosLocationOnField  =
+            genMatrix(legosPosMm,  legosRot);
 }

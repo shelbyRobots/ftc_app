@@ -1,20 +1,17 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import android.graphics.Bitmap;
-import android.widget.TextView;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
-import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
 import org.firstinspires.ftc.teamcode.image.BeaconFinder;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
+import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
@@ -30,7 +27,7 @@ import hallib.HalDashboard;
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach", "UnusedAssignment"})
 @Autonomous(name="AutonTest", group="Auton")
 //@Disabled
-public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
+public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
 {
     public FtcAutoTest()
     {
@@ -41,9 +38,12 @@ public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
     {
         telemetry.addData("_","PLEASE WAIT - STARTING");
         telemetry.update();
-        dashboard = HalDashboard.createInstance(telemetry);
-        FtcRobotControllerActivity act = (FtcRobotControllerActivity)(hardwareMap.appContext);
-        dashboard.setTextView((TextView)act.findViewById(R.id.textOpMode));
+
+        initCommon(this, true, false, false, true);
+
+        bd = new BeaconDetector();
+        dashboard = com.getDashboard();
+
         setup();
     }
 
@@ -170,7 +170,7 @@ public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
         hardwareMap.logDevices();
         robot.init(this);
 
-        tracker = new ImageTracker();
+        tracker = new ImageTracker(VuforiaInitializer.Challenge.VV);
 
         doMenus();
 
@@ -188,7 +188,6 @@ public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
             robot.gyro       != null)
         {
             drvTrn.init(robot);
-            drvTrn.setOpMode(this);
             RobotLog.ii("SJH", "Starting gyro calibration");
             gyroReady = robot.calibrateGyro();
         }
@@ -747,7 +746,7 @@ public class FtcAutoTest extends LinearOpMode implements FtcMenu.MenuButtons
     private Drivetrain drvTrn = new Drivetrain();
 
     private ImageTracker tracker;
-    private BeaconDetector bd = new BeaconDetector();
+    private BeaconDetector bd;
     private ButtonSide bSide = ButtonSide.UNKNOWN;
 
     private static Point2d curPos;

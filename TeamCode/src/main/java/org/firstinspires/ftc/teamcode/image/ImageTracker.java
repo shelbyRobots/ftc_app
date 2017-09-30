@@ -1,14 +1,17 @@
 package org.firstinspires.ftc.teamcode.image;
 
 import android.graphics.Bitmap;
+import android.os.Environment;
 
 import com.qualcomm.robotcore.util.RobotLog;
+import com.vuforia.CameraCalibration;
 import com.vuforia.Image;
 import com.vuforia.Matrix34F;
 import com.vuforia.PIXEL_FORMAT;
-import com.vuforia.Vuforia;
+import com.vuforia.Tool;
+import com.vuforia.Vec2F;
+import com.vuforia.Vec3F;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -18,143 +21,37 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.teamcode.field.VvField;
-import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-@SuppressWarnings("WeakerAccess, unused")
+import hallib.HalDashboard;
+
+@SuppressWarnings({"WeakerAccess, unused", "FieldCanBeLocal"})
 public class ImageTracker
 {
-    public ImageTracker()
+    public ImageTracker(VuforiaInitializer.Challenge challenge)
     {
-        setupTrackables();
-        setupPhoneOnRobot();
+        com = CommonUtil.getInstance();
+        dashboard = com.getDashboard();
+        this.challenge = challenge;
+        setupVuforia();
     }
 
-    private void setupTrackables()
+    private void setupVuforia()
     {
-        //To see camera feedback, pass the view id
-        //For competition, we don't want this - so use the no param ctor
-        if (useScreen)
-        {
-            parameters = new
-                                 VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
-        } else
-        {
-            parameters = new VuforiaLocalizer.Parameters();
-        }
-
-        //SJH Teams license
-        parameters.vuforiaLicenseKey =
-                "AQgIvJ7/////AAAAGQSociXWO0kDvfP15zd4zOsS+fHJygDMLA" +
-                        "1HhOJQ3FkeiPLGU6YW3ru+jzC6MGxM5tY1ajF4Y0plOpxhQGfS" +
-                        "R4g3zFiP0IQavezWhGbjBCRMmYu8INy8KvoZ03crZe9wxxQJu9" +
-                        "9KiNX3ZrbUevNXODKKzWyA9RqxxQHbJ3gpXoff4z1O9n211VOg" +
-                        "EsJjrNZq8xJnznilyXwc8colJnZD/Adr6UmOzxoUGgaMrdPrlj" +
-                        "McDJZU6uyoIrOjiv1G2r3iNjtd7LzKAANKrK/0IrO90MgRqQDr" +
-                        "CAAJVHqqyyubMy8EqE5onzw/WFEcEwfQ6nolsNwYTEZb/JppU8" +
-                        "9Q6DZmhz4FCT49shA+4PyNOzqsjhRC";
-
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-
-        vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-        //Set the image sets to allow getting frames from vuforia
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
-        vuforia.setFrameQueueCapacity(10);
-        RobotLog.ii("SJH", "Vuforia LicKey: " + parameters.vuforiaLicenseKey);
-
-        if (useVv)
-        {
-            vvImages = vuforia.loadTrackablesFromAsset("FTC_2016-17");
-            //Wheels are on blue side closest to blue corner
-            blueWheels = vvImages.get(0);
-            blueWheels.setName("BlueWheels");
-
-            //Legos are on blud side furthest from blue corner
-            blueLegos = vvImages.get(2);
-            blueLegos.setName("BlueLegos");
-
-            //Tools are on red side furthest from red corner
-            redTools = vvImages.get(1);
-            redTools.setName("RedTools");
-
-            //Gears are on red side closest to red corner
-            redGears = vvImages.get(3);
-            redGears.setName("RedGears");
-
-            allTrackables.addAll(vvImages);
-
-            redTools.setLocation(VvField.redToolsLocationOnField);
-            RobotLog.ii(TAG, "Red Tools=%s", getLocString(redTools.getLocation()));
-
-            redGears.setLocation(VvField.redGearsLocationOnField);
-            RobotLog.ii(TAG, "Red Gears=%s", getLocString(redGears.getLocation()));
-
-            blueWheels.setLocation(VvField.blueWheelsLocationOnField);
-            RobotLog.ii(TAG, "Blue Wheels=%s", getLocString(blueWheels.getLocation()));
-
-            blueLegos.setLocation(VvField.blueLegosLocationOnField);
-            RobotLog.ii(TAG, "Blue Legos=%s", getLocString(blueLegos.getLocation()));
-        }
-
-        if (useRr)
-        {
-            rrImages = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-            rrTemplate = rrImages.get(0);
-            rrTemplate.setName("RelicTrack");
-
-            allTrackables.addAll(rrImages);
-
-            //Position on field not usable for RR - but set to identity for now
-            rrTemplate.setLocation(OpenGLMatrix.identityMatrix());
-            RobotLog.ii(TAG, "RR Template=%s", getLocString(rrTemplate.getLocation()));
-        }
+        vInit = com.getVuforiaInitializer();
+        trackables = vInit.setupTrackables(challenge);
+        vuforia = com.getVuforiaLocalizer();
     }
 
-    private void setupPhoneOnRobot()
-    {
-        OpenGLMatrix phoneLocationOnRobot = ShelbyBot.phoneLocationOnRobot;
-        RobotLog.ii(TAG, "phone=%s", getLocString(phoneLocationOnRobot));
-
-        /*
-          A brief tutorial: here's how all the math is going to work:
-
-          C = phoneLocationOnRobot     maps   phone coords        -> robot coords
-          P = tracker.getPose()        maps   image target coords -> phone coords
-          L = redTargetLocationOnField maps   image target coords -> field coords
-
-          C.inverted()                 maps   robot coords -> phone coords
-          P.inverted()                 maps   phone coords -> imageTarget coords
-
-          L x P.inverted() x C.inverted() maps robot coords to field coords.
-
-          @see VuforiaTrackableDefaultListener#getRobotLocation()
-         */
-
-        if (useVv)
-        {
-            ((VuforiaTrackableDefaultListener) redTools.getListener())
-                    .setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-            ((VuforiaTrackableDefaultListener) redGears.getListener())
-                    .setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-            ((VuforiaTrackableDefaultListener) blueLegos.getListener())
-                    .setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-            ((VuforiaTrackableDefaultListener) blueWheels.getListener())
-                    .setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-        }
-
-        if (useRr)
-        {
-            ((VuforiaTrackableDefaultListener) rrTemplate.getListener())
-                    .setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-        }
-    }
+    public RelicRecoveryVuMark getKeyLoc() {return keyLoc;}
 
     @SuppressWarnings("unused")
     public OpenGLMatrix getRobotLocation()
@@ -166,12 +63,19 @@ public class ImageTracker
           getRobotLocation() will return null if the trackable is not currently visible.
          */
         OpenGLMatrix robotLocationTransform = null;
-        for (VuforiaTrackable trackable : allTrackables)
+        for (VuforiaTrackable trackable : trackables)
         {
-            robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener())
-                                             .getUpdatedRobotLocation();
+            VuforiaTrackableDefaultListener l =
+                    (VuforiaTrackableDefaultListener) trackable.getListener();
+
+            RobotLog.dd(TAG, "Trackable " + trackable.getName() + " " + l.isVisible());
+            dashboard.displayPrintf(5, "%s", trackable.getName(),
+                                             l.isVisible() ? "Visible" : "Not Visible");
+
+            robotLocationTransform = l.getUpdatedRobotLocation();
             if (robotLocationTransform != null)
             {
+                lastVisName = trackable.getName();
                 break;
             }
         }
@@ -188,18 +92,15 @@ public class ImageTracker
         if (!raw)
         {
             pose = l.getPose();
-        } else
+        }
+        else
         {
             pose = l.getRawPose();
-            if (pose == null) return null;
-
             poseType += "Raw";
-
-            getImageCorners(pose);
         }
         if (pose != null)
         {
-            RobotLog.dd("SJH", poseType + "Pose: " + getLocString(pose));
+            RobotLog.dd("SJH", poseType + "Pose: " + VuforiaInitializer.getLocString(pose));
         }
         return pose;
     }
@@ -214,7 +115,7 @@ public class ImageTracker
           getRobotLocation() will return null if the trackable is not currently visible.
          */
         OpenGLMatrix robotLocationTransform;
-        for (VuforiaTrackable trackable : allTrackables)
+        for (VuforiaTrackable trackable : trackables)
         {
             VuforiaTrackableDefaultListener l =
                     (VuforiaTrackableDefaultListener) trackable.getListener();
@@ -225,22 +126,37 @@ public class ImageTracker
                 lastVisName = trackable.getName();
                 float xyz[] = robotLocationTransform.getTranslation().getData();
                 currPos = new Point2d(xyz[0] / MM_PER_INCH, xyz[1] / MM_PER_INCH);
-                RobotLog.ii("SJH", "Found Image " + lastVisName);
                 currOri = Orientation.getOrientation(robotLocationTransform,
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
                 currYaw = (double) currOri.firstAngle;
 
+                OpenGLMatrix rawPose;
                 if (keyLoc == RelicRecoveryVuMark.UNKNOWN &&
-                            RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
+                    RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
                 {
                     keyLoc = RelicRecoveryVuMark.from(trackable);
                     RobotLog.ii("SJH", "VuMark KEY = " + keyLoc);
-                    getImagePose(trackable, true);
-                    getImagePose(trackable, false);
-                    if (breakOnVumarkFound) setActive(false);
+                    rawPose = getImagePose(trackable, true);
+                    dashboard.displayPrintf(6, "VuMark key = %s", keyLoc);
+                    RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
+
+                    Bitmap fullPic = getImage();
+                    List<Point2d>  trackablePixCorners =
+                            getTrackableCornersInCamera(rawPose);
+                    List<Point2d> jewelBoxPixCorners =
+                            getJewelBoxCornersInCamera(rawPose, false);
+                            //getCropCorners(trackablePixCorners);
+                   Bitmap jewelImg = getCroppedImage(jewelBoxPixCorners, fullPic);
+
+                    //TODO - pass the jewelImage to a particle detector
+
+                    if (breakOnVumarkFound)
+                    {
+                        vInit.setActive(false);
+                        break;
+                    }
                 }
 
-                break;
             } else
             {
                 currPos = null;
@@ -260,23 +176,6 @@ public class ImageTracker
         return currYaw;
     }
 
-    public String getLocString(OpenGLMatrix mat)
-    {
-        String locStr = null;
-        if (mat != null)
-        {
-            float xyz[] = mat.getTranslation().getData();
-            Orientation ori = Orientation.getOrientation(mat,
-                    AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
-
-            locStr = String.format(Locale.US,
-                    "POS: %5.2f, %5.2f, %5.2f ROT: %4.1f, %4.1f, %4.1f",
-                    xyz[0] / MM_PER_INCH, xyz[1] / MM_PER_INCH, xyz[2] / MM_PER_INCH,
-                    ori.firstAngle, ori.secondAngle, ori.thirdAngle);
-        }
-        return locStr;
-    }
-
     public String getLocString()
     {
         String locStr = null;
@@ -292,6 +191,13 @@ public class ImageTracker
                     currYaw);
         }
         return locStr;
+    }
+
+    String format(OpenGLMatrix transformationMatrix)
+    {
+        return (transformationMatrix != null) ?
+                       transformationMatrix.formatAsTransform() :
+                       "null";
     }
 
     public Bitmap getImage()
@@ -319,7 +225,6 @@ public class ImageTracker
             int format = frame.getImage(i).getFormat();
             if (format == PIXEL_FORMAT.RGB565)
             {
-                RobotLog.dd("SJH", "Image " + i + " format = " + format);
                 imgdata = frame.getImage(i);
                 break;
             }
@@ -331,8 +236,8 @@ public class ImageTracker
             return null;
         }
 
-        imgW = imgdata.getWidth();
-        imgH = imgdata.getHeight();
+        int imgW = imgdata.getWidth();
+        int imgH = imgdata.getHeight();
         Bitmap.Config imgT = Bitmap.Config.RGB_565;
         if (rgbImage == null) rgbImage = Bitmap.createBitmap(imgW, imgH, imgT);
 
@@ -343,73 +248,201 @@ public class ImageTracker
         return rgbImage;
     }
 
+    private Bitmap getCroppedImage(List<Point2d> cropCorners, Bitmap fullImage)
+    {
+        Point2d ptl = cropCorners.get(0);
+        Point2d ptr = cropCorners.get(1);
+        Point2d pbr = cropCorners.get(2);
+        Point2d pbl = cropCorners.get(3);
+
+        int minX = (int)Math.min(Math.min(ptl.getX(), pbl.getX()),
+                                 Math.min(ptr.getX(), ptl.getX()));
+        int maxX = (int)Math.max(Math.max(ptl.getX(), pbl.getX()),
+                                 Math.max(ptr.getX(), ptl.getX()));
+        int minY = (int)Math.min(Math.min(ptl.getY(), pbl.getY()),
+                                 Math.min(ptr.getY(), ptl.getY()));
+        int maxY = (int)Math.max(Math.max(ptl.getY(), pbl.getY()),
+                                 Math.max(ptr.getY(), ptl.getY()));
+
+        int w = maxX - minX;
+        int h = maxY - minY;
+        //Rect aoi = new Rect(minX, minY, w, h);
+
+        int fullImgW = fullImage.getWidth();
+        int fullImgH = fullImage.getHeight();
+
+        if(minX + w > fullImgW) w = fullImgW - minX;
+        if(minY + h > fullImgH) h = fullImgH - minY;
+
+        RobotLog.dd(TAG, "Cropping " + w + "x" + h + " out of " + fullImgW + "x" + fullImgH);
+
+        Bitmap bitmap = Bitmap.createBitmap(fullImage, minX, minY, w, h);
+
+        String fileName = "sbh_test.png";
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        //String directoryPath  = Environment.getExternalStorageDirectory().getPath() +
+        //                                "/FIRST/DataLogger";
+        //String filePath       = directoryPath + "/" + fileName ;
+        File dest = new File(path, fileName);
+
+        //File dest = new File(filePath);
+        FileOutputStream out;
+        try
+        {
+            out = new FileOutputStream(dest);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+        }
+        catch(Exception e)
+        {
+            RobotLog.ee(TAG, "ERROR saving file. " + e);
+        }
+
+        return bitmap;
+    }
+
     /**
      * @param rawPose the pose of the beacon image VuforiaTrackable object
-     * @return the list of 4 Vector2D objects that represent the points of the corners of the beacon image
+     * @return the list of 4 Point2d for the trackable image corners
      */
-    public List<Point2d> getImageCorners(OpenGLMatrix rawPose)
+    private List<Point2d> getTrackableCornersInCamera(OpenGLMatrix rawPose)
     {
         Matrix34F rawPoseMx = new Matrix34F();
-
         OpenGLMatrix poseTransposed = rawPose.transposed();
+
+        final int TL = 0;
+        final int TR = 1;
+        final int BR = 2;
+        final int BL = 3;
 
         if (poseTransposed == null) return null;
         rawPoseMx.setData(Arrays.copyOfRange(poseTransposed.getData(), 0, 12));
 
-        List<Point2d> imageCorners = null; //vuforia.getImageCorners(rawPose);
-        return imageCorners;
-    }
-//    public List<Point2d> getImageCorners(Matrix34F rawPose)
-//    {
-//        CameraCalibration camCal = vuforia.getCameraCalibration();
-//        //top left, top right, bottom left, bottom right
-//        List<Vec2F> vec2fList = Arrays.asList(
-//           Tool.projectPoint(camCal, rawPose,
-//                   new Vec3F(-JEWEL_TARGET_WIDTH / 2, JEWEL_TARGET_HEIGHT / 2, 0)),  //top left)
-//           Tool.projectPoint(camCal, rawPose,
-//                   new Vec3F(JEWEL_TARGET_WIDTH / 2, JEWEL_TARGET_HEIGHT / 2, 0)),   //top right
-//           Tool.projectPoint(camCal, rawPose,
-//                   new Vec3F(-JEWEL_TARGET_WIDTH / 2, -JEWEL_TARGET_HEIGHT / 2, 0)), //bottom left
-//           Tool.projectPoint(camCal, rawPose,
-//                   new Vec3F(JEWEL_TARGET_WIDTH / 2, -JEWEL_TARGET_HEIGHT / 2, 0))   //bottom right
-//        );
-//
-//        RobotLog.i(TAG, "unscaled frame size: " + imgW + " , " + imgH);
-//        RobotLog.i(TAG, "unscaled tl: " + vec2fList.get(0));
-//        RobotLog.i(TAG, "unscaled tr: " + vec2fList.get(1));
-//        RobotLog.i(TAG, "unscaled bl: " + vec2fList.get(2));
-//        RobotLog.i(TAG, "unscaled br: " + vec2fList.get(3));
-////
-////        //get average width from the top width and bottom width
-//////        double w = ((vec2fList.get(1).getData()[1] - vec2fList.get(0).getData()[1]) + (vec2fList.get(3).getData()[1] - vec2fList.get(2).getData()[1])) / 2;
-////        //same for height
-//////        double h = ((vec2fList.get(2).getData()[0] - vec2fList.get(0).getData()[0]) + (vec2fList.get(3).getData()[0] - vec2fList.get(1).getData()[0])) / 2;
-////
-//////        Log.i(TAG, "beacon picture size: " + new Vector2D(w, h));
-////
-//        //convert the Vec2F list to a Vector2D list and scale it to match the requested frame size
-//        List<Point2d> corners = new ArrayList<>();
-//        for (Vec2F vec2f : vec2fList)
-//        {
-//            corners.add(new Point2d((imgH - vec2f.getData()[1]) * widthRequest / imgH,
-//                                     vec2f.getData()[0] * heightRequest / imgW));
-//        }
-//
-//        return corners;
-//    }
+        List<Vec3F> trackableCorners = Arrays.asList(
+                new Vec3F((float)-TARGET_WIDTH/2, (float) TARGET_HEIGHT/2, 0.0f),
+                new Vec3F((float) TARGET_WIDTH/2, (float) TARGET_HEIGHT/2, 0.0f),
+                new Vec3F((float) TARGET_WIDTH/2, (float)-TARGET_HEIGHT/2, 0.0f),
+                new Vec3F((float)-TARGET_WIDTH/2, (float)-TARGET_HEIGHT/2, 0.0f)
+        );
 
-    public void setActive(boolean active)
+        //Project the trackable "real" corners in field or trackable picture local coords
+        //to pixel coordinates in camera image.
+        //To do this, use the inverse of the raw pose matrix and the corner locations
+        //from the printed picture size
+        CameraCalibration camCal = vuforia.getCameraCalibration();
+
+        List<Vec2F> trackableImageCorners = Arrays.asList(
+           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(TL)), //top left)
+           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(TR)), //top right
+           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(BR)), //bottom left
+           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(BL))  //bottom right
+        );
+
+        //These are trackable corners in trackable sheet space - using Point2d for naming
+        List<Point2d> trackableSheetCorners = new ArrayList<>(Arrays.asList(
+                new Point2d("TSTL", -TARGET_WIDTH/2,  TARGET_HEIGHT/2),
+                new Point2d("TSTR",  TARGET_WIDTH/2,  TARGET_HEIGHT/2),
+                new Point2d("TSBR",  TARGET_WIDTH/2, -TARGET_HEIGHT/2),
+                new Point2d("TSBL", -TARGET_WIDTH/2, -TARGET_HEIGHT/2)));
+
+        //These are trackable corners in camera pixel space
+        List<Point2d> trackablePixelCorners = new ArrayList<>(Arrays.asList(
+                new Point2d("TPTL", trackableImageCorners.get(TL).getData()),
+                new Point2d("TPTR", trackableImageCorners.get(TR).getData()),
+                new Point2d("TPBR", trackableImageCorners.get(BR).getData()),
+                new Point2d("TPBL", trackableImageCorners.get(BL).getData())));
+
+        RobotLog.ii(TAG, "trackable size (mm): " + TARGET_WIDTH + " , " + TARGET_HEIGHT);
+        RobotLog.ii(TAG, "Trackable corners in trackable sheet space");
+        for(Point2d p : trackableSheetCorners)
+        {
+            RobotLog.ii(TAG, "" + p);
+        }
+        RobotLog.ii(TAG, "Trackable corners in pixel space");
+        for(Point2d p : trackablePixelCorners)
+        {
+            RobotLog.ii(TAG, "" + p);
+        }
+
+        return trackablePixelCorners;
+    }
+
+    private List<Point2d> getJewelBoxCornersInCamera(OpenGLMatrix rawPose, boolean bothJewels)
     {
-        if(active)
+        Matrix34F rawPoseMx = new Matrix34F();
+        OpenGLMatrix poseTransposed = rawPose.transposed();
+
+        final int TL = 0;
+        final int TR = 1;
+        final int BR = 2;
+        final int BL = 3;
+
+        if (poseTransposed == null) return null;
+        rawPoseMx.setData(Arrays.copyOfRange(poseTransposed.getData(), 0, 12));
+
+        //The jewels will lie roughly along the line of the tracker
+        //picture bottom.  The center of the left jewel
+        //will be ~ at the lower right corner.
+        //The left edge of the left jewel will be one jewel radius
+        //"left" of the corner.  The right edge of the right jewel
+        //will be 1 jewel radius + 6" beyond the end of the line.
+        //The jewels will be +/- radius perpindicular to the line.
+        //According to RR manual part 2, the bottom of the image is
+        //1.5" above the floor, and tiles are 5/8" thick.
+        //So, bottom of jewel sitting on tiles will be 5/8"
+        //above floor.  1.5" trackable bottom - 5/8" jewel bottom
+        //= -7/8"
+
+        double tileToTrackableBottom = 1.5 - 0.625;
+        double jewelRadius   = 3.75/2.0 * MM_PER_INCH;
+        double jewelCtrToCtr = 6.0      * MM_PER_INCH;
+        double jewelLeft   =  TARGET_WIDTH/2 - jewelRadius;
+        double jewelRight  =  TARGET_WIDTH/2 + jewelCtrToCtr + jewelRadius;
+        if(!bothJewels) jewelRight = jewelLeft + 2*jewelRadius;
+        double jewelBottom = -TARGET_HEIGHT/2 - tileToTrackableBottom ;
+        double jewelTop    =  jewelBottom + 2*jewelBottom;
+        List<Vec3F> jewelCorners = Arrays.asList(
+                new Vec3F((float)jewelLeft,  (float)jewelTop,    0.0f),
+                new Vec3F((float)jewelRight, (float)jewelTop,    0.0f),
+                new Vec3F((float)jewelRight, (float)jewelBottom, 0.0f),
+                new Vec3F((float)jewelLeft,  (float)jewelBottom, 0.0f)
+        );
+
+        CameraCalibration camCal = vuforia.getCameraCalibration();
+
+        List<Vec2F> jewelImageCorners = Arrays.asList(
+                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(TL)), //top left)
+                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(TR)), //top right
+                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(BR)), //bottom left
+                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(BL))  //bottom right
+        );
+
+        List<Point2d> jewelBoxSheetCorners = new ArrayList<>(Arrays.asList(
+                new Point2d("JSTL", jewelLeft,  jewelTop ),
+                new Point2d("JSTR", jewelRight, jewelTop),
+                new Point2d("JSBR", jewelRight, jewelBottom ),
+                new Point2d("JSBL", jewelLeft,  jewelBottom )
+        ));
+
+        List<Point2d> jewelBoxPixelCorners = new ArrayList<>(Arrays.asList(
+                new Point2d("JPTL", jewelImageCorners.get(TL).getData()),
+                new Point2d("JPTR", jewelImageCorners.get(TR).getData()),
+                new Point2d("JPBR", jewelImageCorners.get(BR).getData()),
+                new Point2d("JPBL", jewelImageCorners.get(BL).getData())
+        ));
+
+        RobotLog.ii(TAG, "Jewel box corners in trackable sheet space");
+        for(Point2d p : jewelBoxSheetCorners)
         {
-            if(useVv) vvImages.activate();
-            if(useRr) rrImages.activate();
+            RobotLog.ii(TAG, "" + p);
         }
-        else
+        RobotLog.ii(TAG, "Jewel box corners in pixel space");
+        for(Point2d p : jewelBoxPixelCorners)
         {
-            if(useVv) vvImages.deactivate();
-            if(useRr) rrImages.deactivate();
+            RobotLog.ii(TAG, "" + p);
         }
+
+        return jewelBoxPixelCorners;
     }
 
     public void setFrameQueueSize(int size)
@@ -417,50 +450,38 @@ public class ImageTracker
         vuforia.setFrameQueueCapacity(size);
     }
 
+    public void setActive(boolean active)
+    {
+        vInit.setActive(active);
+    }
+
     // Vuforia units are mm = units used in XML for the trackables
     private static final float MM_PER_INCH        = 25.4f;
     private static final String TAG = "SJH ImageTracker";
 
-    private static final boolean useVv = false;
-    private static final boolean useRr = true;
+    //Note: asset file has 304mm x 224mm (12"x8.8")for RR !?!?
+    //Need to figure out what xml coordinates really mean
+    private static final int TARGET_WIDTH = 127 * 2;
+    private static final int TARGET_HEIGHT = 92 * 2;
 
-    private List<VuforiaTrackable> allTrackables = new ArrayList<>();
-
-    private static final int JEWEL_TARGET_WIDTH = 127 * 2;
-    private static final int JEWEL_TARGET_HEIGHT = 92 * 2;
-
-    private int imgW;
-    private int imgH;
-
-
-    private static final int FRAME_SIZE = 16;
-//    private static final int FRAME_SIZE = 8;
-//    private static final int FRAME_SIZE = 64;
-
-    private static final int FRAME_WIDTH = 3 * FRAME_SIZE;
-    private static final int FRAME_HEIGHT = 4 * FRAME_SIZE;
-
-    private int widthRequest = FRAME_WIDTH;
-    private int heightRequest = FRAME_HEIGHT;
-
+    CommonUtil com;
     private VuforiaLocalizer vuforia;
-    private VuforiaTrackable blueWheels;
-    private VuforiaTrackable blueLegos;
-    private VuforiaTrackable redTools;
-    private VuforiaTrackable redGears;
-    private VuforiaTrackable rrTemplate;
     private VuforiaLocalizer.Parameters parameters;
-    private VuforiaTrackables vvImages;
-    private VuforiaTrackables rrImages;
+    private List<VuforiaTrackable> trackables;
     private RelicRecoveryVuMark keyLoc = RelicRecoveryVuMark.UNKNOWN;
+
+    VuforiaInitializer vInit = null;
+    VuforiaInitializer.Challenge challenge = VuforiaInitializer.Challenge.RR;
 
     private boolean breakOnVumarkFound = true;
 
     private Point2d currPos = null;
     private Double  currYaw = null;
     private Orientation currOri = null;
-    private String lastVisName = "";
+    private String lastVisName = "UNKNOWN";
     private boolean useScreen = true;
 
     private Bitmap rgbImage = null;
+    private HalDashboard dashboard;
+    private boolean configureLayout = false;
 }
