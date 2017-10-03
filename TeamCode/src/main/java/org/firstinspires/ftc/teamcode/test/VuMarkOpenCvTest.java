@@ -34,138 +34,116 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.teamcode.image.BeaconDetector;
+import org.firstinspires.ftc.teamcode.field.RrField;
 import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
-import org.firstinspires.ftc.teamcode.image.LedDetector;
+import org.firstinspires.ftc.teamcode.image.MajorColorDetector;
 import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
-import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Point2d;
-
-import hallib.HalDashboard;
 
 @Autonomous(name="Concept: VuMark Id", group ="Concept")
 //@Disabled
 public class VuMarkOpenCvTest extends InitLinearOpMode
 {
+    private static ImageTracker tracker;
     public static final String TAG = "SJH_VuMark";
 
     @Override
     public void runOpMode() throws InterruptedException
     {
-        initCommon(this, true, true, false, true);
-        CommonUtil com = CommonUtil.getInstance();
+        initCommon(this, true, true, false, false);
         super.runOpMode();
+
+        RobotLog.dd(TAG, "Creating new Detector");
+        Detector det = new MajorColorDetector();
+        RobotLog.dd(TAG, "Back from Creating new Detector");
+
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
 
-        //bd = new BeaconDetector();
-        RobotLog.dd("SJH_LEDA", "Creating new LedDetector");
-        ld = new LedDetector();
-        RobotLog.dd("SJH_LEDA", "Back from Creating new LedDetector");
+        setupCropCorners();
 
         telemetry.update();
         waitForStart();
 
         RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
         tracker.setActive(true);
-        RobotLog.dd("SJH", "Finding VuMark first");
+        RobotLog.dd(TAG, "Finding VuMark first");
         while (opModeIsActive() && key == RelicRecoveryVuMark.UNKNOWN)
         {
             ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
-            Point2d sensedBotPos = null;
+            Point2d sensedBotPos;
             double  sensedFldHdg = 0.0;
-            Bitmap bmap = null;
             int frm = 0;
-            //while(sensedBotPos == null && itimer.milliseconds() < 1000)
-            //{
-                tracker.updateRobotLocationInfo();
-                sensedBotPos = tracker.getSensedPosition();
 
-                if(sensedBotPos != null)
-                {
-                    curPos = sensedBotPos;
-                    sensedFldHdg = tracker.getSensedFldHeading();
-                    curHdg = sensedFldHdg;
-                    key = tracker.getKeyLoc();
-                    //rgbImage = tracker.getImage();
-            //        break;
-                }
-                frm++;
-            //    sleep(50);
-            //}
+            tracker.updateRobotLocationInfo();
+            sensedBotPos = tracker.getSensedPosition();
+
+            if(sensedBotPos != null)
+            {
+                sensedFldHdg = tracker.getSensedFldHeading();
+                key = tracker.getKeyLoc();
+            }
+            frm++;
 
             if ( sensedBotPos != null )
             {
                 double t = itimer.seconds();
-                RobotLog.ii("SJH", "Senesed Pos: %s %5.2f %2.3f", sensedBotPos, sensedFldHdg, t);
-                RobotLog.ii("SJH", "IMG %s frame %d", tracker.getLocString(), frm);
-                dashboard.displayPrintf(1, "SLOC: %s %4.1f", sensedBotPos, sensedFldHdg);
-                dashboard.displayPrintf(2, "IMG", "%s  frame %d", tracker.getLocString(), frm);
+                RobotLog.ii("SJH", "Senesed Pos: %s %5.2f %2.3f",
+                        sensedBotPos, sensedFldHdg, t);
+                RobotLog.ii("SJH", "IMG %s frame %d",
+                        tracker.getLocString(), frm);
+                dashboard.displayPrintf(1, "SLOC: %s %4.1f",
+                        sensedBotPos, sensedFldHdg);
+                dashboard.displayPrintf(2, "IMG", "%s  frame %d",
+                        tracker.getLocString(), frm);
             }
 
             telemetry.update();
-
         }
 
         RobotLog.ii(TAG, "KEY : " + key);
         dashboard.displayPrintf(0, "KEY: " + key);
-        RobotLog.dd("SJH", "Turn off image tracker");
+        RobotLog.dd(TAG, "Turn off image tracker");
         tracker.setActive(false);
-        RobotLog.dd("SJH", "Set qsize to get frames");
+        RobotLog.dd(TAG, "Set qsize to get frames");
         tracker.setFrameQueueSize(1);
-        RobotLog.dd("SJH", "Start LD sensing");
-        ld.startSensing();
+        RobotLog.dd(TAG, "Start LD sensing");
+        det.startSensing();
+
+        MajorColorDetector.Color leftJewelColor = MajorColorDetector.Color.NONE;
+        while(opModeIsActive() && leftJewelColor == MajorColorDetector.Color.NONE)
+        {
+            Bitmap rgbImage = tracker.getLastCroppedImage();
+
+            if(rgbImage == null) continue;
+            det.setBitmap(rgbImage);
+            det.logDebug();
+            det.logTelemetry();
+            if(det instanceof MajorColorDetector)
+                leftJewelColor = ((MajorColorDetector) det).getMajorColor();
+            sleep(100);
+        }
 
         while(opModeIsActive())
         {
-            Bitmap rgbImage = tracker.getImage();
-
-            if(rgbImage == null) continue;
-            ld.setBitmap(rgbImage);
-            ld.logDebug();
-            ld.logTelemetry();
-            telemetry.update();
+            //Just sit here until stopped
             sleep(100);
-
-            //ZZBeaconFinder.BeaconSide bs = bd.getRedPosSide();
-            //ZZRobotLog.dd("SJH", "Redside = " + bs);
         }
-        RobotLog.dd("SJH", "Out of LED loop - stop sensing");
-        ld.stopSensing();
-        RobotLog.dd("SJH", " cleanupCamera");
-        //ld.
-        RobotLog.dd("SJH", " frameQueue 0");
+
+        RobotLog.dd(TAG, "Out of detector loop - stop sensing");
+        det.stopSensing();
+        RobotLog.dd(TAG, " cleanupCamera");
+        RobotLog.dd(TAG, " frameQueue 0");
         tracker.setFrameQueueSize(0);
-        RobotLog.dd("SJH", "ByeBye");
+        RobotLog.dd(TAG, "ByeBye");
     }
 
-    String format(OpenGLMatrix transformationMatrix) {
-        return (transformationMatrix != null) ? transformationMatrix.formatAsTransform() : "null";
+    @SuppressWarnings("ConstantConditions")
+    private void setupCropCorners()
+    {
+        tracker.setTrackableRelativeCropCorners(RrField.getTrackableRelativeCropCorners());
     }
-
-    private ImageTracker tracker;
-
-    private int width, height;
-
-    private static final int FRAME_SIZE = 16;
-
-    private static final int FRAME_WIDTH = 3 * FRAME_SIZE;
-    private static final int FRAME_HEIGHT = 4 * FRAME_SIZE;
-
-    private int widthRequest = FRAME_WIDTH;
-    private int heightRequest = FRAME_HEIGHT;
-
-    private static Point2d curPos = null;
-    private static double  curHdg = 0.0;
-
-    //private ImageProcessor bd = null;
-    private BeaconDetector bd;
-    private Detector ld;
-    private Bitmap rgbImage = null;
-    private VuforiaLocalizer.CloseableFrame frame = null;
 }

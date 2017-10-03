@@ -58,8 +58,12 @@ public abstract class Field
     public static final float S_WALL_Y = -N_WALL_Y;
     public static final float W_WALL_X = -E_WALL_X;
 
-    static final float MM_PER_INCH = 25.4f;
     static final float IMAGE_Z = 6.50f;
+
+    //Note: asset file has 304mm x 224mm (12"x8.8")for RR !?!?
+    //Need to figure out what xml coordinates really mean
+    public static int target_width  = 127 * 2;
+    public static int target_height = 92 * 2;
 
     static float[] scaleArr(float[] inArr, float scale)
     {

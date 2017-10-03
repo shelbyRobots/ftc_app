@@ -474,7 +474,7 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
                 ord == BeaconFinder.LightOrder.BLUE_BLUE) &&
                itimer.milliseconds() < timeout)
         {
-            Bitmap bmap = tracker.getImage();
+            Bitmap bmap = tracker.getLastImage();
             if(bmap != null)
             {
                 bd.setBitmap(bmap);

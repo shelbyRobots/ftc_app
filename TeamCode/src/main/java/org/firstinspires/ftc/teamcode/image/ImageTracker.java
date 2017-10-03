@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
@@ -42,6 +43,7 @@ public class ImageTracker
         dashboard = com.getDashboard();
         this.challenge = challenge;
         setupVuforia();
+        setTrackableCorners();
     }
 
     private void setupVuforia()
@@ -144,11 +146,11 @@ public class ImageTracker
                     List<Point2d>  trackablePixCorners =
                             getTrackableCornersInCamera(rawPose);
                     List<Point2d> jewelBoxPixCorners =
-                            getJewelBoxCornersInCamera(rawPose, false);
-                            //getCropCorners(trackablePixCorners);
+                            getCropCornersInCamera(rawPose);
                    Bitmap jewelImg = getCroppedImage(jewelBoxPixCorners, fullPic);
 
-                    //TODO - pass the jewelImage to a particle detector
+                    lastImage        = fullPic;
+                    lastCroppedImage = jewelImg;
 
                     if (breakOnVumarkFound)
                     {
@@ -193,6 +195,16 @@ public class ImageTracker
         return locStr;
     }
 
+    public Bitmap getLastImage()
+    {
+        return lastImage;
+    }
+
+    public Bitmap getLastCroppedImage()
+    {
+        return lastCroppedImage;
+    }
+
     String format(OpenGLMatrix transformationMatrix)
     {
         return (transformationMatrix != null) ?
@@ -200,7 +212,7 @@ public class ImageTracker
                        "null";
     }
 
-    public Bitmap getImage()
+    private Bitmap getImage()
     {
         VuforiaLocalizer.CloseableFrame frame = null;
         try
@@ -264,15 +276,22 @@ public class ImageTracker
         int maxY = (int)Math.max(Math.max(ptl.getY(), pbl.getY()),
                                  Math.max(ptr.getY(), ptl.getY()));
 
-        int w = maxX - minX;
-        int h = maxY - minY;
-        //Rect aoi = new Rect(minX, minY, w, h);
+        int w = Math.abs(maxX - minX);
+        int h = Math.abs(maxY - minY);
 
         int fullImgW = fullImage.getWidth();
         int fullImgH = fullImage.getHeight();
 
+        if(maxX < 0 || maxY < 0 || minX > fullImgW || maxY > fullImgH)
+        {
+            RobotLog.ww(TAG, "Crop pixel box outside of full image");
+            return null;
+        }
+
         if(minX + w > fullImgW) w = fullImgW - minX;
         if(minY + h > fullImgH) h = fullImgH - minY;
+        if(minX < 0) {minX = 0; w = maxX;}
+        if(minY < 0) {minY = 0; h = maxY;}
 
         RobotLog.dd(TAG, "Cropping " + w + "x" + h + " out of " + fullImgW + "x" + fullImgH);
 
@@ -310,40 +329,20 @@ public class ImageTracker
         Matrix34F rawPoseMx = new Matrix34F();
         OpenGLMatrix poseTransposed = rawPose.transposed();
 
-        final int TL = 0;
-        final int TR = 1;
-        final int BR = 2;
-        final int BL = 3;
-
         if (poseTransposed == null) return null;
         rawPoseMx.setData(Arrays.copyOfRange(poseTransposed.getData(), 0, 12));
 
-        List<Vec3F> trackableCorners = Arrays.asList(
-                new Vec3F((float)-TARGET_WIDTH/2, (float) TARGET_HEIGHT/2, 0.0f),
-                new Vec3F((float) TARGET_WIDTH/2, (float) TARGET_HEIGHT/2, 0.0f),
-                new Vec3F((float) TARGET_WIDTH/2, (float)-TARGET_HEIGHT/2, 0.0f),
-                new Vec3F((float)-TARGET_WIDTH/2, (float)-TARGET_HEIGHT/2, 0.0f)
-        );
-
-        //Project the trackable "real" corners in field or trackable picture local coords
-        //to pixel coordinates in camera image.
-        //To do this, use the inverse of the raw pose matrix and the corner locations
-        //from the printed picture size
+        //Project the trackable "real" corners in field or trackable picture
+        //local coords to pixel coordinates in camera image.
+        //To do this, use the inverse of the raw pose matrix and the corner
+        //locations from the printed picture size
         CameraCalibration camCal = vuforia.getCameraCalibration();
 
-        List<Vec2F> trackableImageCorners = Arrays.asList(
-           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(TL)), //top left)
-           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(TR)), //top right
-           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(BR)), //bottom left
-           Tool.projectPoint(camCal, rawPoseMx, trackableCorners.get(BL))  //bottom right
-        );
-
-        //These are trackable corners in trackable sheet space - using Point2d for naming
-        List<Point2d> trackableSheetCorners = new ArrayList<>(Arrays.asList(
-                new Point2d("TSTL", -TARGET_WIDTH/2,  TARGET_HEIGHT/2),
-                new Point2d("TSTR",  TARGET_WIDTH/2,  TARGET_HEIGHT/2),
-                new Point2d("TSBR",  TARGET_WIDTH/2, -TARGET_HEIGHT/2),
-                new Point2d("TSBL", -TARGET_WIDTH/2, -TARGET_HEIGHT/2)));
+        List<Vec2F> trackableImageCorners = new ArrayList<>(4);
+        for(Vec3F vpt : trackableCorners)
+        {
+            trackableImageCorners.add(Tool.projectPoint(camCal, rawPoseMx, vpt));
+        }
 
         //These are trackable corners in camera pixel space
         List<Point2d> trackablePixelCorners = new ArrayList<>(Arrays.asList(
@@ -352,97 +351,99 @@ public class ImageTracker
                 new Point2d("TPBR", trackableImageCorners.get(BR).getData()),
                 new Point2d("TPBL", trackableImageCorners.get(BL).getData())));
 
-        RobotLog.ii(TAG, "trackable size (mm): " + TARGET_WIDTH + " , " + TARGET_HEIGHT);
+        RobotLog.ii(TAG, "trackable size (mm): " + target_width + " , " + target_height);
         RobotLog.ii(TAG, "Trackable corners in trackable sheet space");
         for(Point2d p : trackableSheetCorners)
         {
-            RobotLog.ii(TAG, "" + p);
+            RobotLog.ii(TAG, "  " + p);
         }
         RobotLog.ii(TAG, "Trackable corners in pixel space");
         for(Point2d p : trackablePixelCorners)
         {
-            RobotLog.ii(TAG, "" + p);
+            RobotLog.ii(TAG, "  " + p);
         }
 
         return trackablePixelCorners;
     }
 
-    private List<Point2d> getJewelBoxCornersInCamera(OpenGLMatrix rawPose, boolean bothJewels)
+    private List<Point2d> getCropCornersInCamera(OpenGLMatrix rawPose)
     {
         Matrix34F rawPoseMx = new Matrix34F();
         OpenGLMatrix poseTransposed = rawPose.transposed();
 
-        final int TL = 0;
-        final int TR = 1;
-        final int BR = 2;
-        final int BL = 3;
-
         if (poseTransposed == null) return null;
         rawPoseMx.setData(Arrays.copyOfRange(poseTransposed.getData(), 0, 12));
 
-        //The jewels will lie roughly along the line of the tracker
-        //picture bottom.  The center of the left jewel
-        //will be ~ at the lower right corner.
-        //The left edge of the left jewel will be one jewel radius
-        //"left" of the corner.  The right edge of the right jewel
-        //will be 1 jewel radius + 6" beyond the end of the line.
-        //The jewels will be +/- radius perpindicular to the line.
-        //According to RR manual part 2, the bottom of the image is
-        //1.5" above the floor, and tiles are 5/8" thick.
-        //So, bottom of jewel sitting on tiles will be 5/8"
-        //above floor.  1.5" trackable bottom - 5/8" jewel bottom
-        //= -7/8"
-
-        double tileToTrackableBottom = 1.5 - 0.625;
-        double jewelRadius   = 3.75/2.0 * MM_PER_INCH;
-        double jewelCtrToCtr = 6.0      * MM_PER_INCH;
-        double jewelLeft   =  TARGET_WIDTH/2 - jewelRadius;
-        double jewelRight  =  TARGET_WIDTH/2 + jewelCtrToCtr + jewelRadius;
-        if(!bothJewels) jewelRight = jewelLeft + 2*jewelRadius;
-        double jewelBottom = -TARGET_HEIGHT/2 - tileToTrackableBottom ;
-        double jewelTop    =  jewelBottom + 2*jewelBottom;
-        List<Vec3F> jewelCorners = Arrays.asList(
-                new Vec3F((float)jewelLeft,  (float)jewelTop,    0.0f),
-                new Vec3F((float)jewelRight, (float)jewelTop,    0.0f),
-                new Vec3F((float)jewelRight, (float)jewelBottom, 0.0f),
-                new Vec3F((float)jewelLeft,  (float)jewelBottom, 0.0f)
-        );
-
         CameraCalibration camCal = vuforia.getCameraCalibration();
 
-        List<Vec2F> jewelImageCorners = Arrays.asList(
-                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(TL)), //top left)
-                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(TR)), //top right
-                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(BR)), //bottom left
-                Tool.projectPoint(camCal, rawPoseMx, jewelCorners.get(BL))  //bottom right
-        );
+        List<Vec2F> cropImageCorners = new ArrayList<>(4);
+        for(Vec3F vpt : cropCorners)
+        {
+            cropImageCorners.add(Tool.projectPoint(camCal, rawPoseMx, vpt));
+        }
 
-        List<Point2d> jewelBoxSheetCorners = new ArrayList<>(Arrays.asList(
-                new Point2d("JSTL", jewelLeft,  jewelTop ),
-                new Point2d("JSTR", jewelRight, jewelTop),
-                new Point2d("JSBR", jewelRight, jewelBottom ),
-                new Point2d("JSBL", jewelLeft,  jewelBottom )
+        List<Point2d> cropPixelCorners = new ArrayList<>(Arrays.asList(
+                new Point2d("JPTL", cropImageCorners.get(TL).getData()),
+                new Point2d("JPTR", cropImageCorners.get(TR).getData()),
+                new Point2d("JPBR", cropImageCorners.get(BR).getData()),
+                new Point2d("JPBL", cropImageCorners.get(BL).getData())
         ));
 
-        List<Point2d> jewelBoxPixelCorners = new ArrayList<>(Arrays.asList(
-                new Point2d("JPTL", jewelImageCorners.get(TL).getData()),
-                new Point2d("JPTR", jewelImageCorners.get(TR).getData()),
-                new Point2d("JPBR", jewelImageCorners.get(BR).getData()),
-                new Point2d("JPBL", jewelImageCorners.get(BL).getData())
-        ));
-
-        RobotLog.ii(TAG, "Jewel box corners in trackable sheet space");
-        for(Point2d p : jewelBoxSheetCorners)
+        RobotLog.ii(TAG, "Crop corners in trackable sheet space");
+        for(Point2d p : cropSheetCorners)
         {
             RobotLog.ii(TAG, "" + p);
         }
-        RobotLog.ii(TAG, "Jewel box corners in pixel space");
-        for(Point2d p : jewelBoxPixelCorners)
+        RobotLog.ii(TAG, "Crop corners in pixel space");
+        for(Point2d p : cropPixelCorners)
         {
             RobotLog.ii(TAG, "" + p);
         }
 
-        return jewelBoxPixelCorners;
+        return cropPixelCorners;
+    }
+
+    public void setTrackableCorners()
+    {
+        for(int i = 0; i < trackableSheetCorners.size(); i++)
+        {
+            trackableSheetCorners.remove(i);
+        }
+        for(int i = 0; i < trackableCorners.size(); i++)
+        {
+            trackableCorners.remove(i);
+        }
+
+        //These are trackable corners in trackable sheet space - using Point2d for naming
+        trackableSheetCorners.add(new Point2d("TSTL", -target_width /2,  target_height /2));
+        trackableSheetCorners.add(new Point2d("TSTR",  target_width /2,  target_height /2));
+        trackableSheetCorners.add(new Point2d("TSBR",  target_width /2, -target_height /2));
+        trackableSheetCorners.add(new Point2d("TSBL", -target_width /2, -target_height /2));
+
+        for(Point2d pt : trackableSheetCorners)
+        {
+            trackableCorners.add(new Vec3F((float)pt.getX(), (float)pt.getY(), 0.0f));
+        }
+    }
+
+    public void setTrackableSize(int width, int height)
+    {
+        target_height = height;
+        target_width  = width;
+    }
+
+    public void setTrackableRelativeCropCorners(List<Point2d> corners)
+    {
+        cropSheetCorners = corners;
+        for(int i = 0; i < cropCorners.size(); i++)
+        {
+            cropCorners.remove(i);
+        }
+
+        for(Point2d pt : corners)
+        {
+            cropCorners.add(new Vec3F((float)pt.getX(), (float)pt.getY(), 0.0f));
+        }
     }
 
     public void setFrameQueueSize(int size)
@@ -459,11 +460,8 @@ public class ImageTracker
     private static final float MM_PER_INCH        = 25.4f;
     private static final String TAG = "SJH ImageTracker";
 
-    //Note: asset file has 304mm x 224mm (12"x8.8")for RR !?!?
-    //Need to figure out what xml coordinates really mean
-    private static final int TARGET_WIDTH = 127 * 2;
-    private static final int TARGET_HEIGHT = 92 * 2;
-
+    private int target_width  = Field.target_width;
+    private int target_height = Field.target_height;
     CommonUtil com;
     private VuforiaLocalizer vuforia;
     private VuforiaLocalizer.Parameters parameters;
@@ -482,6 +480,18 @@ public class ImageTracker
     private boolean useScreen = true;
 
     private Bitmap rgbImage = null;
+    private Bitmap lastImage = null;
+    private Bitmap lastCroppedImage = null;
     private HalDashboard dashboard;
     private boolean configureLayout = false;
+
+    private static final int TL = 0;
+    private static final int TR = 1;
+    private static final int BR = 2;
+    private static final int BL = 3;
+
+    List<Vec3F>   trackableCorners      = new ArrayList<>(4);
+    List<Point2d> trackableSheetCorners = new ArrayList<>(4);
+    List<Vec3F>   cropCorners           = new ArrayList<>(4);
+    List<Point2d> cropSheetCorners      = new ArrayList<>(4);
 }

@@ -5,6 +5,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.Units;
 
 
 @SuppressWarnings("unused")
@@ -20,12 +21,11 @@ public class VvField extends Field
     private static final float[] gearsRot  = {90.0f, 0.0f, 90.0f};
     private static final float[] wheelsRot = {90.0f, 0.0f,  0.0f};
     private static final float[] legosRot  = {90.0f, 0.0f,  0.0f};
-    //private static final float[] legosRot  = {0.0f, 0.0f,  0.0f};
 
-    private static final float[] toolsPosMm  = scaleArr(toolsPos,  MM_PER_INCH);
-    private static final float[] gearsPosMm  = scaleArr(gearsPos,  MM_PER_INCH);
-    private static final float[] wheelsPosMm = scaleArr(wheelsPos, MM_PER_INCH);
-    private static final float[] legosPosMm  = scaleArr(legosPos,  MM_PER_INCH);
+    private static final float[] toolsPosMm  = scaleArr(toolsPos,  (float)Units.MM_PER_INCH);
+    private static final float[] gearsPosMm  = scaleArr(gearsPos,  (float)Units.MM_PER_INCH);
+    private static final float[] wheelsPosMm = scaleArr(wheelsPos, (float)Units.MM_PER_INCH);
+    private static final float[] legosPosMm  = scaleArr(legosPos,  (float)Units.MM_PER_INCH);
 
     public static final OpenGLMatrix redToolsLocationOnField   =
             genMatrix(toolsPosMm,  toolsRot);
