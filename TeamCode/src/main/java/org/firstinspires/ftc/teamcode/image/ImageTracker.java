@@ -24,6 +24,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Point2d;
+import org.firstinspires.ftc.teamcode.util.Units;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -127,7 +128,8 @@ public class ImageTracker
             {
                 lastVisName = trackable.getName();
                 float xyz[] = robotLocationTransform.getTranslation().getData();
-                currPos = new Point2d(xyz[0] / MM_PER_INCH, xyz[1] / MM_PER_INCH);
+                currPos = new Point2d(xyz[0] / Units.MM_PER_INCH,
+                                      xyz[1] / Units.MM_PER_INCH);
                 currOri = Orientation.getOrientation(robotLocationTransform,
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
                 currYaw = (double) currOri.firstAngle;
@@ -189,7 +191,8 @@ public class ImageTracker
 
             locStr += String.format(Locale.US,
                     "POS: %5.2f, %5.2f  ROT: %4.1f",
-                    currPos.getX() / MM_PER_INCH, currPos.getY() / MM_PER_INCH,
+                    currPos.getX() / Units.MM_PER_INCH,
+                    currPos.getY() / Units.MM_PER_INCH,
                     currYaw);
         }
         return locStr;
@@ -297,7 +300,7 @@ public class ImageTracker
 
         Bitmap bitmap = Bitmap.createBitmap(fullImage, minX, minY, w, h);
 
-        String fileName = "sbh_test.png";
+        String fileName = "sbh_test_" + imgNum++ + ".png";
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         //String directoryPath  = Environment.getExternalStorageDirectory().getPath() +
         //                                "/FIRST/DataLogger";
@@ -457,8 +460,9 @@ public class ImageTracker
     }
 
     // Vuforia units are mm = units used in XML for the trackables
-    private static final float MM_PER_INCH        = 25.4f;
     private static final String TAG = "SJH ImageTracker";
+
+    private static int imgNum = 0;
 
     private int target_width  = Field.target_width;
     private int target_height = Field.target_height;

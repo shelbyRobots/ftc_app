@@ -64,13 +64,13 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
 
         setupCropCorners();
 
-        telemetry.update();
-        waitForStart();
+        //waitForStart();
 
         RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
         tracker.setActive(true);
         RobotLog.dd(TAG, "Finding VuMark first");
-        while (opModeIsActive() && key == RelicRecoveryVuMark.UNKNOWN)
+
+        while (!isStarted() && key == RelicRecoveryVuMark.UNKNOWN)
         {
             ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
@@ -112,11 +112,13 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
         tracker.setFrameQueueSize(1);
         RobotLog.dd(TAG, "Start LD sensing");
         det.startSensing();
+        sleep(100);
 
         MajorColorDetector.Color leftJewelColor = MajorColorDetector.Color.NONE;
-        while(opModeIsActive() && leftJewelColor == MajorColorDetector.Color.NONE)
+        while(!isStarted() && leftJewelColor == MajorColorDetector.Color.NONE)
         {
-            Bitmap rgbImage = tracker.getLastCroppedImage();
+            Bitmap rgbImage;
+            rgbImage = tracker.getLastCroppedImage();
 
             if(rgbImage == null) continue;
             det.setBitmap(rgbImage);
@@ -126,6 +128,8 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
                 leftJewelColor = ((MajorColorDetector) det).getMajorColor();
             sleep(100);
         }
+
+        waitForStart();
 
         while(opModeIsActive())
         {
