@@ -358,6 +358,7 @@ public class ShelbyBot
 
     public void turnColorOn()
     {
+        if(colorSensor == null) return;
         RobotLog.ii("SJH", "Turning on colorSensor LED");
         colorEnabled = true;
         //TODO: SBH - Figure out how to register/deregister if timing shows its needed
@@ -370,6 +371,7 @@ public class ShelbyBot
 
     public void turnColorOff()
     {
+        if(colorSensor == null) return;
         colorEnabled = false;
         colorSensor.enableLed(false);
         op.sleep(50);

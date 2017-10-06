@@ -60,6 +60,8 @@ public class Teleop_Driver extends InitLinearOpMode
             Thread.sleep(50);
         }
 
+        RobotLog.dd(TAG, "Telop_Driver starting");
+
         boolean toggle = false;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive())
@@ -138,6 +140,8 @@ public class Teleop_Driver extends InitLinearOpMode
             }
             dashboard.displayPrintf(5, "L_OUT " + left);
             dashboard.displayPrintf(6, "R_OUT " + right);
+            dashboard.displayPrintf(7, "L_CNT " + robot.leftMotor.getCurrentPosition());
+            dashboard.displayPrintf(8, "R_CNT " + robot.rightMotor.getCurrentPosition());
             robot.leftMotor.setPower(left);
             robot.rightMotor.setPower(right);
 
@@ -281,4 +285,6 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private ShelbyBot robot = new ShelbyBot();
     private Drivetrain dtrn = new Drivetrain();
+
+    private static final String TAG = "SJH_TD";
 }

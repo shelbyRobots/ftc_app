@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess", "unused"})
 public class DataLogger {
     private Writer writer;
     private BufferedWriter bw;
@@ -20,7 +21,7 @@ public class DataLogger {
     private long msBase;
     private long nsBase;
     private boolean lineStart = false;
-    private boolean logData   = false;
+    private boolean logData   = true;
 
     private String timeFormat = "%.3f";
     private char fs = ',';
@@ -102,7 +103,7 @@ public class DataLogger {
         lineStart = true;
     }
 
-    public void logTime()
+    private void logTime()
     {
         long milliTime   = System.currentTimeMillis();
         long nanoTime    = System.nanoTime();
@@ -117,7 +118,7 @@ public class DataLogger {
         lineStart = false;
     }
 
-    public void sep()
+    private void sep()
     {
         if(lineStart) logTime();
         sb.append(fs);

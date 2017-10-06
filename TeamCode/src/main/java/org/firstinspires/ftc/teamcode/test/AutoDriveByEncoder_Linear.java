@@ -34,14 +34,15 @@ package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
-import org.firstinspires.ftc.teamcode.util.DataLogger;
 
+@SuppressWarnings("FieldCanBeLocal")
 @Autonomous(name="Auto Drive By Encoder", group="Test")
 //@Disabled
 public class AutoDriveByEncoder_Linear extends InitLinearOpMode
@@ -50,46 +51,61 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
     private ElapsedTime runtime = new ElapsedTime();
     private ShelbyBot robot = new ShelbyBot();
 
-    static final double COUNTS_PER_MOTOR_REV = 1120;
-    static final double DRIVE_GEAR_REDUCTION = 0.5;     // This is < 1.0 if geared UP
-    static final double WHEEL_DIAMETER_INCHES = 4.5;     // For figuring circumference
-    static final double TUNE = 1.05;
-    static final double CPI = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION /
-                                       (WHEEL_DIAMETER_INCHES * TUNE * Math.PI));
+    private static final double COUNTS_PER_MOTOR_REV = 28;
+    private static final double DRIVE_GEARS[] = {19.2, 1};
+    private static double getTotalGearRatio()
+    {
+        double gr = 1.0;
+        for(double g : DRIVE_GEARS) gr *= g;
+        return gr;
+    }
+    private static final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
+    private static final double TUNE = 1.00;
+    private static final double CPI = (COUNTS_PER_MOTOR_REV *
+                               getTotalGearRatio())/
+                              (WHEEL_DIAMETER_INCHES * TUNE * Math.PI);
 
-    static final double DRIVE_SPEED = 0.6;
-    static final double TURN_SPEED = 0.5;
+    private static final double DRIVE_SPEED = 0.6;
+    private static final double TURN_SPEED = 0.5;
 
     private ElapsedTime datalogtimer = new ElapsedTime();
     private boolean logData = true;
-    private boolean gyroReady = false;
+
     private boolean colorOn = false;
     private int r, g, b;
 
-    private final double DD = 24.0; //47.25;
-    private final double TD = 18 * Math.PI; //360
+    private final double DD = 24.0;
+    private final double TD = 14.9/2.0 * Math.PI;
 
-    static int frame = 0;
+    private static int frame = 0;
 
-    ShelbyBot.DriveDir startDir = ShelbyBot.DriveDir.SWEEPER;
+    private ShelbyBot.DriveDir startDir = ShelbyBot.DriveDir.SWEEPER;
+
+    private final static String TAG = "SJH_ADBE";
 
     @Override
     public void runOpMode() throws InterruptedException
     {
         initCommon(this, false, false, false, false);
+        super.runOpMode();
         if (logData)
         {
             dl = com.getDataLogger();
-            dl.addField("Gyro");
-            dl.addField("LENC");
-            dl.addField("RENC");
-            dl.addField("LPWR");
-            dl.addField("RPWR");
-            dl.addField("RED");
-            dl.addField("GRN");
-            dl.addField("BLU");
-            dl.newLine();
+            if(dl != null)
+            {
+                dl.addField("Gyro");
+                dl.addField("LENC");
+                dl.addField("RENC");
+                dl.addField("LPWR");
+                dl.addField("RPWR");
+                dl.addField("RED");
+                dl.addField("GRN");
+                dl.addField("BLU");
+                dl.newLine();
+            }
         }
+
+        RobotLog.dd(TAG, "CPI %4.2f", CPI);
 
         robot.init(this);
 
@@ -100,19 +116,25 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
         robot.rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         robot.setDriveDir(startDir);
-        gyroReady = robot.calibrateGyro();
+        //Currently setup for tilerunner with 1 gear after motor gearbox
+        robot.leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.rightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         ElapsedTime tmpTimer = new ElapsedTime();
         boolean first = true;
 
         while (!isStarted() && tmpTimer.seconds() < 60)
         {
-            telemetry.addData(":", "FHDG = %d", robot.getGyroFhdg());
+            if(robot.gyro != null)
+                telemetry.addData(":", "FHDG = %d", robot.getGyroFhdg());
             telemetry.addData("<", "LENC = %5d RENC = %5d",
                     robot.leftMotor.getCurrentPosition(),
                     robot.rightMotor.getCurrentPosition());
-            telemetry.addData(")", "ZInt = %d", robot.gyro.getIntegratedZValue());
-            telemetry.addData(")", "GHdg = %d", robot.gyro.getHeading());
+            if(robot.gyro != null)
+            {
+                telemetry.addData(")", "ZInt = %d", robot.gyro.getIntegratedZValue());
+                telemetry.addData(")", "GHdg = %d", robot.gyro.getHeading());
+            }
             telemetry.addData("0", "DDIR = %s", robot.getDriveDir());
             telemetry.addData("0", "IDIR = %s", robot.calibrationDriveDir);
             telemetry.update();
@@ -126,7 +148,7 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
         }
 
         waitForStart();
-        robot.gyro.resetZAxisIntegrator();
+        if(robot.gyro != null) robot.gyro.resetZAxisIntegrator();
 
         ShelbyBot.DriveDir dir = startDir;
 
@@ -143,34 +165,37 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
         telemetry.update();
     }
 
-    boolean skipHere = true;
-    public void doTestCycle(ShelbyBot.DriveDir ddir, double spd, double trnspd)
+    private void doTestCycle(ShelbyBot.DriveDir ddir, double spd, double trnspd)
     {
-        robot.setDriveDir(ddir);
-        dl.addField(ddir.toString()); dl.newLine();
+        //Temporary comment out robot.setDriveDir(ddir);
+        if(logData && dl != null)
+        {
+            dl.addField(ddir.toString());
+            dl.newLine();
+        }
 
         robot.turnColorOn();
         telemetry.addData("SEG", "SWEEPER FWD " + DD);
         telemetry.update();
-        encoderDrive(DRIVE_SPEED,  DD,  DD, 30.0);
+        encoderDrive(spd,  DD,  DD, 30.0);
         robot.turnColorOff();
         r = 0;
         g = 0;
         b = 0;
         telemetry.addData("SEG", "SWEEPER LFT " + TD);
         telemetry.update();
-        encoderDrive(TURN_SPEED, -TD, TD, 30.0);
+        encoderDrive(trnspd, TD, -TD, 30.0);
         robot.turnColorOn();
         telemetry.addData("SEG", "SWEEPER BCK " + DD);
         telemetry.update();
-        encoderDrive(DRIVE_SPEED, -DD, -DD, 30.0);
+        encoderDrive(spd, -DD, -DD, 30.0);
         //turnColorOff();
-        telemetry.addData("SEG", "SWEEPER RGT " + TD);
-        telemetry.update();
-        encoderDrive(TURN_SPEED, TD, -TD, 30.0);
+        //telemetry.addData("SEG", "SWEEPER RGT " + TD);
+        //telemetry.update();
+        //encoderDrive(trnspd, -TD, TD, 30.0);
     }
 
-    public void encoderDrive(double speed,
+    private void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS)
     {
@@ -185,13 +210,16 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
             int lmoveCnt = (int)(leftInches  * CPI);
             int rmoveCnt = (int)(rightInches  * CPI);
 
-            dl.addField("encoderDrive");
-            dl.addField("",leftInches);
-            dl.addField("",rightInches);
-            dl.addField("",speed);
-            dl.addField("",lmoveCnt);
-            dl.addField("",rmoveCnt);
-            dl.newLine();
+            if(logData && dl != null)
+            {
+                dl.addField("encoderDrive");
+                dl.addField("", leftInches);
+                dl.addField("", rightInches);
+                dl.addField("", speed);
+                dl.addField("", lmoveCnt);
+                dl.addField("", rmoveCnt);
+                dl.newLine();
+            }
 
             newLeftTarget  = robot.leftMotor.getCurrentPosition()  + lmoveCnt;
             newRightTarget = robot.rightMotor.getCurrentPosition() + rmoveCnt;
@@ -238,7 +266,12 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
             robot.leftMotor.setPower(0);
             robot.rightMotor.setPower(0);
 
-            dl.addField("DONE"); dl.newLine();
+            if(logData && dl != null)
+            {
+                dl.addField("DONE");
+                dl.newLine();
+            }
+
             ElapsedTime et = new ElapsedTime();
             while(et.seconds() < 0.5)
             {
@@ -258,7 +291,7 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
 
         datalogtimer.reset();
 
-        if(logData)
+        if(logData && dl != null)
         {
             if(colorOn  && robot.colorSensor != null)
             {

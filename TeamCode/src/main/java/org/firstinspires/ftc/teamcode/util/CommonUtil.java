@@ -37,7 +37,7 @@ public class CommonUtil
 
     private boolean cfgLayout = false;
     private boolean layoutModified = false;
-    private boolean logData   = false;
+    private boolean logData   = true;
 
     private boolean useOpenCV  = false;
     private boolean useManualFedOpenCv = false;

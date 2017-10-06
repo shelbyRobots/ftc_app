@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -21,29 +20,43 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 //@Disabled
 public class RampMotorTest extends LinearOpMode {
 
-    static final double INCREMENT   = 0.01;     // amount to ramp motor each CYCLE_MS cycle
-    static final int    CYCLE_MS    =   50;     // period of each cycle
-    static final double MAX_FWD     =  1.0;     // Maximum FWD power applied to motor
-    static final double MAX_REV     = -1.0;     // Maximum REV power applied to motor
+    private static final double INCREMENT   = 0.01;     // amount to ramp motor each CYCLE_MS cycle
+    private static final int    CYCLE_MS    =   50;     // period of each cycle
+    private static final double MAX_FWD     =  1.0;     // Maximum FWD power applied to motor
+    private static final double MAX_REV     = -1.0;     // Maximum REV power applied to motor
 
     // Define class members
-    DcMotor motor;
-    double  power   = 0;
-    boolean rampUp  = true;
+    private DcMotor motor = null;
+    private double  power   = 0;
+    private boolean rampUp  = true;
 
+    public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
 
     @Override
     public void runOpMode() throws InterruptedException {
 
+        DcMotor left_drive;
+        DcMotor right_drive;
         // Connect to motor (Assume standard left wheel)
         // Change the text in quotes to match any motor name on your robot.
         //motor = hardwareMap.dcMotor.get("left motor");
-        left_drive = hardwareMap.dcMotor.get("left_drive");
-        right_drive = hardwareMap.dcMotor.get("right_drive");
+        left_drive = hardwareMap.dcMotor.get("leftdrive");
+        right_drive = hardwareMap.dcMotor.get("rightdrive");
+
+        if(left_drive  != null)  left_drive.setDirection(LEFT_DIR);
+        if(right_drive != null) right_drive.setDirection(RIGHT_DIR);
 
         // Wait for the start button
         telemetry.addData(">", "Press Start to run Motors." );
         telemetry.update();
+        while(!isStarted())
+        {
+            telemetry.addData("LCNT", "%d", left_drive.getCurrentPosition());
+            telemetry.addData("RCNT", "%d", right_drive.getCurrentPosition());
+            telemetry.update();
+            sleep(10);
+        }
         waitForStart();
 
         // Ramp motor speeds till stop pressed.
@@ -69,11 +82,14 @@ public class RampMotorTest extends LinearOpMode {
 
             // Display the current value
             telemetry.addData("Motor Power", "%5.2f", power);
+            telemetry.addData("LCNT", "%d", left_drive.getCurrentPosition());
+            telemetry.addData("RCNT", "%d", right_drive.getCurrentPosition());
             telemetry.addData(">", "Press Stop to end test." );
             telemetry.update();
 
             // Set the motor to the new power and pause;
             left_drive.setPower(power);
+            right_drive.setPower(power);
             sleep(CYCLE_MS);
             idle();
         }
@@ -84,6 +100,4 @@ public class RampMotorTest extends LinearOpMode {
         telemetry.update();
 
     }
-    private DcMotor left_drive;
-    private DcMotor right_drive;
 }
