@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -32,12 +33,12 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             dtrn.init(robot);
+            robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
         }
 
         // Send telemetry message to signify robot waiting;
         dashboard.displayText(0, "Hello Driver");
 
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
         if(dtrnType == Drivetrain.DrivetrainType.RWD_2_2X40)
         {
             robot.LEFT_DIR = DcMotorSimple.Direction.REVERSE;
@@ -57,7 +58,7 @@ public class Teleop_Driver extends InitLinearOpMode
             gpad2.update();
             gpad1.log(1);
             gpad2.log(2);
-            Thread.sleep(50);
+            idle();
         }
 
         RobotLog.dd(TAG, "Telop_Driver starting");
@@ -75,6 +76,7 @@ public class Teleop_Driver extends InitLinearOpMode
             boolean invert_drive_dir  = gpad1.just_pressed(ManagedGamepad.Button.Y);
             boolean toggle_rpusher    = gpad1.just_pressed(ManagedGamepad.Button.R_TRIGGER);
             boolean toggle_lpusher    = gpad1.just_pressed(ManagedGamepad.Button.L_TRIGGER);
+            boolean step_driveType    = gpad1.just_pressed(ManagedGamepad.Button.A);
             boolean toggle_float      = gpad1.just_pressed(ManagedGamepad.Button.B);
             boolean decr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean incr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
@@ -105,43 +107,53 @@ public class Teleop_Driver extends InitLinearOpMode
             // (note: The joystick goes negative when pushed forwards, so negate it)
 
             dashboard.displayPrintf(0, "TMODE " + driveType);
-            dashboard.displayPrintf(1, "L_IN " + left);
-            dashboard.displayPrintf(2, "R_IN " + right);
+            dashboard.displayPrintf(1, "L_IN %4.2f", left);
+            dashboard.displayPrintf(2, "R_IN %4.2f", right);
             left  = ishaper.shape(left);
             right = ishaper.shape(right);
-            dashboard.displayPrintf(3, "L_SHP " + left);
-            dashboard.displayPrintf(4, "R_SHP " + right);
+            turn  = ishaper.shape(turn);
 
-            double speed = -right;
+            double speed = right;
 
             switch (driveType)
             {
                 case TANK_DRIVE:
-                    if(robot.leftMotor  != null) left  = left;
-                    if(robot.rightMotor != null) right = right;
+                    left  = left;
+                    right = right;
                     break;
 
                 case ARCADE_DRIVE:
-                    if(robot.leftMotor  != null) left  = speed + turn;
-                    if(robot.rightMotor != null) right = speed - turn;
+                    left  = speed + turn;
+                    right = speed - turn;
                     break;
 
                 case CAR_DRIVE:
-                    if(robot.leftMotor != null)
-                        left =((1 - Math.abs(turn)) * speed +
-                               (1 - Math.abs(speed)) * turn  +
-                               turn + speed) / 2;
+                    left =((1 - Math.abs(turn)) * speed +
+                           (1 - Math.abs(speed)) * turn  +
+                           turn + speed) / 2;
 
-                    if(robot.rightMotor  != null)
-                        right = ((1 - Math.abs(turn))  * speed -
-                                (1 - Math.abs(speed)) * turn  -
-                                turn + speed) / 2;
+
+                    right = ((1 - Math.abs(turn))  * speed -
+                            (1 - Math.abs(speed)) * turn  -
+                            turn + speed) / 2;
+
                     break;
             }
-            dashboard.displayPrintf(5, "L_OUT " + left);
-            dashboard.displayPrintf(6, "R_OUT " + right);
-            dashboard.displayPrintf(7, "L_CNT " + robot.leftMotor.getCurrentPosition());
-            dashboard.displayPrintf(8, "R_CNT " + robot.rightMotor.getCurrentPosition());
+
+            left  = Range.clip(left,  -1.0, 1.0);
+            right = Range.clip(right, -1.0, 1.0);
+
+            dashboard.displayPrintf(3, "SPEED %4.2f", speed);
+            dashboard.displayPrintf(4, "TURN  %4.2f", turn);
+            dashboard.displayPrintf(5, "L_OUT %4.2f", left);
+            dashboard.displayPrintf(6, "R_OUT %4.2f", right);
+            dashboard.displayPrintf(7, "L_CNT %d", robot.leftMotor.getCurrentPosition());
+            dashboard.displayPrintf(8, "R_CNT %d", robot.rightMotor.getCurrentPosition());
+            dashboard.displayPrintf(9, "DTYPE " + driveType);
+            dashboard.displayPrintf(10,"D_DIR " + robot.getDriveDir());
+            dashboard.displayPrintf(11,"Z_PWR " + zeroPwr);
+            dashboard.displayPrintf(12,"RMODE " + robot.leftMotor.getMode());
+
             robot.leftMotor.setPower(left);
             robot.rightMotor.setPower(right);
 
@@ -253,6 +265,22 @@ public class Teleop_Driver extends InitLinearOpMode
                 }
             }
 
+            if(step_driveType && robot.leftMotor != null && robot.rightMotor != null)
+            {
+                switch(driveType)
+                {
+                    case TANK_DRIVE:
+                        driveType = TELEOP_DRIVE_TYPE.ARCADE_DRIVE;
+                        break;
+                    case ARCADE_DRIVE:
+                        driveType = TELEOP_DRIVE_TYPE.CAR_DRIVE;
+                        break;
+                    case CAR_DRIVE:
+                        driveType = TELEOP_DRIVE_TYPE.TANK_DRIVE;
+                        break;
+                }
+            }
+
 //            dashboard.displayPrintf(7, "shoot_scale", "%.2f", shoot_scale);
 //            dashboard.displayPrintf(8, "SHT1CNT", "%5d", shotmotor1Pos);
 //            dashboard.displayPrintf(9, "SHT2CNT", "%5d", shotmotor2Pos);
@@ -276,7 +304,7 @@ public class Teleop_Driver extends InitLinearOpMode
         CAR_DRIVE
     }
 
-    private final static TELEOP_DRIVE_TYPE driveType = TELEOP_DRIVE_TYPE.TANK_DRIVE;
+    private TELEOP_DRIVE_TYPE driveType = TELEOP_DRIVE_TYPE.TANK_DRIVE;
 
     private final static double L_DN_PUSH_POS = 1.0;
     private final static double R_DN_PUSH_POS = 0.05;

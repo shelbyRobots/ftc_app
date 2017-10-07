@@ -235,8 +235,8 @@ public class DriveTestUtil
                 for(double gain = startGain; gain < endGain; gain += gainStep)
                 {
                     dl.addField("START GYRO SPD OPT " + angle + " " + spd + " " + gain);
-                    int curH = robot.getGyroFhdg();
-                    int trgH = curH + angle;
+                    double curH = robot.getGyroFhdg();
+                    double trgH = curH + angle;
                     drvTrn.Kp_GyroTurn = gain;
                     drvTrn.ctrTurnToHeading(curH, spd);
                 }
@@ -323,11 +323,11 @@ public class DriveTestUtil
 
     public void doDoubleCurveTurn(double sideDist, double spd)
     {
-        double theta = Math.toDegrees(Math.acos(1 - sideDist/ShelbyBot.BOT_WIDTH));
+        double theta = Math.toDegrees(Math.acos(1 - sideDist/robot.BOT_WIDTH));
         drvTrn.logData(true, "S turn " + theta + " " + spd + " " + sideDist);
-        drvTrn.turn(theta, spd,   ShelbyBot.BOT_WIDTH/2);
-        drvTrn.turn(-theta,spd, -ShelbyBot.BOT_WIDTH/2);
+        drvTrn.turn(theta, spd,   robot.BOT_WIDTH/2);
+        drvTrn.turn(-theta,spd, -robot.BOT_WIDTH/2);
         op.sleep(1000);
-        drvTrn.turn(90, spd, ShelbyBot.BOT_WIDTH);
+        drvTrn.turn(90, spd, robot.BOT_WIDTH);
     }
 }

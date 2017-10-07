@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.util.Point2d;
 
 import java.util.Locale;
 
-@SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal"})
+@SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal", "UnusedAssignment", "SpellCheckingInspection", "UnnecessaryLocalVariable"})
 public class Drivetrain
 {
     public Drivetrain()
@@ -152,7 +152,7 @@ public class Drivetrain
         moveInit(pwr, pwr);
     }
 
-    public int driveDistanceLinear(double dst, double pwr, Direction dir, int targetHdg, boolean useCol)
+    public int driveDistanceLinear(double dst, double pwr, Direction dir, double targetHdg, boolean useCol)
     {
         trgtHdg = targetHdg;
 
@@ -264,7 +264,7 @@ public class Drivetrain
         return((doneLpos - initLpos + doneRpos - initRpos)/2);
     }
 
-    public int driveDistanceLinear(double dst, double pwr, Direction dir, int targetHdg)
+    public int driveDistanceLinear(double dst, double pwr, Direction dir, double targetHdg)
     {
         return driveDistanceLinear(dst, pwr, dir, targetHdg, false);
     }
@@ -274,7 +274,7 @@ public class Drivetrain
         return driveDistanceLinear(dst, pwr, dir, robot.getGyroFhdg());
     }
 
-    public int driveToPoint(Point2d tgtPt, double pwr, Direction dir, int targetHdg)
+    public int driveToPoint(Point2d tgtPt, double pwr, Direction dir, double targetHdg)
     {
         if (tgtPt == null)  RobotLog.ee("SJH", "tgtPt null in driveToPoint");
         if (currPt == null) RobotLog.ee("SJH", "currPt null in driveToPoint");
@@ -282,7 +282,7 @@ public class Drivetrain
         return driveDistanceLinear(dist, pwr, dir, targetHdg);
     }
 
-    public int driveToPointLinear(Point2d tgtPt, double pwr, Direction dir, int targetHdg)
+    public int driveToPointLinear(Point2d tgtPt, double pwr, Direction dir, double targetHdg)
     {
         int dist = driveToPoint(tgtPt, pwr, dir, targetHdg);
 
@@ -300,7 +300,7 @@ public class Drivetrain
         //perform a turn about drive axle center
         //left turns are positive angles
 
-        int counts = angleToCounts(angle, VEH_WIDTH/2.0);
+        int counts = angleToCounts(angle, robot.BOT_WIDTH/2.0);
 
         setInitValues();
         trgtLpos = initLpos - counts;
@@ -519,8 +519,8 @@ public class Drivetrain
         //A radius of +w/2 pivots on the left wheel
         //A radius of -w/2 pivots on the right wheel
 
-        double rl = radius - VEH_WIDTH/2.0;
-        double rr = radius + VEH_WIDTH/2.0;
+        double rl = radius - robot.BOT_WIDTH/2.0;
+        double rr = radius + robot.BOT_WIDTH/2.0;
         int lcnts = angleToCounts(angle, rl);
         int rcnts = angleToCounts(angle, rr);
 
@@ -635,7 +635,7 @@ public class Drivetrain
         yPos += dY;
         estPos.setX(xPos);
         estPos.setY(yPos);
-        double dH = (dCntR-dCntL)/CPI/ ShelbyBot.BOT_WIDTH;
+        double dH = (dCntR-dCntL)/CPI/ robot.BOT_WIDTH;
         estHdg += dH;
         lastLcnt = curLcnt;
         lastRcnt = curRcnt;
@@ -654,6 +654,9 @@ public class Drivetrain
         dl = com.getDataLogger();
         frame = 0;
         this.robot  = robot;
+
+        CPI = robot.CPI;
+        DEF_CPI = CPI;
 
         robot.leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -695,7 +698,7 @@ public class Drivetrain
         period.reset();
     }
 
-    public void makeGyroCorrections(double pwr, int thdg, Direction dir)
+    public void makeGyroCorrections(double pwr, double thdg, Direction dir)
     {
         if(robot.gyro == null || !robot.gyroReady) return;
 
@@ -832,13 +835,13 @@ public class Drivetrain
         int rdc = Math.abs(curRpos);
 
         //convert LR count difference to angle
-        return countsToAngle(rdc - ldc, VEH_WIDTH);
+        return countsToAngle(rdc - ldc, robot.BOT_WIDTH);
     }
 
-    private int getGyroError(int tgtHdg)
+    private double getGyroError(double tgtHdg)
     {
-        int robotError;
-        int gHdg = curHdg;
+        double robotError;
+        double gHdg = curHdg;
         robotError = tgtHdg - gHdg;
         while (robotError > 180)   robotError -= 360;
         while (robotError <= -180) robotError += 360;
@@ -1121,7 +1124,7 @@ public class Drivetrain
 
     public void setDrvTuner(double dtnr)
     {
-        CPI = ENCODER_CPR * GEAR_REDUC / (CIRCUMFERENCE * dtnr);
+        CPI = robot.CPI / dtnr;
     }
 
     public void setLogOverrun(boolean lo)
@@ -1185,14 +1188,13 @@ public class Drivetrain
     private final static double TURN_TOLERANCE = 2.0;
     private int colGyroOffset = 0;
 
-    private final static double VEH_WIDTH   = ShelbyBot.BOT_WIDTH * TRN_TUNER;
     private static double WHL_DIAMETER = 4.1875; //Diameter of the wheel (inches)
-    private final static int    ENCODER_CPR = ShelbyBot.ENCODER_CPR;
+    private int encoder_CPR;
     private final static double GEAR_REDUC = 0.5;                   //Gear ratio
 
     private static double CIRCUMFERENCE = Math.PI * WHL_DIAMETER;
-    private static double CPI = ENCODER_CPR *GEAR_REDUC / (CIRCUMFERENCE * DRV_TUNER);
-    private static final double DEF_CPI = CPI;
+    private double CPI;
+    private double DEF_CPI;
 
     private static final double Kp_GyrCorrection = 0.008;
     private static final double Kp_EncCorrection = 0.01;
@@ -1227,11 +1229,11 @@ public class Drivetrain
     private int overLpos;
     private int overRpos;
 
-    private int initHdg;
-    public int curHdg;
-    private int trgtHdg;
-    private int doneHdg;
-    private int overHdg;
+    private double initHdg;
+    public double curHdg;
+    private double trgtHdg;
+    private double doneHdg;
+    private double overHdg;
 
     public int curRed = 0;
     public int curGrn = 0;

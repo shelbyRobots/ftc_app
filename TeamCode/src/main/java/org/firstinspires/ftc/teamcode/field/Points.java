@@ -135,9 +135,6 @@ public abstract class Points
         return sbldr.toString();
     }
 
-    final static double REAR_OFFSET = ShelbyBot.REAR_OFFSET;
-    final static double FRNT_OFFSET = ShelbyBot.FRNT_OFFSET;
-
     static final double S_WALL = Field.S_WALL_Y;
     static final double W_WALL = Field.W_WALL_X;
 

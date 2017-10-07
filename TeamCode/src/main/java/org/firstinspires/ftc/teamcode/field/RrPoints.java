@@ -29,24 +29,7 @@ public class RrPoints extends Points
         Segment.Action none   = Segment.Action.NOTHING;
         Segment.TargetType defSegType = Segment.TargetType.ENCODER;
 
-        //SHOOT PTS
         points.add(start_pt);
-
-        //After starting on balance stone, opmode needs to read vumark to find L, C, R
-        //and left ball color.
-        // Then
-        //  - move fwd/back ~3 in based on ball color and alliance
-        //  - move to point in front of cryptobox based on L, C, R
-        //  - turn 90 and move fwd towards cbox
-        //  - place glyph
-        //  - turn towards pit
-        //  - drive to pit
-        //  - grab glyphs
-        //  - turn toward triangle tip
-        //  - drive to triangle tip
-        //  - turn to align
-        //  - drive forward toward cbox
-        //  - place glyphs
 
         addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLCC);
         addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLPP);

@@ -222,6 +222,10 @@ public class VvPoints extends Points
     private static final double FUDGE   =  0.0;
     private static final double BECN2_Y =  36.0 - FUDGE;
 
+    //Note - these should really come from the robot.
+    private static final double REAR_OFFSET = 9.0;
+    private static final double FRNT_OFFSET = 9.0;
+
     private static final double ASTARTX =  -8.0;
     private static final double ASTARTY =  S_WALL + REAR_OFFSET + 0.5;
     private static final double AIMERY  =  ASTARTY + 3.0;

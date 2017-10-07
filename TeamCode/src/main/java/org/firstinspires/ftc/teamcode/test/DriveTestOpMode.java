@@ -224,7 +224,7 @@ public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
             {
                 for (int i = 2; i < 6; i++)
                 {
-                    int cHdg = robot.getGyroFhdg();
+                    double cHdg = robot.getGyroFhdg();
                     double ang = angle * i;
                     dl.addField("doTurnAngle GYRO from " + cHdg + " to " + ang + " at " + spd);
                     dl.newLine();

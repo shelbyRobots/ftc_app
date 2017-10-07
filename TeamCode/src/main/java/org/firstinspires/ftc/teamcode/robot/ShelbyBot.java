@@ -16,9 +16,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.Units;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -33,6 +33,7 @@ import java.util.Map;
  * Motor channel:  Left  drive motor:        "left_drive"
  * Motor channel:  Right drive motor:        "right_drive"
  */
+@SuppressWarnings({"WeakerAccess", "FieldCanBeLocal", "unused"})
 public class ShelbyBot
 {
     private LinearOpMode op = null;
@@ -50,12 +51,43 @@ public class ShelbyBot
     public ModernRoboticsI2cColorSensor colorSensor = null;
     public DeviceInterfaceModule        dim         = null;
 
-    public final static int    ENCODER_CPR = 1120;     //Encoder Counts per Revolution
+    public boolean gyroInverted = true;
+
+    //Distance from ctr of rear wheel to tail
+    public float REAR_OFFSET;
+    public float FRNT_OFFSET;
+    protected static float CAMERA_X_IN_BOT;
+    protected static float CAMERA_Y_IN_BOT;
+    protected static float CAMERA_Z_IN_BOT;
+
+    private int colorPort = 0;
+    private DriveDir ddir = DriveDir.UNKNOWN;
+    public DriveDir calibrationDriveDir = DriveDir.UNKNOWN;
+    private HardwareMap hwMap = null;
+
+    boolean colorEnabled = false;
+
+    private int initHdg = 0;
+
+    //The values below are for the 6 wheel 2016-2017 drop center bot
+    //with center wheels powered by Neverest 40 motors.
+    //NOTE:  Notes reference center of bot on ground as bot coord frame origin.
+    //However, it seems logical to use the center of the rear axis (pivot point)
+    public float BOT_WIDTH       = 16.8f; //Vehicle width at rear wheels
+    public float BOT_LENGTH      = 18.0f;
+
+    protected double COUNTS_PER_MOTOR_REV;
+    protected double DRIVE_GEARS[];
+
+    protected double WHEEL_DIAMETER_INCHES;
+    protected double TUNE = 1.00;
+    public double CPI;
 
     public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
     public static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
 
     public boolean gyroReady = false;
+    Map<String, Boolean> capMap = new HashMap<>();
 
     /* local OpMode members. */
     private ElapsedTime period  = new ElapsedTime();
@@ -63,25 +95,57 @@ public class ShelbyBot
     /* Constructor */
     public ShelbyBot()
     {
-    }
+        //Neverest classic 20,40,60, and orbital 20 have 7 rising edges of Channel A per revolution
+        //with a quadrature encoder (4 total edges - A rise, B rise, A fall, B fall) for a total
+        //of 28 counts per pre-gear box motor shaft revolution.
+        COUNTS_PER_MOTOR_REV = 28;
+        DRIVE_GEARS = new double[]{40.0, 1.0/2.0};
 
-    /* Initialize standard Hardware interfaces */
-    public void init(LinearOpMode op)
-    {
-        this.op = op;
-        this.hwMap = op.hardwareMap;
-        // Define and Initialize Motors
+        WHEEL_DIAMETER_INCHES = 4.1875;
+        TUNE = 1.00;
 
-        Map<String, Boolean> capMap = new HashMap<>();
+        BOT_WIDTH  = 16.8f;
+        BOT_LENGTH = 18.0f;
+
+        REAR_OFFSET = 9.0f;
+        FRNT_OFFSET = BOT_LENGTH - REAR_OFFSET;
+
+        CAMERA_X_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
+        CAMERA_Y_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
+        CAMERA_Z_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
+
         capMap.put("drivetrain", false);
         capMap.put("shooter",    false);
         capMap.put("collector",  false);
         capMap.put("pusher",     false);
         capMap.put("sensor",     false);
+    }
 
+    /* Initialize standard Hardware interfaces */
+    public void init(LinearOpMode op)
+    {
+        computeCPI();
+
+        initOp(op);
+        initDriveMotors();
+        initCollectorLifter();
+        initShooters();
+        initPushers();
+        initSensors();
+        initCapabilities();
+    }
+
+    protected void initOp(LinearOpMode op)
+    {
+        this.op = op;
+        this.hwMap = op.hardwareMap;
+    }
+
+    protected void initDriveMotors()
+    {
         try  //Drivetrain
         {
-            leftMotor = hwMap.dcMotor.get("leftdrive");
+            leftMotor  = hwMap.dcMotor.get("leftdrive");
             rightMotor = hwMap.dcMotor.get("rightdrive");
             capMap.put("drivetrain", true);
         }
@@ -90,6 +154,22 @@ public class ShelbyBot
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
 
+        // FORWARD for CCW drive shaft rotation if using AndyMark motors
+        // REVERSE for  CW drive shaft rotation if using AndyMark motors
+        if(leftMotor  != null)  leftMotor.setDirection(LEFT_DIR);
+        if(rightMotor != null) rightMotor.setDirection(RIGHT_DIR);
+        if(leftMotor  != null)  leftMotor.setPower(0);
+        if(rightMotor != null) rightMotor.setPower(0);
+        if(leftMotor  != null)  leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if(rightMotor != null) rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if(leftMotor  != null)  leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(rightMotor != null) rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(leftMotor  != null)  leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if(rightMotor != null) rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    protected void initCollectorLifter()
+    {
         try  //Collector
         {
             elevMotor = hwMap.dcMotor.get("elevmotor");
@@ -101,6 +181,16 @@ public class ShelbyBot
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
 
+        if(elevMotor  != null)  elevMotor.setDirection(DcMotor.Direction.REVERSE);
+        if(sweepMotor != null) sweepMotor.setDirection(DcMotor.Direction.FORWARD);
+        if(elevMotor  != null)  elevMotor.setPower(0);
+        if(sweepMotor != null) sweepMotor.setPower(0);
+        if(elevMotor  != null)  elevMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if(sweepMotor != null) sweepMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    protected void initShooters()
+    {
         try  //Shooters
         {
             shotmotor1 = hwMap.dcMotor.get("leftshooter");
@@ -112,6 +202,19 @@ public class ShelbyBot
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
 
+        if(shotmotor1 != null) shotmotor1.setDirection(DcMotor.Direction.FORWARD);
+        if(shotmotor2 != null) shotmotor2.setDirection(DcMotor.Direction.REVERSE);
+        if(shotmotor1 != null) shotmotor1.setPower(0);
+        if(shotmotor2 != null) shotmotor2.setPower(0);
+        if(shotmotor1 != null) shotmotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(shotmotor2 != null) shotmotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(shotmotor1 != null) shotmotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if(shotmotor2 != null) shotmotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
+    protected void initPushers()
+    {
         try  //Pushers
         {
             lpusher = hwMap.servo.get("lpusher");
@@ -122,7 +225,10 @@ public class ShelbyBot
         {
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
+    }
 
+    protected void initSensors()
+    {
         try  //I2C and DAIO
         {
             dim = hwMap.deviceInterfaceModule.get("dim");
@@ -136,57 +242,8 @@ public class ShelbyBot
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
 
-        Iterator it = capMap.entrySet().iterator();
-        while (it.hasNext())
-        {
-            Map.Entry pair = (Map.Entry) it.next();
-            System.out.println(pair.getKey() + " = " + pair.getValue());
-        }
-
-        // FORWARD for CCW drive shaft rotation if using AndyMark motors
-        // REVERSE for  CW drive shaft rotation if using AndyMark motors
-        if(leftMotor  != null)  leftMotor.setDirection(LEFT_DIR);
-        if(rightMotor != null) rightMotor.setDirection(RIGHT_DIR);
-        if(elevMotor  != null)  elevMotor.setDirection(DcMotor.Direction.REVERSE);
-        if(sweepMotor != null) sweepMotor.setDirection(DcMotor.Direction.FORWARD);
-        // sweepmotor changed from reverse to forward to run with chain 2/11/17
-        if(shotmotor1 != null) shotmotor1.setDirection(DcMotor.Direction.FORWARD);
-        if(shotmotor2 != null) shotmotor2.setDirection(DcMotor.Direction.REVERSE);
-
-        // Set all motors to zero power
-        if(leftMotor  != null)  leftMotor.setPower(0);
-        if(rightMotor != null) rightMotor.setPower(0);
-        if(elevMotor  != null)  elevMotor.setPower(0);
-        if(sweepMotor != null) sweepMotor.setPower(0);
-        if(shotmotor1 != null) shotmotor1.setPower(0);
-        if(shotmotor2 != null) shotmotor2.setPower(0);
-
-        if(leftMotor  != null)  leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        if(rightMotor != null) rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        if(leftMotor  != null)  leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        if(rightMotor != null) rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        if(shotmotor1 != null) shotmotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        if(shotmotor2 != null) shotmotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        if(leftMotor  != null)  leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        if(rightMotor != null) rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        if(elevMotor  != null)  elevMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        if(sweepMotor != null) sweepMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        if(shotmotor1 != null) shotmotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        if(shotmotor2 != null) shotmotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //if(leftMotor  != null)  leftMotor.setMaxSpeed(2650);
-        //if(rightMotor != null) rightMotor.setMaxSpeed(2650);
-
-        //SET ACTUAL MAX SPEED AFTER TEST - then set shooter speeds in auton and teleop
-        //ALSO SET MAX SPEED for drive in auton
-        //if(shotmotor1 != null) shotmotor1.setMaxSpeed(30800);
-        //if(shotmotor2 != null) shotmotor2.setMaxSpeed(30800);
-
         if(colorSensor != null)
         {
-            //TODO: SBH - Figure out how to register/deregister if timing shows its needed
             //colorPort = colorSensor.getPort();
             //RobotLog.ii("SJH", "I2C Controller version %d",
             //        colorSensor.getI2cController().getVersion());
@@ -209,6 +266,27 @@ public class ShelbyBot
             RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(gyro.getI2cAddress().get8Bit()));
             RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(gyro.getI2cAddress().get7Bit()));
         }
+    }
+
+    protected void initCapabilities()
+    {
+        for (Map.Entry mEnt : capMap.entrySet())
+        {
+            System.out.println(mEnt.getKey() + " = " + mEnt.getValue());
+        }
+    }
+
+    private double getTotalGearRatio()
+    {
+        double gr = 1.0;
+        for(double g : DRIVE_GEARS) gr *= g;
+        return gr;
+    }
+
+    protected void computeCPI()
+    {
+        CPI = (COUNTS_PER_MOTOR_REV * getTotalGearRatio())/
+                      (WHEEL_DIAMETER_INCHES * TUNE * Math.PI);
     }
 
     public void setDriveDir (DriveDir ddir)
@@ -312,13 +390,19 @@ public class ShelbyBot
         return gyroReady;
     }
 
-    public int getGyroFhdg()
+    protected double getGyroHdg()
+    {
+        double rawGyroHdg = gyro.getIntegratedZValue();
+        return rawGyroHdg;
+    }
+
+    public double getGyroFhdg()
     {
         if(gyro == null) return 0;
         int dirHdgAdj = 0;
         if(ddir != calibrationDriveDir) dirHdgAdj = 180;
 
-        int rawGyroHdg = gyro.getIntegratedZValue();
+        double rawGyroHdg = getGyroHdg();
         //There have been cases where gyro incorrectly returns 0 for a frame : needs filter
         //Uncomment the following block for a test filter
 //        if(rawGyroHdg == 0 &&
@@ -335,7 +419,9 @@ public class ShelbyBot
         //WHEN the freaking gyro is mounted upright.
         //Since snowman 2.0 has gyro mounted upside down, we need
         //to negate the value!!
-        int cHdg = -rawGyroHdg + initHdg + dirHdgAdj;
+        int gDir = 1;
+        if(gyroInverted) gDir = -1;
+        double cHdg = gDir * rawGyroHdg + initHdg + dirHdgAdj;
 
         while (cHdg <= -180) cHdg += 360;
         while (cHdg >   180) cHdg -= 360;
@@ -361,7 +447,6 @@ public class ShelbyBot
         if(colorSensor == null) return;
         RobotLog.ii("SJH", "Turning on colorSensor LED");
         colorEnabled = true;
-        //TODO: SBH - Figure out how to register/deregister if timing shows its needed
         //colorSensor.getI2cController().registerForI2cPortReadyCallback(colorSensor,
         //        getColorPort());
 
@@ -375,7 +460,6 @@ public class ShelbyBot
         colorEnabled = false;
         colorSensor.enableLed(false);
         op.sleep(50);
-        //TODO: SBH - Figure out how to register/deregister if timing shows its needed
         //colorSensor.getI2cController().deregisterForPortReadyCallback(getColorPort());
     }
 
@@ -401,29 +485,6 @@ public class ShelbyBot
         period.reset();
     }
 
-
-    //NOTE:  Notes reference center of bot on ground as bot coord frame origin.
-    //However, it seems logical to use the center of the rear axis (pivot point)
-    private static final float MM_PER_INCH     = 25.4f;
-    public static final float BOT_WIDTH               = 16.8f; //Vehicle width at rear wheels
-    public static final float BOT_LENGTH      = 18.0f;
-
-    //Distance from ctr of rear wheel to tail
-    public static final float REAR_OFFSET             = 9.0f;
-    public static final float FRNT_OFFSET             = BOT_LENGTH - REAR_OFFSET;
-    private static final float CAMERA_X_IN_BOT = 0.0f  * MM_PER_INCH;
-    private static final float CAMERA_Y_IN_BOT = 0.0f; //12.5f * MM_PER_INCH;
-    private static final float CAMERA_Z_IN_BOT = 0.0f; //15.5f * MM_PER_INCH;
-
-    private int colorPort = 0;
-    private DriveDir ddir = DriveDir.UNKNOWN;
-    public DriveDir calibrationDriveDir = DriveDir.UNKNOWN;
-    private HardwareMap hwMap = null;
-
-    boolean colorEnabled = false;
-
-    private int initHdg = 0;
-
     //With phone laid flat in portrait mode with screen up:
     //The phone axis is 0,0,0 at Camera (using front camera)
     //X pts to the right side of phone (ZTE volume button edge)
@@ -432,11 +493,11 @@ public class ShelbyBot
     //to mount camera on front of bot looking bot fwd,
     //rotate -90 about z, then -90 about x
     //translate 0 in bot x, half bot length in bot y, and ~11" in bot z
-    public static final OpenGLMatrix phoneOrientation = Orientation.getRotationMatrix(
+    public static OpenGLMatrix phoneOrientation = Orientation.getRotationMatrix(
             AxesReference.EXTRINSIC, AxesOrder.XYZ, //ZXY
             AngleUnit.DEGREES, 0, 0, 0);
 
-    public static final OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
+    public static OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
             .translation(CAMERA_X_IN_BOT, CAMERA_Y_IN_BOT, CAMERA_Z_IN_BOT)
             .multiplied(phoneOrientation);
 }

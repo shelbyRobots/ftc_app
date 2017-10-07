@@ -492,7 +492,7 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         {
             dtlCorrect = 16;
             double shotAdjAngle = 0.0;
-            int shootAdjCnt = drvTrn.angleToCounts(shotAdjAngle, ShelbyBot.BOT_WIDTH/2.0);
+            int shootAdjCnt = drvTrn.angleToCounts(shotAdjAngle, robot.BOT_WIDTH/2.0);
             String sAdjStr = String.format(Locale.US, "SHOOT ANGLE ADJ %d", shootAdjCnt);
             drvTrn.logData(true, sAdjStr);
             if(alliance == Field.Alliance.RED && startPos != Field.StartPos.START_R_PUSHER)
@@ -532,7 +532,7 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setBusyAnd(true);
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
-        int cHdg = drvTrn.curHdg;
+        double cHdg = drvTrn.curHdg;
         int tHdg = (int) Math.round(fHdg);
         double angle = tHdg - cHdg;
         RobotLog.ii("SJH", "doEncoderTurn CHDG %4d THDG %4d", cHdg, tHdg);
@@ -562,8 +562,8 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
-        int cHdg = drvTrn.curHdg;
-        int tHdg = (int) Math.round(fHdg);
+        double cHdg = drvTrn.curHdg;
+        double tHdg = (int) Math.round(fHdg);
 
         RobotLog.ii("SJH", "doGyroTurn CHDG %4d THDG %4d", cHdg, tHdg);
 
@@ -695,9 +695,9 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         double MAXERR = 5;
         if(Math.abs(posXOffset) > MAXERR && bcnf > 0.3)
         {
-            double theta = Math.acos(1- Math.abs(posXOffset/ShelbyBot.BOT_WIDTH));
-            double runRad = ShelbyBot.BOT_WIDTH/2;
-            double advDist = ShelbyBot.BOT_WIDTH * Math.sin(theta) + 5;
+            double theta = Math.acos(1- Math.abs(posXOffset/robot.BOT_WIDTH));
+            double runRad = robot.BOT_WIDTH/2;
+            double advDist = robot.BOT_WIDTH * Math.sin(theta) + 5;
             theta = Math.toDegrees(theta);
             String outstr = String.format(Locale.US, "%3.1f %3.1f %4.1f %4.1f",
                     theta, advDist, posXOffset, zPos);

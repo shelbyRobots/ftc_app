@@ -626,9 +626,9 @@ class TestDrivetrain
     private final static double TRN_TUNER = 1.0;
     private final static double TURN_TOLERANCE = 1.0;
 
-    private final static double VEH_WIDTH   = ShelbyBot.BOT_WIDTH * TRN_TUNER;
+    private final static double VEH_WIDTH   = 15.0 * TRN_TUNER;
     private static double WHL_DIAMETER = 6.35 * DRV_TUNER; //Diameter of the wheel (inches)
-    private final static int    ENCODER_CPR = ShelbyBot.ENCODER_CPR;
+    private final static int    ENCODER_CPR = 1120;
     private final static double GEAR_RATIO  = 1;                   //Gear ratio
 
     private static double CIRCUMFERENCE = Math.PI * WHL_DIAMETER;

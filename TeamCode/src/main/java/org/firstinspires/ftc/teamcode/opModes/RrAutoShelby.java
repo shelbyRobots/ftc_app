@@ -1,17 +1,23 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
+import android.graphics.Bitmap;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.field.Points;
+import org.firstinspires.ftc.teamcode.field.RrField;
 import org.firstinspires.ftc.teamcode.field.RrPoints;
-import org.firstinspires.ftc.teamcode.image.BeaconDetector;
-import org.firstinspires.ftc.teamcode.image.BeaconFinder;
 import org.firstinspires.ftc.teamcode.image.Detector;
+import org.firstinspires.ftc.teamcode.image.ImageTracker;
+import org.firstinspires.ftc.teamcode.image.MajorColorDetector;
+import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
+import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
@@ -20,6 +26,23 @@ import java.util.Locale;
 import ftclib.FtcChoiceMenu;
 import ftclib.FtcMenu;
 import ftclib.FtcValueMenu;
+
+
+//After starting on balance stone, opmode needs to read vumark to find L, C, R
+//and left ball color.
+// Then
+//  - move fwd/back ~3 in based on ball color and alliance
+//  - move to point in front of cryptobox based on L, C, R
+//  - turn 90 and move fwd towards cbox
+//  - place glyph
+//  - turn towards pit
+//  - drive to pit
+//  - grab glyphs
+//  - turn toward triangle tip
+//  - drive to triangle tip
+//  - turn to align
+//  - drive forward toward cbox
+//  - place glyphs
 
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach"})
 @Autonomous(name="RrAutoShelby", group="Auton")
@@ -39,30 +62,27 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     }
 
     @Override
-    public void runOpMode()
+    public void runOpMode() throws InterruptedException
     {
+        initCommon(this, true, true, false, true);
+        super.runOpMode();
+
         setup();
         waitForStart();
         startMode();
         stopMode();
     }
 
-    public void runPeriodic(double elapsedTime)
-    {
-    }
-
     private void stopMode()
     {
         if(drvTrn != null) drvTrn.cleanup();
-        bd.cleanupCamera();
+        det.cleanupCamera();
     }
 
     private void setup()
     {
         telemetry.addData("_","PLEASE WAIT - STARTING");
         telemetry.update();
-
-        initCommon(this, true, true, false, true);
 
         dashboard.displayPrintf(2, "STATE: %s", "INITIALIZING - PLEASE WAIT FOR MENU");
         RobotLog.ii("SJH", "SETUP");
@@ -73,8 +93,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setUseSpeedThreads(false);
         drvTrn.setRampUp(false);
 
-        bd = new BeaconDetector();
-        bf = (BeaconFinder) bd;
+        det = new MajorColorDetector();
+        tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
+
+        tracker.setTrackableRelativeCropCorners(RrField.getTrackableRelativeCropCorners());
 
         doMenus();
         setupLogger();
@@ -112,23 +134,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         Point2d currPoint = pathSegs[0].getStrtPt();
         drvTrn.setCurrPt(currPoint);
 
-        if(startPos == Field.StartPos.START_R_PUSHER && robot.gyroReady)
-        {
-            dashboard.displayPrintf(1, "PERFORM START POS MOVE NOW TO HDG %d", initHdg);
-            robot.gyro.resetZAxisIntegrator();
-
-            ElapsedTime botRotTimer = new ElapsedTime();
-            while (botRotTimer.seconds() < 20)
-            {
-                int chdg = robot.gyro.getIntegratedZValue();
-                dashboard.displayPrintf(0, "GHDG: %d", chdg);
-                RobotLog.ii("SJH", "RMOVE CHDG %d", chdg);
-                sleep(10);
-            }
-
-            dashboard.displayPrintf(1, "NO MORE MOVEMENT");
-        }
-
         drvTrn.setStartHdg(initHdg);
         robot.setInitHdg(initHdg);
 
@@ -137,7 +142,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         RobotLog.ii("SJH", "IHDG %4d", initHdg);
 
-        bd.setTelemetry(telemetry);
+        det.setTelemetry(telemetry);
     }
 
     private void do_main_loop()
@@ -207,12 +212,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             }
             curPos = null;
 
-            if(curSeg.getStrtPt().getX() == curSeg.getTgtPt().getX() &&
-               curSeg.getStrtPt().getY() == curSeg.getTgtPt().getY())
-            {
-                continue;
-            }
-
             robot.setDriveDir(curSeg.getDir());
 
             drvTrn.setInitValues();
@@ -231,7 +230,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 //                robot.shotmotor2.setPower(DEF_SHT_PWR);
 //                //robot.sweepMotor.setPower(-DEF_SWP_PWR * 0.1);
 //            }
-            doMove(curSeg);
+            if(curSeg.getStrtPt().getX() == curSeg.getTgtPt().getX() &&
+               curSeg.getStrtPt().getY() == curSeg.getTgtPt().getY())
+            {
+                //No move needed
+            }
+            else
+                doMove(curSeg);
 
             Double pturn = curSeg.getPostTurn();
             if(usePostTurn && pturn != null)
@@ -284,6 +289,48 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 //                case RST_PUSHER:
 //                    robot.lpusher.setPosition(L_DN_PUSH_POS);
 //                    break;
+                case SCAN_IMAGE:
+                    double jewelPushDist = 2.0;
+                    double jewelPushSpd  = 0.2;
+                    Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
+
+                    key = getKey();
+                    jewelColor = getJewelColor();
+                    if(jewelColor == MajorColorDetector.Color.NONE)
+                        continue;
+
+                    //TODO: Deploy pusher
+                    switch (jewelColor)
+                    {
+                        case RED:
+                            if(alliance == Field.Alliance.RED)
+                            {
+                                ddir = Drivetrain.Direction.REVERSE;
+                            }
+
+                        case BLUE:
+                            if(alliance == Field.Alliance.BLUE)
+                            {
+                                ddir = Drivetrain.Direction.REVERSE;
+                            }
+
+                        case NONE:
+                            continue;
+                    }
+
+                    //move to knock off jewel
+                    drvTrn.driveDistance(jewelPushDist, jewelPushSpd, ddir);
+
+                    //TODO: retract pusher
+                    if(ddir == Drivetrain.Direction.REVERSE)
+                        ddir = Drivetrain.Direction.FORWARD;
+                    else
+                        ddir = Drivetrain.Direction.REVERSE;
+
+                    //move back to start pt
+                    drvTrn.driveDistance(jewelPushDist, jewelPushSpd, ddir);
+
+                    break;
 
                 case NOTHING:
                     break;
@@ -478,7 +525,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setBusyAnd(true);
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
-        int cHdg = drvTrn.curHdg;
+        double cHdg = drvTrn.curHdg;
         int tHdg = (int) Math.round(fHdg);
         double angle = tHdg - cHdg;
         RobotLog.ii("SJH", "doEncoderTurn CHDG %4d THDG %4d", cHdg, tHdg);
@@ -508,7 +555,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
-        int cHdg = drvTrn.curHdg;
+        double cHdg = drvTrn.curHdg;
         int tHdg = (int) Math.round(fHdg);
 
         RobotLog.ii("SJH", "doGyroTurn CHDG %4d THDG %4d", cHdg, tHdg);
@@ -524,17 +571,90 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 tHdg, timer.time(), cHdg);
     }
 
-    //TODO:  ADD calls to ImageTracker - with gettin key to determine glyph box
-    //       - ImageTracker should have base IF for getting pos/hdg, full img
-    //       -    and cropped image (based on input paremeters with offsets)
-    //       -    ImageTracker sub-class can have challenge specific - getKey
-    //       -    or better - getResult - with result being enum from an IF.
     //TODO:  ADD Glyph placer
     //TODO:  ADD Glyph getter
 
     //
     // Implements FtcMenu.MenuButtons interface.
     //
+
+    private RelicRecoveryVuMark getKey()
+    {
+        RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
+        tracker.setActive(true);
+        RobotLog.dd(TAG, "Finding VuMark first");
+
+        while (opModeIsActive() && key == RelicRecoveryVuMark.UNKNOWN)
+        {
+            ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+
+            Point2d sensedBotPos;
+            double  sensedFldHdg = 0.0;
+            int frm = 0;
+
+            tracker.updateRobotLocationInfo();
+            sensedBotPos = tracker.getSensedPosition();
+
+            if(sensedBotPos != null)
+            {
+                sensedFldHdg = tracker.getSensedFldHeading();
+                key = tracker.getKeyLoc();
+            }
+            frm++;
+
+            if ( sensedBotPos != null )
+            {
+                double t = itimer.seconds();
+                RobotLog.ii("SJH", "Senesed Pos: %s %5.2f %2.3f",
+                        sensedBotPos, sensedFldHdg, t);
+                RobotLog.ii("SJH", "IMG %s frame %d",
+                        tracker.getLocString(), frm);
+                dashboard.displayPrintf(1, "SLOC: %s %4.1f",
+                        sensedBotPos, sensedFldHdg);
+                dashboard.displayPrintf(2, "IMG", "%s  frame %d",
+                        tracker.getLocString(), frm);
+            }
+
+            telemetry.update();
+        }
+
+        RobotLog.ii(TAG, "KEY : " + key);
+        dashboard.displayPrintf(0, "KEY: " + key);
+        RobotLog.dd(TAG, "Turn off image tracker");
+        tracker.setActive(false);
+
+        return key;
+    }
+
+    private MajorColorDetector.Color getJewelColor()
+    {
+        RobotLog.dd(TAG, "Set qsize to get frames");
+        tracker.setFrameQueueSize(1);
+        RobotLog.dd(TAG, "Start LD sensing");
+        det.startSensing();
+
+        MajorColorDetector.Color leftJewelColor = MajorColorDetector.Color.NONE;
+        while(opModeIsActive() && leftJewelColor == MajorColorDetector.Color.NONE)
+        {
+            Bitmap rgbImage;
+            rgbImage = tracker.getLastCroppedImage();
+
+            if(rgbImage == null) continue;
+            det.setBitmap(rgbImage);
+            det.logDebug();
+            det.logTelemetry();
+            if(det instanceof MajorColorDetector)
+                leftJewelColor = ((MajorColorDetector) det).getMajorColor();
+
+            if(leftJewelColor == MajorColorDetector.Color.NONE)
+                sleep(100);
+        }
+
+        det.stopSensing();
+        tracker.setFrameQueueSize(0);
+
+        return leftJewelColor;
+    }
 
     @Override
     public boolean isMenuUpButton() { return gamepad1.dpad_up;} //isMenuUpButton
@@ -568,7 +688,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         startPosMenu.addChoice("Start_A", Field.StartPos.START_A_SWEEPER, startPosMenu);
         startPosMenu.addChoice("Start_B", Field.StartPos.START_B_SWEEPER, startPosMenu);
-        startPosMenu.addChoice("Start_R", Field.StartPos.START_R_PUSHER,  startPosMenu);
 
         allianceMenu.addChoice("RED",  Field.Alliance.RED,  delayMenu);
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, delayMenu);
@@ -616,13 +735,15 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private Segment[] pathSegs;
 
-    private ShelbyBot   robot = new ShelbyBot();
+    private ShelbyBot   robot = new TilerunnerGtoBot();
     private ElapsedTime timer = new ElapsedTime();
     private ElapsedTime startTimer = new ElapsedTime();
     private Drivetrain drvTrn = new Drivetrain();
 
-    private BeaconFinder bf;
-    private Detector bd;
+    private Detector det;
+    private static ImageTracker tracker;
+    private static RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
+    private static MajorColorDetector.Color jewelColor = MajorColorDetector.Color.NONE;
 
     private static Point2d curPos;
     private static double  curHdg;
@@ -648,5 +769,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private int postSleep = 150;
 
     private int colSegNum = 0;
+
+    private static final String TAG = "SJH_RRA";
 }
 
