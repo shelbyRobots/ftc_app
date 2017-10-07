@@ -535,7 +535,7 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         double cHdg = drvTrn.curHdg;
         int tHdg = (int) Math.round(fHdg);
         double angle = tHdg - cHdg;
-        RobotLog.ii("SJH", "doEncoderTurn CHDG %4d THDG %4d", cHdg, tHdg);
+        RobotLog.ii("SJH", "doEncoderTurn CHDG %6.3f THDG %4d", cHdg, tHdg);
 
         while (angle <= -180.0) angle += 360.0;
         while (angle >   180.0) angle -= 360.0;

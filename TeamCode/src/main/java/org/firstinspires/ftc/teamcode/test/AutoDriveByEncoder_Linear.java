@@ -126,7 +126,7 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
         while (!isStarted() && tmpTimer.seconds() < 60)
         {
             if(robot.gyro != null)
-                telemetry.addData(":", "FHDG = %d", robot.getGyroFhdg());
+                telemetry.addData(":", "FHDG = %6.3f", robot.getGyroFhdg());
             telemetry.addData("<", "LENC = %5d RENC = %5d",
                     robot.leftMotor.getCurrentPosition(),
                     robot.rightMotor.getCurrentPosition());
@@ -246,7 +246,7 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
                             robot.leftMotor.getCurrentPosition(),
                             robot.rightMotor.getCurrentPosition());
                     if(robot.gyro != null)
-                        telemetry.addData("ROT", "%d", robot.getGyroFhdg());
+                        telemetry.addData("ROT", "%6.3f", robot.getGyroFhdg());
                     if(robot.colorSensor != null)
                         telemetry.addData("RGB", "RGB %3d %3d %3d", r, g, b);
                     RobotLog.dd("SJH", "Pos : %7d %7d",

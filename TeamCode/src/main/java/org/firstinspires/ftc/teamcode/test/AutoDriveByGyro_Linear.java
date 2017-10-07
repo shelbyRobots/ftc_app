@@ -126,7 +126,7 @@ public class AutoDriveByGyro_Linear extends InitLinearOpMode
         robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         while (!isStarted()) {
-            telemetry.addData(":", "Robot Heading = %d", robot.getGyroFhdg());
+            telemetry.addData(":", "Robot Heading = %6.3f", robot.getGyroFhdg());
             telemetry.update();
             idle();
         }
