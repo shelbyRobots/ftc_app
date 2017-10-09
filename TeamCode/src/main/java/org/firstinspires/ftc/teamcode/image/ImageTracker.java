@@ -108,6 +108,11 @@ public class ImageTracker
         return pose;
     }
 
+    public OpenGLMatrix getRawImagePose()
+    {
+        return rawPose;
+    }
+
     //public OpenGLMatrix getRobotLocation()
     public void updateRobotLocationInfo()
     {
@@ -134,7 +139,7 @@ public class ImageTracker
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
                 currYaw = (double) currOri.firstAngle;
 
-                OpenGLMatrix rawPose;
+
                 if (keyLoc == RelicRecoveryVuMark.UNKNOWN &&
                     RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
                 {
@@ -147,6 +152,7 @@ public class ImageTracker
                     Bitmap fullPic = getImage();
                     List<Point2d>  trackablePixCorners =
                             getTrackableCornersInCamera(rawPose);
+
                     List<Point2d> jewelBoxPixCorners =
                             getCropCornersInCamera(rawPose);
                    Bitmap jewelImg = getCroppedImage(jewelBoxPixCorners, fullPic);
@@ -215,7 +221,7 @@ public class ImageTracker
                        "null";
     }
 
-    private Bitmap getImage()
+    public Bitmap getImage()
     {
         VuforiaLocalizer.CloseableFrame frame = null;
         try
@@ -311,6 +317,7 @@ public class ImageTracker
         FileOutputStream out;
         try
         {
+            RobotLog.dd(TAG, "Saving crop file %s %s", path.getName() , fileName);
             out = new FileOutputStream(dest);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.close();
@@ -327,7 +334,7 @@ public class ImageTracker
      * @param rawPose the pose of the beacon image VuforiaTrackable object
      * @return the list of 4 Point2d for the trackable image corners
      */
-    private List<Point2d> getTrackableCornersInCamera(OpenGLMatrix rawPose)
+    public List<Point2d> getTrackableCornersInCamera(OpenGLMatrix rawPose)
     {
         Matrix34F rawPoseMx = new Matrix34F();
         OpenGLMatrix poseTransposed = rawPose.transposed();
@@ -480,6 +487,7 @@ public class ImageTracker
     private Point2d currPos = null;
     private Double  currYaw = null;
     private Orientation currOri = null;
+    private OpenGLMatrix rawPose = null;
     private String lastVisName = "UNKNOWN";
     private boolean useScreen = true;
 

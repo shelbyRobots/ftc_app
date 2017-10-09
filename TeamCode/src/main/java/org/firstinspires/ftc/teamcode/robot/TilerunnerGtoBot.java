@@ -82,6 +82,7 @@ public class TilerunnerGtoBot extends ShelbyBot
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMU_IMUCalibration.json";
         parameters.loggingEnabled      = false;
         parameters.loggingTag          = "IMU";
         //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
@@ -93,7 +94,7 @@ public class TilerunnerGtoBot extends ShelbyBot
     @Override
     public boolean calibrateGyro()
     {
-        //TODO: Take care of gyro callibration for new gyro
+        //Callibration performed internally and assisted by loading file from offline calib.
         return true;
     }
 
@@ -101,12 +102,18 @@ public class TilerunnerGtoBot extends ShelbyBot
     public double getGyroHdg()
     {
         double startTime = imuTimer.milliseconds();
-        double yaw = imu.getAngularOrientation().firstAngle;
+        getGyroAngles();
+        double yaw = angles.firstAngle;
         double endTime = imuTimer.milliseconds();
         double imuTime = endTime - startTime;
         RobotLog.dd("IMU", String.format(Locale.US,
                 "%.2f,%.4f", imuTime, yaw));
 
         return yaw;
+    }
+
+    private void getGyroAngles()
+    {
+        angles = imu.getAngularOrientation();
     }
 }

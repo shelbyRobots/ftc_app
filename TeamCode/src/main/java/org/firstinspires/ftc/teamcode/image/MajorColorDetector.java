@@ -1,12 +1,19 @@
 package org.firstinspires.ftc.teamcode.image;
 
+import android.graphics.Bitmap;
+
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
+import org.firstinspires.ftc.teamcode.util.Point2d;
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -118,7 +125,6 @@ public class MajorColorDetector extends Detector {
         redPct = redp;
         bluPct = bluep;
 
-        //UHHH - WHY does this work with bluep and redp what seems to be reversed?
         if(redp >= THRESHOLD){
             //yayRed!!! :D
             foundColor = Color.RED;
@@ -132,5 +138,26 @@ public class MajorColorDetector extends Detector {
             //booNone!!!:(
             foundColor = Color.NONE;
         }
+    }
+
+    Mat cvImage;
+    public void hightlightCorners(Bitmap fullImag, List<Point2d> pts)
+    {
+        int cvt = CvType.CV_8UC1;
+        int inHeight = fullImag.getHeight();
+        int inWidth = fullImag.getWidth();
+
+        if(cvImage == null) cvImage = new Mat(inHeight, inWidth, cvt);
+
+        Utils.bitmapToMat(fullImag, cvImage);
+
+        for(Point2d pt : pts)
+        {
+            Point p = new Point(pt.getX(), pt.getY());
+            Imgproc.circle(cvImage, p, 5, new Scalar(1, 0, 0));
+            RobotLog.dd(TAG, "Corner at %4.2f %4.2f", p.x, p.y);
+        }
+
+        saveImage(cvImage);
     }
 }

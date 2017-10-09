@@ -43,6 +43,8 @@ import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
+import java.util.List;
+
 @Autonomous(name="Concept: VuMark Id", group ="Concept")
 //@Disabled
 public class VuMarkOpenCvTest extends InitLinearOpMode
@@ -128,6 +130,10 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
                 leftJewelColor = ((MajorColorDetector) det).getMajorColor();
             sleep(100);
         }
+//        Bitmap fullImage = tracker.getLastImage();
+//        List<Point2d> tpcs = tracker.getTrackableCornersInCamera(tracker.getRawImagePose());
+//        MajorColorDetector mcd = (MajorColorDetector) det;
+//        mcd.hightlightCorners(fullImage, tpcs);
 
         waitForStart();
 

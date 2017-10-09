@@ -114,6 +114,7 @@ public class Teleop_Driver extends InitLinearOpMode
             turn  = ishaper.shape(turn);
 
             double speed = right;
+            double arcadeTurnScale = 0.5;
 
             switch (driveType)
             {
@@ -123,6 +124,7 @@ public class Teleop_Driver extends InitLinearOpMode
                     break;
 
                 case ARCADE_DRIVE:
+                    turn = (1 - Math.abs(speed)) * turn;
                     left  = speed + turn;
                     right = speed - turn;
                     break;
@@ -140,8 +142,12 @@ public class Teleop_Driver extends InitLinearOpMode
                     break;
             }
 
-            left  = Range.clip(left,  -1.0, 1.0);
-            right = Range.clip(right, -1.0, 1.0);
+            double max = Math.max(Math.abs(left), Math.abs(right));
+            if(max > 1.0)
+            {
+                left  /= max;
+                right /= max;
+            }
 
             dashboard.displayPrintf(3, "SPEED %4.2f", speed);
             dashboard.displayPrintf(4, "TURN  %4.2f", turn);
