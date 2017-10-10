@@ -16,7 +16,6 @@ public class TilerunnerGtoBot extends ShelbyBot
 {
     private CommonUtil com = CommonUtil.getInstance();
 
-    private BNO055IMU imu;
     private Orientation angles;
     private Acceleration gravity;
 
@@ -87,8 +86,17 @@ public class TilerunnerGtoBot extends ShelbyBot
         parameters.loggingTag          = "IMU";
         //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        imu = (BNO055IMU) com.getHardwareMap().get("imu");
-        imu.initialize(parameters);
+        try
+        {
+            imu = (BNO055IMU) com.getHardwareMap().get("imu");
+            imu.initialize(parameters);
+            gyroReady = true;
+            capMap.put("sensor", true);
+        }
+        catch(Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get imu\n" + e.toString());
+        }
     }
 
     @Override
@@ -96,6 +104,10 @@ public class TilerunnerGtoBot extends ShelbyBot
     {
         //Callibration performed internally and assisted by loading file from offline calib.
         return true;
+    }
+
+    public void resetGyro()
+    {
     }
 
     @Override

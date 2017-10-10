@@ -62,8 +62,12 @@ public abstract class Field
 
     //Note: asset file has 304mm x 224mm (12"x8.8")for RR !?!?
     //Need to figure out what xml coordinates really mean
-    public static int target_width  = 127 * 2;
-    public static int target_height = 92 * 2;
+//    public static int target_width  = 127 * 2;
+//    public static int target_height = 92 * 2;
+    //It turns out that we really need the trackable page dimensions in this case
+    //So use 8.5"x11" paper in landscape =
+    public static int target_width  = 280;
+    public static int target_height = 216;
 
     static float[] scaleArr(float[] inArr, float scale)
     {

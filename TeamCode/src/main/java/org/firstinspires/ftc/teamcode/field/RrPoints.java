@@ -12,7 +12,8 @@ import java.util.Vector;
 public class RrPoints extends Points
 {
     @SuppressWarnings("ConstantConditions")
-    private Vector<Point2d> initPoints()
+    @Override
+    protected Vector<Point2d> initPoints()
     {
         Point2d start_pt = RrField.RLBS;
 
@@ -26,12 +27,14 @@ public class RrPoints extends Points
         //convenience declarations to make call params shorter
         ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.PUSHER;
         ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.SWEEPER;
-        Segment.Action none   = Segment.Action.NOTHING;
+        Segment.Action none    = Segment.Action.NOTHING;
+        Segment.Action scan    = Segment.Action.SCAN_IMAGE;
         Segment.TargetType defSegType = Segment.TargetType.ENCODER;
 
         points.add(start_pt);
 
-        addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLCC);
+        addPoint(points, fwd, 0.45,  1.00, defSegType, scan, RrField.RLBS);
+        addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLTT);
         addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLPP);
         addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLTT);
 

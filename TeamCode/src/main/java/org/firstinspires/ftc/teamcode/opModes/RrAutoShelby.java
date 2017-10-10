@@ -89,6 +89,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         robot.init(this);
 
+        System.out.println("Robot CPI " + robot.CPI);
+
         drvTrn.init(robot);
         drvTrn.setUseSpeedThreads(false);
         drvTrn.setRampUp(false);
@@ -117,9 +119,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         dashboard.displayPrintf(0, "GYRO CALIBRATING DO NOT TOUCH OR START");
 
-        if (robot.leftMotor  != null &&
-            robot.rightMotor != null &&
-            robot.gyro       != null)
+        if (robot.gyro  != null)
         {
             gyroReady = robot.calibrateGyro();
         }
@@ -171,9 +171,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         RobotLog.ii("SJH", "Done delay");
 
-        RobotLog.ii("SJH", "START CHDG %d", robot.gyro.getIntegratedZValue());
+        RobotLog.ii("SJH", "START CHDG %6.3f", robot.getGyroHdg());
 
-        robot.gyro.resetZAxisIntegrator();
+        robot.resetGyro();
 
         boolean SkipNextSegment = false;
         for (int i = 0; i < pathSegs.length; ++i)
@@ -222,7 +222,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             drvTrn.logData(true, segName + " " + segLogStr);
 
             RobotLog.ii("SJH", "ENCODER TURN %s", curSeg.getName());
-            doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
 
 //            if (curSeg.getAction() == Segment.Action.SHOOT)
 //            {
@@ -236,7 +235,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 //No move needed
             }
             else
+            {
+                doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
                 doMove(curSeg);
+            }
+
 
             Double pturn = curSeg.getPostTurn();
             if(usePostTurn && pturn != null)
@@ -296,39 +299,46 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                     key = getKey();
                     jewelColor = getJewelColor();
+                    RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
+                            key, jewelColor);
                     if(jewelColor == MajorColorDetector.Color.NONE)
                         continue;
 
                     //TODO: Deploy pusher
+                    RobotLog.dd(TAG, "Deploy pusher");
+                    MajorColorDetector.Color badJewel = MajorColorDetector.Color.NONE;
                     switch (jewelColor)
                     {
                         case RED:
+                            badJewel = MajorColorDetector.Color.BLUE;
                             if(alliance == Field.Alliance.RED)
                             {
                                 ddir = Drivetrain.Direction.REVERSE;
                             }
+                            break;
 
                         case BLUE:
+                            badJewel = MajorColorDetector.Color.RED;
                             if(alliance == Field.Alliance.BLUE)
                             {
                                 ddir = Drivetrain.Direction.REVERSE;
                             }
+                            break;
 
                         case NONE:
                             continue;
                     }
 
                     //move to knock off jewel
-                    drvTrn.driveDistance(jewelPushDist, jewelPushSpd, ddir);
+                    RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s",
+                            ddir, jewelPushDist, jewelPushSpd, badJewel);
+                    drvTrn.driveDistanceLinear(jewelPushDist, jewelPushSpd, ddir);
 
                     //TODO: retract pusher
-                    if(ddir == Drivetrain.Direction.REVERSE)
-                        ddir = Drivetrain.Direction.FORWARD;
-                    else
-                        ddir = Drivetrain.Direction.REVERSE;
+                    RobotLog.dd(TAG, "Retract pusher");
 
                     //move back to start pt
-                    drvTrn.driveDistance(jewelPushDist, jewelPushSpd, ddir);
+                    drvTrn.driveDistanceLinear(-jewelPushDist, jewelPushSpd, ddir);
 
                     break;
 
@@ -514,7 +524,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         drvTrn.setCurrPt(ept);
 
-        RobotLog.ii("SJH", "Completed move %s. Time: %6.3f HDG: %4d",
+        RobotLog.ii("SJH", "Completed move %s. Time: %6.3f HDG: %6.3f",
                 seg.getName(), timer.time(), robot.getGyroFhdg());
     }
 
@@ -526,9 +536,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
         double cHdg = drvTrn.curHdg;
-        int tHdg = (int) Math.round(fHdg);
+        double tHdg = fHdg;
         double angle = tHdg - cHdg;
-        RobotLog.ii("SJH", "doEncoderTurn CHDG %4d THDG %4d", cHdg, tHdg);
+        RobotLog.ii("SJH", "doEncoderTurn CHDG %6.3f THDG %6.3f", cHdg, tHdg);
 
         while (angle <= -180.0) angle += 360.0;
         while (angle >   180.0) angle -= 360.0;
@@ -539,7 +549,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         timer.reset();
         drvTrn.ctrTurnLinear(angle, DEF_ENCTRN_PWR, thresh);
         cHdg = robot.getGyroFhdg();
-        RobotLog.ii("SJH", "Completed turn %5.2f. Time: %6.3f CHDG: %4d",
+        RobotLog.ii("SJH", "Completed turn %5.2f. Time: %6.3f CHDG: %6.3f",
                 angle, timer.time(), cHdg);
     }
 
@@ -686,8 +696,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         FtcValueMenu delayMenu     = new FtcValueMenu("DELAY:", allianceMenu, this,
                 0.0, 20.0, 1.0, 0.0, "%5.2f");
 
-        startPosMenu.addChoice("Start_A", Field.StartPos.START_A_SWEEPER, startPosMenu);
-        startPosMenu.addChoice("Start_B", Field.StartPos.START_B_SWEEPER, startPosMenu);
+        startPosMenu.addChoice("Start_A", Field.StartPos.START_1, allianceMenu);
+        startPosMenu.addChoice("Start_B", Field.StartPos.START_2, allianceMenu);
 
         allianceMenu.addChoice("RED",  Field.Alliance.RED,  delayMenu);
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, delayMenu);
@@ -751,7 +761,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private boolean gyroReady;
     private boolean usePostTurn = true;
 
-    private static Field.StartPos startPos = Field.StartPos.START_A_SWEEPER;
+    private static Field.StartPos startPos = Field.StartPos.START_1;
     private static Field.Alliance alliance = Field.Alliance.RED;
     private static Team team = Team.SNOWMAN;
 
@@ -771,5 +781,14 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private int colSegNum = 0;
 
     private static final String TAG = "SJH_RRA";
+
+    public static final void main(String args[])
+    {
+        RrAutoShelby vas = new RrAutoShelby();
+        vas.setup();
+        //ShelbyBot bot = new TilerunnerGtoBot();
+        //bot.init(vas);
+        //RobotLog.dd(TAG, "Robot CPI %4.2f", bot.CPI);
+    }
 }
 

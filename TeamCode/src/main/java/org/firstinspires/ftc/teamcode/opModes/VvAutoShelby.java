@@ -57,9 +57,9 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 //        {
 //            if(robot.gyro != null)
 //            {
-//                int chdg = robot.gyro.getIntegratedZValue();
-//                dashboard.displayPrintf(6, "GHDG: %d", chdg);
-//                RobotLog.dd("SJH", "INIT CHDG %d", chdg);
+//                double chdg = robot.getGyroHdg();
+//                dashboard.displayPrintf(6, "GHDG: %6.3f", chdg);
+//                RobotLog.dd("SJH", "INIT CHDG %6.3f", chdg);
 //            }
 //            sleep(10);
 //        }
@@ -109,7 +109,7 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         Points pts = new VvPoints(startPos, alliance, beaconChoice, parkChoice, useFly2Light);
         pathSegs = pts.getSegments();
 
-        initHdg = (int)(Math.round(pathSegs[0].getFieldHeading()));
+        initHdg = Math.round(pathSegs[0].getFieldHeading());
 
         ShelbyBot.DriveDir startDdir = pathSegs[0].getDir();
         robot.setDriveDir(startDdir);
@@ -143,15 +143,15 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         if(startPos == Field.StartPos.START_R_PUSHER && robot.gyroReady)
         {
-            dashboard.displayPrintf(1, "PERFORM START POS MOVE NOW TO HDG %d", initHdg);
+            dashboard.displayPrintf(1, "PERFORM START POS MOVE NOW TO HDG %6.3f", initHdg);
             robot.gyro.resetZAxisIntegrator();
 
             ElapsedTime botRotTimer = new ElapsedTime();
             while (botRotTimer.seconds() < 20)
             {
-                int chdg = robot.gyro.getIntegratedZValue();
-                dashboard.displayPrintf(0, "GHDG: %d", chdg);
-                RobotLog.ii("SJH", "RMOVE CHDG %d", chdg);
+                double chdg = robot.getGyroHdg();
+                dashboard.displayPrintf(0, "GHDG: %6.3f", chdg);
+                RobotLog.ii("SJH", "RMOVE CHDG %6.3f", chdg);
                 sleep(10);
             }
 
@@ -1221,7 +1221,7 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private static Point2d curPos;
     private static double  curHdg;
-    private int initHdg = 0;
+    private double initHdg = 0;
     private boolean gyroReady;
     private boolean usePostTurn = true;
 

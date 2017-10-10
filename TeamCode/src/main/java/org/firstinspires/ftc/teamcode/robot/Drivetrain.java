@@ -152,7 +152,8 @@ public class Drivetrain
         moveInit(pwr, pwr);
     }
 
-    public int driveDistanceLinear(double dst, double pwr, Direction dir, double targetHdg, boolean useCol)
+    public int driveDistanceLinear(double dst, double pwr, Direction dir,
+                                   double targetHdg, boolean useCol)
     {
         trgtHdg = targetHdg;
 
@@ -177,6 +178,9 @@ public class Drivetrain
             dst += colOverDist;
         }
 
+        RobotLog.dd(TAG, "DriveDistanceLinear %4.2f %4.2f %4.2f %s %s %s %s",
+                dst, pwr, pwrIncr, dir, rampUp, rampDown, useCol);
+
         driveDistance(dst, startPwr, dir);
         int linLpos = trgtLpos;
         int linRpos = trgtRpos;
@@ -194,8 +198,12 @@ public class Drivetrain
 
             if(rampUp)
             {
-                if(tmpPwr < pwr) tmpPwr = Math.min(pwr, tmpPwr + pwrIncr);
-                ppwr = tmpPwr;
+                if(tmpPwr < pwr)
+                {
+                    tmpPwr = Math.min(pwr, tmpPwr + pwrIncr);
+                    RobotLog.dd(TAG, "Ramping up %4.2f", tmpPwr);
+                    ppwr = tmpPwr;
+                }
             }
 
             if(rampDown)
@@ -211,8 +219,8 @@ public class Drivetrain
                 if (Math.abs(remaining) < lowSlow) ppwr = Math.min(ppwr, 0.09);
             }
 
-            RobotLog.ii("SJH", "ppwr " + ppwr + " curLpower " + curLpower +
-                               " curRpower " + curRpower + " pwrIncr " +  pwrIncr);
+            RobotLog.ii("SJH", "ppwr %4.2f curLpower %4.2f curRpower %4.2f %5.3f pwrIncr",
+                    ppwr, curLpower, curRpower, pwrIncr);
 
             int COLOR_THRESH = 30;
             double lRem = countsToDistance(Math.abs(trgtLpos - curLpos));
@@ -239,7 +247,14 @@ public class Drivetrain
             }
             else
             {
-                makeGyroCorrections(ppwr, trgtHdg, dir);
+                if((robot.gyro == null && robot.imu == null))
+                {
+                    move(ppwr, ppwr);
+                }
+                else
+                {
+                    makeGyroCorrections(ppwr, trgtHdg, dir);
+                }
             }
 
             if(!isBusy()) break;
@@ -311,7 +326,7 @@ public class Drivetrain
         String angStr = String.format(Locale.US, "ENC_TURN %4.2f", angle);
         logStartValues(angStr);
 
-        RobotLog.ii("SJH", "Angle: %5.2f Counts: %4d CHdg: %d", angle, counts, initHdg);
+        RobotLog.ii("SJH", "Angle: %5.2f Counts: %4d CHdg: %6.3f", angle, counts, initHdg);
 
         robot.leftMotor.setTargetPosition(trgtLpos);
         robot.rightMotor.setTargetPosition(trgtRpos);
@@ -330,14 +345,15 @@ public class Drivetrain
         double leftSpeed;
         double rightSpeed;
 
-        int ihdg = (int)(Math.round(hdg));
+        double ihdg = Math.round(hdg);
 
         // determine turn power based on +/- error
         error = getGyroError((int)hdg);
 
         if(error * lastGyroError < 0) //error sign changed - we passed target
         {
-            RobotLog.ii("SJH", "ctrTurnGryo overshot lastErr %5.2f error %5.2f hdg %d tgt %d",
+            RobotLog.ii("SJH", "ctrTurnGryo overshot lastErr %5.2f error %5.2f " +
+                               "hdg %6.3f tgt %6.3f",
                     lastGyroError, error, curHdg, ihdg);
         }
 
@@ -385,9 +401,9 @@ public class Drivetrain
         if(ct > nextPrintTime)
         {
             nextPrintTime = ct + printTimeout;
-            RobotLog.ii("SJH", "TGT %d CHDG %d ERR %d STR %4.2f L %4.2f R %4.2f",
-                    (int) hdg, curHdg,
-                    (int) error, steer, leftSpeed, rightSpeed);
+            RobotLog.ii("SJH", "TGT %6.3f CHDG %6.3f ERR %6.3f STR %4.2f L %4.2f R %4.2f",
+                    hdg, curHdg,
+                    error, steer, leftSpeed, rightSpeed);
         }
         return onTarget;
     }
@@ -473,7 +489,7 @@ public class Drivetrain
     {
         tgtHdg = Math.round(tgtHdg);
 
-        RobotLog.ii("SJH", "GYRO TURN to HDG %d", (int)tgtHdg);
+        RobotLog.ii("SJH", "GYRO TURN to HDG %6.3f", tgtHdg);
 
         gyroFirstGood = false;
 
@@ -648,7 +664,6 @@ public class Drivetrain
 
     public void init(ShelbyBot robot)
     {
-        RobotLog.ii("SJH", "CPI: %5.2f", CPI);
         com = CommonUtil.getInstance();
         op = com.getLinearOpMode();
         dl = com.getDataLogger();
@@ -657,6 +672,8 @@ public class Drivetrain
 
         CPI = robot.CPI;
         DEF_CPI = CPI;
+
+        RobotLog.ii("SJH", "CPI: %5.2f", CPI);
 
         robot.leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -700,7 +717,7 @@ public class Drivetrain
 
     public void makeGyroCorrections(double pwr, double thdg, Direction dir)
     {
-        if(robot.gyro == null || !robot.gyroReady) return;
+        if((robot.gyro == null && robot.imu == null) || !robot.gyroReady) return;
 
         double ldp;
         double rdp;
@@ -747,7 +764,8 @@ public class Drivetrain
         if (ct > nextPrintTime)
         {
             nextPrintTime = ct + printTimeout;
-            RobotLog.ii("SJH", "%4d lpwr: %5.3f rpwr: %5.3f err: %5.3f str %5.3f rt %5.3f chdg %d thdg %d",
+            RobotLog.ii("SJH", "%4d lpwr: %5.3f rpwr: %5.3f err: %5.3f" +
+                               "str %5.3f rt %5.3f chdg %6.3f thdg %6.3f",
                     frame, curLpower, curRpower, err, steer, rt.seconds(), curHdg, thdg);
         }
     }
@@ -900,7 +918,7 @@ public class Drivetrain
             dl.addField("");
             dl.newLine();
         }
-        RobotLog.ii("SJH", "Begin ldc %6d rdc %6d Hdg %d",
+        RobotLog.ii("SJH", "Begin ldc %6d rdc %6d Hdg %6.3f",
                 initLpos, initRpos, initHdg);
     }
 
@@ -911,7 +929,8 @@ public class Drivetrain
         doneHdg  = robot.getGyroFhdg();
         logData(true, "DONE " + note);
 
-        RobotLog.ii("SJH", "End ldc %6d rdc %6d Hdg %d",
+        RobotLog.ii("SJH", "End ldc %6d rdc " +
+                                   "%6d Hdg %6.3f",
                 doneLpos, doneRpos, doneHdg);
     }
 
@@ -1061,7 +1080,7 @@ public class Drivetrain
         if(ct > nextBusyPrintTime)
         {
             nextBusyPrintTime = ct + printTimeout;
-            RobotLog.ii("SJH", "ldc %6d rdc %6d  mptimer: %4.2f chdg %5d",
+            RobotLog.ii("SJH", "ldc %6d rdc %6d  mptimer: %4.2f chdg %6.3f",
                     curLpos, curRpos, noMoveTimer.seconds(), curHdg);
         }
 
@@ -1356,6 +1375,8 @@ public class Drivetrain
     private boolean useSpeedThreads = true;
     private Thread lftSpdThread = null;
     private Thread rgtSpdThread = null;
+
+    private static final String TAG = "SJH_DTRN";
 }
 
 

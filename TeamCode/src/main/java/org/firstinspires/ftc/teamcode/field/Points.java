@@ -12,7 +12,7 @@ import java.util.Vector;
 public abstract class Points
 {
     @SuppressWarnings("ConstantConditions")
-    private Vector<Point2d> initPoints()
+    protected Vector<Point2d> initPoints()
     {
         return new Vector<>(MAX_SEGMENTS);
     }

@@ -1,6 +1,7 @@
 
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -51,6 +52,8 @@ public class ShelbyBot
     public ModernRoboticsI2cColorSensor colorSensor = null;
     public DeviceInterfaceModule        dim         = null;
 
+    public BNO055IMU imu = null;
+
     public boolean gyroInverted = true;
 
     //Distance from ctr of rear wheel to tail
@@ -76,7 +79,7 @@ public class ShelbyBot
     public float BOT_WIDTH       = 16.8f; //Vehicle width at rear wheels
     public float BOT_LENGTH      = 18.0f;
 
-    protected double COUNTS_PER_MOTOR_REV;
+    protected double COUNTS_PER_MOTOR_REV = 28;
     protected double DRIVE_GEARS[];
 
     protected double WHEEL_DIAMETER_INCHES;
@@ -91,6 +94,8 @@ public class ShelbyBot
 
     /* local OpMode members. */
     private ElapsedTime period  = new ElapsedTime();
+
+    private static final String TAG = "SJH_BOT";
 
     /* Constructor */
     public ShelbyBot()
@@ -124,6 +129,7 @@ public class ShelbyBot
     /* Initialize standard Hardware interfaces */
     public void init(LinearOpMode op)
     {
+        RobotLog.dd(TAG, "in robot init");
         computeCPI();
 
         initOp(op);
@@ -390,7 +396,15 @@ public class ShelbyBot
         return gyroReady;
     }
 
-    protected double getGyroHdg()
+    public void resetGyro()
+    {
+        if(gyro != null && gyroReady)
+        {
+            gyro.resetZAxisIntegrator();
+        }
+    }
+
+    public double getGyroHdg()
     {
         double rawGyroHdg = gyro.getIntegratedZValue();
         return rawGyroHdg;
@@ -493,11 +507,16 @@ public class ShelbyBot
     //to mount camera on front of bot looking bot fwd,
     //rotate -90 about z, then -90 about x
     //translate 0 in bot x, half bot length in bot y, and ~11" in bot z
-    public static OpenGLMatrix phoneOrientation = Orientation.getRotationMatrix(
-            AxesReference.EXTRINSIC, AxesOrder.XYZ, //ZXY
-            AngleUnit.DEGREES, 0, 0, 0);
+    public static OpenGLMatrix phoneOrientation;
+    public static OpenGLMatrix phoneLocationOnRobot;
+    static
+    {
+        phoneOrientation = Orientation.getRotationMatrix(
+                AxesReference.EXTRINSIC, AxesOrder.XYZ, //ZXY
+                AngleUnit.DEGREES, 0, 0, 0);
 
-    public static OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
-            .translation(CAMERA_X_IN_BOT, CAMERA_Y_IN_BOT, CAMERA_Z_IN_BOT)
-            .multiplied(phoneOrientation);
+        phoneLocationOnRobot = OpenGLMatrix
+                .translation(CAMERA_X_IN_BOT, CAMERA_Y_IN_BOT, CAMERA_Z_IN_BOT)
+                .multiplied(phoneOrientation);
+    }
 }

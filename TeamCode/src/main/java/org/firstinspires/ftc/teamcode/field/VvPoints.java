@@ -12,7 +12,8 @@ import java.util.Vector;
 public class VvPoints extends Points
 {
     @SuppressWarnings("ConstantConditions")
-    private Vector<Point2d> initPoints()
+    @Override
+    protected Vector<Point2d> initPoints()
     {
         Point2d start_pt = ASTART_PT;
         Point2d shoot_pt = ASHOOT_PT;
