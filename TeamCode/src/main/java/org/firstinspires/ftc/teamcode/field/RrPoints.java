@@ -15,13 +15,6 @@ public class RrPoints extends Points
     @Override
     protected Vector<Point2d> initPoints()
     {
-        Point2d start_pt = RrField.RLBS;
-
-        if(startPos == Field.StartPos.START_2)
-        {
-            start_pt = RrField.RRBS;
-        }
-
         Vector<Point2d> points = new Vector<>(MAX_SEGMENTS);
 
         //convenience declarations to make call params shorter
@@ -29,14 +22,29 @@ public class RrPoints extends Points
         ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.SWEEPER;
         Segment.Action none    = Segment.Action.NOTHING;
         Segment.Action scan    = Segment.Action.SCAN_IMAGE;
-        Segment.TargetType defSegType = Segment.TargetType.ENCODER;
+        Segment.Action key     = Segment.Action.SET_KEY;
+        Segment.TargetType encType = Segment.TargetType.ENCODER;
 
-        points.add(start_pt);
-
-        addPoint(points, fwd, 0.45,  1.00, defSegType, scan, RrField.RLBS);
-        addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLTT);
-        addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLPP);
-        addPoint(points, fwd, 0.45,  1.00, defSegType, none, RrField.RLTT);
+        if(startPos == Field.StartPos.START_1)
+        {
+            Point2d preTT = new Point2d(-24.0, -48.0);
+            points.add(RrField.RLBS);
+            addPoint(points, fwd, 0.45, 1.00, encType, scan, RrField.RLBS);
+            addPoint(points, fwd, 0.30, 1.00, encType, key , preTT);
+            addPoint(points, fwd, 0.45, 1.00, encType, none, RrField.RLTT);
+            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RLPP);
+            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RLTT);
+        }
+        else if(startPos == Field.StartPos.START_2)
+        {
+            Point2d preTT = new Point2d(48.0, -48.0);
+            points.add(RrField.RRBS);
+            addPoint(points, fwd, 0.45, 1.00, encType, scan, RrField.RRBS);
+            addPoint(points, fwd, 0.30, 1.00, encType, none, preTT);
+            addPoint(points, fwd, 0.30, 1.00, encType, none, RrField.RRTT);
+            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RRPP);
+            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RRTT);
+        }
 
         ShelbyBot.DriveDir parkDir = fwd;
         //addPoint(points, parkDir, 0.75, 1.00, Segment.TargetType.ENCODER, none, park_pt);

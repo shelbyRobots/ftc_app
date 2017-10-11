@@ -14,12 +14,15 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class RrField extends Field
 {
+    static final double CBOX_GAP  = 7.625;
+    static final double CBOX_LCTR = -12.0;
+    static final double CBOX_RCTR = -36.0;
     //Red Points > Left
     static final Point2d RLBS = new Point2d("RLBS", -48.0,  -48.0);
     static final Point2d RLJB = new Point2d("RLJB", -48.0,  -68.0);
-    static final Point2d RLCL = new Point2d("RLCL", -4.37,  -70.0);
-    static final Point2d RLCC = new Point2d("RLCC", -12.0,  -70.0);
-    static final Point2d RLCR = new Point2d("RLCR", -19.63, -70.0);
+    static final Point2d RLCL = new Point2d("RLCL", CBOX_LCTR + CBOX_GAP,  -60.0);
+    static final Point2d RLCC = new Point2d("RLCC", CBOX_LCTR,  -60.0);
+    static final Point2d RLCR = new Point2d("RLCR", CBOX_LCTR - CBOX_GAP, -60.0);
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
     static final Point2d RLTT = new Point2d("RLTT", -12.0,  -48.0);
@@ -29,9 +32,9 @@ public class RrField extends Field
     //Red Points > Right
     static final Point2d RRBS = new Point2d("RRBS",  24.0,  -48.0);
     static final Point2d RRJB = new Point2d("RRJB",  24.0,  -68.0);
-    static final Point2d RRCL = new Point2d("RRCL",  70.0,  -28.37);
-    static final Point2d RRCC = new Point2d("RRCC",  70.0,  -36.0);
-    static final Point2d RRCR = new Point2d("RRCR",  70.0,  -43.63);
+    static final Point2d RRCL = new Point2d("RRCL",  60.0,  CBOX_RCTR + CBOX_GAP);
+    static final Point2d RRCC = new Point2d("RRCC",  60.0,  CBOX_RCTR);
+    static final Point2d RRCR = new Point2d("RRCR",  60.0,  CBOX_RCTR - CBOX_GAP);
     static final Point2d RRRR = new Point2d("RRRR",  68.0,  -68.0);
     static final Point2d RARZ = new Point2d("RARZ", -72.0,  -12.0);
 

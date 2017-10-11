@@ -51,7 +51,6 @@ public class Teleop_Driver extends InitLinearOpMode
         if(robot.lpusher != null) robot.lpusher.setPosition(curLpushPos);
 
         // Wait for the game to start (driver presses PLAY)
-        //waitForStart();
         while(!isStarted())
         {
             gpad1.update();

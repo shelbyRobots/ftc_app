@@ -66,7 +66,7 @@ public class ShelbyBot
     private int colorPort = 0;
     private DriveDir ddir = DriveDir.UNKNOWN;
     public DriveDir calibrationDriveDir = DriveDir.UNKNOWN;
-    private HardwareMap hwMap = null;
+    protected HardwareMap hwMap = null;
 
     boolean colorEnabled = false;
 
@@ -412,7 +412,7 @@ public class ShelbyBot
 
     public double getGyroFhdg()
     {
-        if(gyro == null) return 0;
+        if(imu == null && gyro == null) return 0;
         int dirHdgAdj = 0;
         if(ddir != calibrationDriveDir) dirHdgAdj = 180;
 

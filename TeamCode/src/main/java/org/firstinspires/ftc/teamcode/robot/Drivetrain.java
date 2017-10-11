@@ -286,6 +286,7 @@ public class Drivetrain
 
     public int driveDistanceLinear(double dst, double pwr, Direction dir)
     {
+        robot.getGyroHdg();
         return driveDistanceLinear(dst, pwr, dir, robot.getGyroFhdg());
     }
 
@@ -1116,6 +1117,7 @@ public class Drivetrain
         this.rampUp = rampUp;
     }
 
+    public boolean getRampDown() {return  rampDown;}
     public void setRampDown(boolean rampDown)
     {
         this.rampDown = rampDown;

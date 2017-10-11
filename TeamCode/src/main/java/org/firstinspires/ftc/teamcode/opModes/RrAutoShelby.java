@@ -21,6 +21,9 @@ import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import ftclib.FtcChoiceMenu;
@@ -110,11 +113,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.ii("SJH", "DELAY    %4.2f", delay);
 
         Points pts = new RrPoints(startPos, alliance);
-        pathSegs = pts.getSegments();
+        pathSegs.addAll(Arrays.asList(pts.getSegments()));
 
-        initHdg = (int)(Math.round(pathSegs[0].getFieldHeading()));
+        initHdg = (int)(Math.round(pathSegs.get(0).getFieldHeading()));
 
-        ShelbyBot.DriveDir startDdir = pathSegs[0].getDir();
+        ShelbyBot.DriveDir startDdir = pathSegs.get(0).getDir();
         robot.setDriveDir(startDdir);
 
         dashboard.displayPrintf(0, "GYRO CALIBRATING DO NOT TOUCH OR START");
@@ -131,7 +134,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         RobotLog.ii("SJH", "ROUTE: \n" + pts.toString());
 
-        Point2d currPoint = pathSegs[0].getStrtPt();
+        Point2d currPoint = pathSegs.get(0).getStrtPt();
         drvTrn.setCurrPt(currPoint);
 
         drvTrn.setStartHdg(initHdg);
@@ -154,7 +157,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.ii("SJH", "STARTING AT %4.2f", timer.seconds());
         if(logData)
         {
-            Point2d spt = pathSegs[0].getStrtPt();
+            Point2d spt = pathSegs.get(0).getStrtPt();
             dl.addField("START");
             dl.addField(initHdg);
             dl.addField(spt.getX());
@@ -176,11 +179,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.resetGyro();
 
         boolean SkipNextSegment = false;
-        for (int i = 0; i < pathSegs.length; ++i)
+        for (int i = 0; i < pathSegs.size(); ++i)
         {
             if(!opModeIsActive() || isStopRequested()) break;
 
-            String segName = pathSegs[i].getName();
+            String segName = pathSegs.get(i).getName();
             RobotLog.ii("SJH", "Starting segment %s at %4.2f", segName,
                     startTimer.seconds());
 
@@ -188,13 +191,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             if (SkipNextSegment)
             {
                 SkipNextSegment = false;
-                RobotLog.ii("SJH", "Skipping segment %s", pathSegs[i].getName());
-                if(i < pathSegs.length - 1)
+                RobotLog.ii("SJH", "Skipping segment %s", pathSegs.get(i).getName());
+                if(i < pathSegs.size() - 1)
                 {
                     RobotLog.ii("SJH", "Setting segment %s start pt to %s",
-                            pathSegs[i+1].getName(),
-                            pathSegs[i].getStrtPt());
-                    pathSegs[i+1].setStrtPt(pathSegs[i].getStrtPt());
+                            pathSegs.get(i+1).getName(),
+                            pathSegs.get(i).getStrtPt());
+                    pathSegs.get(i+1).setStrtPt(pathSegs.get(i).getStrtPt());
                 }
                 continue;
             }
@@ -203,12 +206,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
             if(curPos == null || !useImageLoc)
             {
-                curSeg = pathSegs[i];
+                curSeg = pathSegs.get(i);
             }
             else
             {
                 drvTrn.setCurrPt(curPos);
-                curSeg = new Segment("CURSEG", curPos, pathSegs[i].getTgtPt());
+                curSeg = new Segment("CURSEG", curPos, pathSegs.get(i).getTgtPt());
             }
             curPos = null;
 
@@ -258,8 +261,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             }
 
             RobotLog.ii("SJH", "Planned pos: %s %s",
-                    pathSegs[i].getTgtPt(),
-                    pathSegs[i].getFieldHeading());
+                    pathSegs.get(i).getTgtPt(),
+                    pathSegs.get(i).getFieldHeading());
 
 
             Segment.Action act = curSeg.getAction();
@@ -272,80 +275,129 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
             switch (act)
             {
-//                case SHOOT:
-//                    do_shoot();
-//                    drvTrn.driveToTarget(0.13, 18);
-//                    break;
-//
-//                case FIND_BEACON:
-//                    //do_findAndPushBeacon(curSeg.getTgtPt());
-//                    do_findAndPushBeacon(true, curSeg);
-//
-//                    if(robot.dim != null)
-//                    {
-//                        robot.dim.setLED(0, false); robot.dim.setLED(1, false);
-//                        robot.dim.setLED(0, false); robot.dim.setLED(0, false);
-//                    }
-//
-//                    break;
-//
 //                case RST_PUSHER:
 //                    robot.lpusher.setPosition(L_DN_PUSH_POS);
 //                    break;
                 case SCAN_IMAGE:
-                    double jewelPushDist = 2.0;
-                    double jewelPushSpd  = 0.2;
-                    Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
-
-                    key = getKey();
-                    jewelColor = getJewelColor();
-                    RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
-                            key, jewelColor);
-                    if(jewelColor == MajorColorDetector.Color.NONE)
-                        continue;
-
-                    //TODO: Deploy pusher
-                    RobotLog.dd(TAG, "Deploy pusher");
-                    MajorColorDetector.Color badJewel = MajorColorDetector.Color.NONE;
-                    switch (jewelColor)
-                    {
-                        case RED:
-                            badJewel = MajorColorDetector.Color.BLUE;
-                            if(alliance == Field.Alliance.RED)
-                            {
-                                ddir = Drivetrain.Direction.REVERSE;
-                            }
-                            break;
-
-                        case BLUE:
-                            badJewel = MajorColorDetector.Color.RED;
-                            if(alliance == Field.Alliance.BLUE)
-                            {
-                                ddir = Drivetrain.Direction.REVERSE;
-                            }
-                            break;
-
-                        case NONE:
-                            continue;
-                    }
-
-                    //move to knock off jewel
-                    RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s",
-                            ddir, jewelPushDist, jewelPushSpd, badJewel);
-                    drvTrn.driveDistanceLinear(jewelPushDist, jewelPushSpd, ddir);
-
-                    //TODO: retract pusher
-                    RobotLog.dd(TAG, "Retract pusher");
-
-                    //move back to start pt
-                    drvTrn.driveDistanceLinear(-jewelPushDist, jewelPushSpd, ddir);
-
+                    doScanPush(pathSegs.get(i+1));
                     break;
 
-                case NOTHING:
+                case SET_KEY:
+                    RobotLog.dd(TAG, "In SET_KEY");
+                    if(i+1 < pathSegs.size())
+                    {
+                        Segment alignSeg = pathSegs.get(i+1);
+                        Point2d cboxPt = alignSeg.getTgtPt();
+                        Point2d dropPt = cboxPt;
+                        double offset = 7.63;
+                        double loc = cboxPt.getX();
+                        if (startPos == Field.StartPos.START_1)
+                        {
+                            switch (key)
+                            {
+                                case LEFT:
+                                    loc += offset;
+                                    break;
+                                case RIGHT:
+                                    loc -= offset;
+                                    break;
+                            }
+                            cboxPt.setX(loc);
+                            dropPt.setX(loc);
+                            dropPt.setY(-60.0);
+                        }
+
+                        if (startPos == Field.StartPos.START_2)
+                        {
+                            switch (key)
+                            {
+                                case LEFT:
+                                    loc += offset;
+                                    break;
+                                case RIGHT:
+                                    loc -= offset;
+                                    break;
+                            }
+                            cboxPt.setY(loc);
+                            dropPt.setY(loc);
+                            dropPt.setX(60.0);
+                        }
+
+                        RobotLog.dd(TAG, "On segment %s", curSeg.toString());
+                        RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
+
+                        alignSeg.setEndPt(cboxPt);
+                        Segment dropSeg = new Segment("DropSeg", cboxPt, dropPt);
+                        dropSeg.setDir(curSeg.getDir());
+                        dropSeg.setSpeed(0.2);
+                        RobotLog.dd(TAG, "Post alignSeg %s", alignSeg.toString());
+                        RobotLog.dd(TAG, "Post dropSeg  %s", dropSeg.toString());
+
+                        pathSegs.add(i+2, dropSeg);
+                    }
+                    break;
+
+                case DROP:
                     break;
             }
         }
+    }
+
+    private void doScanPush(Segment postPushSeg)
+    {
+        double jewelPushDist = 2.0;
+        double jewelPushSpd  = 0.2;
+        Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
+
+        key = getKey();
+        jewelColor = getJewelColor();
+        RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
+                key, jewelColor);
+        if(jewelColor == MajorColorDetector.Color.NONE)
+            return;
+
+        //TODO: Deploy pusher
+        RobotLog.dd(TAG, "Deploy pusher");
+        MajorColorDetector.Color badJewel = MajorColorDetector.Color.NONE;
+        int pushSign = 1;
+        switch (jewelColor)
+        {
+            case RED:
+                badJewel = MajorColorDetector.Color.BLUE;
+                if(alliance == Field.Alliance.RED)
+                    pushSign = -1;
+                break;
+
+            case BLUE:
+                badJewel = MajorColorDetector.Color.RED;
+                if(alliance == Field.Alliance.BLUE)
+                    pushSign = -1;
+                break;
+        }
+
+        //move to knock off jewel
+        RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s",
+                ddir, jewelPushDist * pushSign, jewelPushSpd, badJewel);
+
+        Point2d pushStart = postPushSeg.getTgtPt();
+        Point2d pushEnd   = new Point2d(pushStart.getX() + jewelPushDist * pushSign,
+                                               pushStart.getY());
+
+        boolean curRampDown = drvTrn.getRampDown();
+        drvTrn.setRampDown(false);
+        Segment pushSeg = new Segment("PushSeg", pushStart, pushEnd);
+        pushSeg.setAction(Segment.Action.NOTHING);
+        pushSeg.setDir(postPushSeg.getDir());
+        pushSeg.setSpeed(jewelPushSpd);
+        doMove(pushSeg);
+        drvTrn.setRampDown(curRampDown);
+
+        //TODO: retract pusher
+        RobotLog.dd(TAG, "Retract pusher");
+
+        RobotLog.dd(TAG, "Orig postPushSeg %s", postPushSeg.toString());
+        postPushSeg.setStrtPt(pushEnd);
+        RobotLog.dd(TAG, "Post postPushSeg %s", postPushSeg.toString());
     }
 
     private void doMove(Segment seg)
@@ -502,25 +554,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         }
         else
         {
-            int targetHdg = (int) Math.round(seg.getFieldHeading());
+            double targetHdg = seg.getFieldHeading();
             drvTrn.driveToPointLinear(ept, speed, ddir, targetHdg);
         }
-
-        //If segment action is shoot, force bot to turn slightly to try to get balls to fall away from beacons
-
-        int dtlCorrect = 18;
-
-//        if(snm.equals("PRECTR") ||
-//           snm.equals("CTRPRK") ||
-//           snm.equals("B_MID")  ||
-//           snm.equals("DP1")    ||
-//           snm.equals("ASHOOT") ||
-//           snm.equals("BSHOOT") ||
-//           snm.equals("DFNPRK"))
-//        {
-//            doCorrect = false;
-//        }
-        if(doCorrect) drvTrn.driveToTarget(0.13, dtlCorrect);
 
         drvTrn.setCurrPt(ept);
 
@@ -743,7 +779,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private final static double DEF_ENCTRN_PWR  = 0.4;
     private final static double DEF_GYRTRN_PWR = 0.4;
 
-    private Segment[] pathSegs;
+    private List<Segment> pathSegs = new ArrayList<>();
 
     private ShelbyBot   robot = new TilerunnerGtoBot();
     private ElapsedTime timer = new ElapsedTime();
