@@ -18,8 +18,8 @@ public class RrPoints extends Points
         Vector<Point2d> points = new Vector<>(MAX_SEGMENTS);
 
         //convenience declarations to make call params shorter
-        ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.PUSHER;
-        ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.SWEEPER;
+        ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.SWEEPER;
+        ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.PUSHER;
         Segment.Action none    = Segment.Action.NOTHING;
         Segment.Action scan    = Segment.Action.SCAN_IMAGE;
         Segment.Action key     = Segment.Action.SET_KEY;

@@ -51,6 +51,7 @@ public class Segment
     public Double getPostTurn() { return postTurn; }
     public TargetType getTgtType() { return tgtType; }
 
+    public void setName(String name) {this.name = name;}
     public void setAction(Action act) { this.act = act; }
     public void setDir(ShelbyBot.DriveDir dir)
     {

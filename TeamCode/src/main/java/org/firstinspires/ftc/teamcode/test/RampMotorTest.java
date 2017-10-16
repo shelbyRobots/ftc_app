@@ -3,57 +3,73 @@ package org.firstinspires.ftc.teamcode.test;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.RobotLog;
 
-/**
- * This OpMode ramps a single motor speed up and down repeatedly until Stop is pressed.
- * The code is structured as a LinearOpMode
- *
- * This code assumes a DC motor configured with the name "left motor" as is found on a pushbot.
- *
- * INCREMENT sets how much to increase/decrease the power each cycle
- * CYCLE_MS sets the update period.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
 @Autonomous(name = "Concept: Ramp Motor Speed", group = "Test")
 //@Disabled
 public class RampMotorTest extends LinearOpMode {
 
     private static final double INCREMENT   = 0.01;     // amount to ramp motor each CYCLE_MS cycle
-    private static final int    CYCLE_MS    =   50;     // period of each cycle
+    private static final int    CYCLE_MS    =  500;     // period of each cycle
     private static final double MAX_FWD     =  1.0;     // Maximum FWD power applied to motor
     private static final double MAX_REV     = -1.0;     // Maximum REV power applied to motor
 
+    private int lastLeft  = 0;
+    private int lastRight = 0;
+    private double lastPower = 0.0;
+
     // Define class members
-    private DcMotor motor = null;
     private double  power   = 0;
     private boolean rampUp  = true;
 
-    public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
-    public static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
+    private static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.REVERSE;
+    private static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.FORWARD;
+
+    private static final String TAG = "SJH_RMT";
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-        DcMotor left_drive;
-        DcMotor right_drive;
-        // Connect to motor (Assume standard left wheel)
-        // Change the text in quotes to match any motor name on your robot.
-        //motor = hardwareMap.dcMotor.get("left motor");
-        left_drive = hardwareMap.dcMotor.get("leftdrive");
-        right_drive = hardwareMap.dcMotor.get("rightdrive");
+        DcMotor left_drive = null;
+        DcMotor right_drive = null;
 
-        if(left_drive  != null)  left_drive.setDirection(LEFT_DIR);
-        if(right_drive != null) right_drive.setDirection(RIGHT_DIR);
+        try
+        {
+            left_drive = hardwareMap.dcMotor.get("leftdrive");
+            left_drive.setDirection(LEFT_DIR);
+            left_drive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            left_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch(Exception e)
+        {
+            RobotLog.ee(TAG, "Problem finding left motor");
+        }
+
+        try
+        {
+            right_drive = hardwareMap.dcMotor.get("rightdrive");
+            right_drive.setDirection(RIGHT_DIR);
+            right_drive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            right_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+        catch(Exception e)
+        {
+            RobotLog.ee(TAG, "Problem finding right motor");
+        }
 
         // Wait for the start button
         telemetry.addData(">", "Press Start to run Motors." );
         telemetry.update();
         while(!isStarted())
         {
-            telemetry.addData("LCNT", "%d", left_drive.getCurrentPosition());
-            telemetry.addData("RCNT", "%d", right_drive.getCurrentPosition());
+            if(left_drive != null)
+            {
+                telemetry.addData("LCNT", "%d", left_drive.getCurrentPosition());
+            }
+            if(right_drive != null)
+            {
+                telemetry.addData("RCNT", "%d", right_drive.getCurrentPosition());
+            }
             telemetry.update();
             sleep(10);
         }
@@ -82,20 +98,37 @@ public class RampMotorTest extends LinearOpMode {
 
             // Display the current value
             telemetry.addData("Motor Power", "%5.2f", power);
-            telemetry.addData("LCNT", "%d", left_drive.getCurrentPosition());
-            telemetry.addData("RCNT", "%d", right_drive.getCurrentPosition());
+            if(left_drive != null)
+            {
+                int curLeft = left_drive.getCurrentPosition();
+                telemetry.addData("LCNT", "%d", curLeft);
+                telemetry.addData("LLST", "%d", curLeft - lastLeft);
+                RobotLog.dd(TAG, "Power %4.2f LCounts %d", lastPower, curLeft - lastLeft);
+                lastLeft = curLeft;
+            }
+            if(right_drive != null)
+            {
+                int curRight = right_drive.getCurrentPosition();
+                telemetry.addData("RCNT", "%d", curRight);
+                telemetry.addData("RLST", "%d", curRight - lastRight);
+                RobotLog.dd(TAG, "Power %4.2f RCounts %d", lastPower, curRight - lastRight);
+                lastRight = curRight;
+            }
+
             telemetry.addData(">", "Press Stop to end test." );
             telemetry.update();
 
             // Set the motor to the new power and pause;
-            left_drive.setPower(power);
-            right_drive.setPower(power);
+            if(left_drive !=null) left_drive.setPower(power);
+            if(right_drive != null) right_drive.setPower(power);
+            lastPower = power;
             sleep(CYCLE_MS);
             idle();
         }
 
+        if(left_drive !=null) left_drive.setPower(0.0);
+        if(right_drive != null) right_drive.setPower(0.0);
         // Turn off motor and signal done;
-        motor.setPower(0);
         telemetry.addData(">", "Done");
         telemetry.update();
 

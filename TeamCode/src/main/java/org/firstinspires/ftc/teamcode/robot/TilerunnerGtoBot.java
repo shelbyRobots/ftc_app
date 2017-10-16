@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -20,6 +21,8 @@ public class TilerunnerGtoBot extends ShelbyBot
     private Acceleration gravity;
 
     private ElapsedTime imuTimer = new ElapsedTime();
+
+    private static final String TAG = "SJH_GTO";
 
     public TilerunnerGtoBot()
     {
@@ -41,12 +44,16 @@ public class TilerunnerGtoBot extends ShelbyBot
         CAMERA_Y_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
         CAMERA_Z_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
 
+        LEFT_DIR  = DcMotorSimple.Direction.REVERSE;
+        RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
+
         gyroInverted = false;
     }
 
     @Override
     public void init(LinearOpMode op)
     {
+        System.out.println("In TilerunnerGtoBot.init");
         computeCPI();
 
         initOp(op);
@@ -78,6 +85,7 @@ public class TilerunnerGtoBot extends ShelbyBot
     @Override
     protected void initSensors()
     {
+        System.out.println("In TilerunnerGtoBot.initSensors");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -90,12 +98,11 @@ public class TilerunnerGtoBot extends ShelbyBot
         {
             imu = (BNO055IMU) com.getHardwareMap().get("imu");
             imu.initialize(parameters);
-            gyroReady = true;
             capMap.put("sensor", true);
         }
         catch(Exception e)
         {
-            RobotLog.ee("SJH", "ERROR get imu\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get imu\n" + e.toString());
         }
     }
 
@@ -103,6 +110,13 @@ public class TilerunnerGtoBot extends ShelbyBot
     public boolean calibrateGyro()
     {
         //Callibration performed internally and assisted by loading file from offline calib.
+        RobotLog.dd(TAG, "CalibrateGyro isAccelCal %s isGyroCal %s calStatus %s sysStatus %s",
+                imu.isAccelerometerCalibrated(),
+                imu.isGyroCalibrated(),
+                imu.getCalibrationStatus(),
+                imu.getSystemStatus());
+
+        gyroReady = true;
         return true;
     }
 

@@ -54,7 +54,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 {
     public RrAutoShelby()
     {
-        super();
+        //super();
     }
 
     private void startMode()
@@ -71,7 +71,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         super.runOpMode();
 
         setup();
-        waitForStart();
+        //waitForStart();
+        while(!isStarted())
+        {
+            double shdg = robot.getGyroHdg();
+            double fhdg = robot.getGyroFhdg();
+            dashboard.displayPrintf(9, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
+            dashboard.displayPrintf(10, "GyroReady %s", gyroReady);
+            dashboard.displayPrintf(11, "RGyroReady %s", robot.gyroReady);
+            sleep(10);
+        }
         startMode();
         stopMode();
     }
@@ -122,7 +131,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         dashboard.displayPrintf(0, "GYRO CALIBRATING DO NOT TOUCH OR START");
 
-        if (robot.gyro  != null)
+        if (robot.imu != null || robot.gyro  != null)
         {
             gyroReady = robot.calibrateGyro();
         }
@@ -284,11 +293,18 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case SET_KEY:
                     RobotLog.dd(TAG, "In SET_KEY");
+                    RobotLog.dd(TAG, "On segment %s", curSeg.toString());
                     if(i+1 < pathSegs.size())
                     {
+
                         Segment alignSeg = pathSegs.get(i+1);
+
+                        RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
+
                         Point2d cboxPt = alignSeg.getTgtPt();
-                        Point2d dropPt = cboxPt;
+                        Point2d dropPt = new Point2d("DropPt",
+                                                     cboxPt.getX(),
+                                                     cboxPt.getY());
                         double offset = 7.63;
                         double loc = cboxPt.getX();
                         if (startPos == Field.StartPos.START_1)
@@ -304,7 +320,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                             }
                             cboxPt.setX(loc);
                             dropPt.setX(loc);
-                            dropPt.setY(-60.0);
+                            dropPt.setY(-52.0);
                         }
 
                         if (startPos == Field.StartPos.START_2)
@@ -320,18 +336,15 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                             }
                             cboxPt.setY(loc);
                             dropPt.setY(loc);
-                            dropPt.setX(60.0);
+                            dropPt.setX(52.0);
                         }
-
-                        RobotLog.dd(TAG, "On segment %s", curSeg.toString());
-                        RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
 
                         alignSeg.setEndPt(cboxPt);
                         Segment dropSeg = new Segment("DropSeg", cboxPt, dropPt);
                         dropSeg.setDir(curSeg.getDir());
                         dropSeg.setSpeed(0.2);
                         RobotLog.dd(TAG, "Post alignSeg %s", alignSeg.toString());
-                        RobotLog.dd(TAG, "Post dropSeg  %s", dropSeg.toString());
+                        RobotLog.dd(TAG, "dropSeg  %s", dropSeg.toString());
 
                         pathSegs.add(i+2, dropSeg);
                     }
@@ -379,9 +392,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s",
                 ddir, jewelPushDist * pushSign, jewelPushSpd, badJewel);
 
-        Point2d pushStart = postPushSeg.getTgtPt();
-        Point2d pushEnd   = new Point2d(pushStart.getX() + jewelPushDist * pushSign,
-                                               pushStart.getY());
+        Point2d pushStart = postPushSeg.getStrtPt();
+        Point2d pushEnd   = new Point2d("PUSHENDPT",
+                pushStart.getX() + jewelPushDist * pushSign,
+                pushStart.getY());
 
         boolean curRampDown = drvTrn.getRampDown();
         drvTrn.setRampDown(false);

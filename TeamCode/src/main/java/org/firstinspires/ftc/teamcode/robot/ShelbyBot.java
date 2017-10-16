@@ -129,6 +129,7 @@ public class ShelbyBot
     /* Initialize standard Hardware interfaces */
     public void init(LinearOpMode op)
     {
+        System.out.println("In ShelbyBot.init");
         RobotLog.dd(TAG, "in robot init");
         computeCPI();
 
@@ -235,6 +236,7 @@ public class ShelbyBot
 
     protected void initSensors()
     {
+        System.out.println("In ShelbyBot.initSensors");
         try  //I2C and DAIO
         {
             dim = hwMap.deviceInterfaceModule.get("dim");

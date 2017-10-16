@@ -2,13 +2,12 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
+import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
@@ -33,17 +32,17 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             dtrn.init(robot);
-            robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+            //robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
         }
 
         // Send telemetry message to signify robot waiting;
         dashboard.displayText(0, "Hello Driver");
 
-        if(dtrnType == Drivetrain.DrivetrainType.RWD_2_2X40)
-        {
-            robot.LEFT_DIR = DcMotorSimple.Direction.REVERSE;
-            robot.RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
-        }
+//        if(dtrnType == Drivetrain.DrivetrainType.RWD_2_2X40)
+//        {
+//            robot.LEFT_DIR = DcMotorSimple.Direction.REVERSE;
+//            robot.RIGHT_DIR = DcMotorSimple.Direction.FORWARD;
+//        }
 
         double curLpushPos = L_DN_PUSH_POS;
         double curRpushPos = R_DN_PUSH_POS;
@@ -158,6 +157,8 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(10,"D_DIR " + robot.getDriveDir());
             dashboard.displayPrintf(11,"Z_PWR " + zeroPwr);
             dashboard.displayPrintf(12,"RMODE " + robot.leftMotor.getMode());
+            dashboard.displayPrintf(13,"L_DIR " + robot.leftMotor.getDirection());
+            dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
 
             robot.leftMotor.setPower(left);
             robot.rightMotor.setPower(right);
@@ -316,7 +317,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private final static double L_UP_PUSH_POS = 0.05;
     private final static double R_UP_PUSH_POS = 1.0;
 
-    private ShelbyBot robot = new ShelbyBot();
+    private ShelbyBot robot = new TilerunnerGtoBot();
     private Drivetrain dtrn = new Drivetrain();
 
     private static final String TAG = "SJH_TD";
