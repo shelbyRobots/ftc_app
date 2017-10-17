@@ -124,7 +124,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         Points pts = new RrPoints(startPos, alliance);
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
 
-        initHdg = (int)(Math.round(pathSegs.get(0).getFieldHeading()));
+        initHdg = pathSegs.get(0).getFieldHeading();
 
         ShelbyBot.DriveDir startDdir = pathSegs.get(0).getDir();
         robot.setDriveDir(startDdir);
@@ -152,7 +152,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.ii("SJH", "Start %s.", currPoint);
         dashboard.displayPrintf(3, "PATH: Start at %s", currPoint);
 
-        RobotLog.ii("SJH", "IHDG %4d", initHdg);
+        RobotLog.ii("SJH", "IHDG %4.2f", initHdg);
 
         det.setTelemetry(telemetry);
     }
@@ -249,6 +249,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             else
             {
                 doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
+                doGyroTurn(curSeg.getFieldHeading(), segName + " gyroTurn");
                 doMove(curSeg);
             }
 
@@ -616,9 +617,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
         double cHdg = drvTrn.curHdg;
-        int tHdg = (int) Math.round(fHdg);
+        double tHdg = fHdg;
 
-        RobotLog.ii("SJH", "doGyroTurn CHDG %4d THDG %4d", cHdg, tHdg);
+        RobotLog.ii("SJH", "doGyroTurn CHDG %4.2f THDG %4.2f", cHdg, tHdg);
 
         if(Math.abs(tHdg-cHdg) < 1.0)
             return;
@@ -627,7 +628,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.ctrTurnToHeading(tHdg, DEF_GYRTRN_PWR);
 
         cHdg = drvTrn.curHdg;
-        RobotLog.ii("SJH", "Completed turnGyro %4d. Time: %6.3f CHDG: %4d",
+        RobotLog.ii("SJH", "Completed turnGyro %4.2f. Time: %6.3f CHDG: %4.2f",
                 tHdg, timer.time(), cHdg);
     }
 
@@ -807,7 +808,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private static Point2d curPos;
     private static double  curHdg;
-    private int initHdg = 0;
+    private double initHdg = 0.0;
     private boolean gyroReady;
     private boolean usePostTurn = true;
 

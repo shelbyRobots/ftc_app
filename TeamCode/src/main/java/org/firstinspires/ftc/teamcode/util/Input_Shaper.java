@@ -7,7 +7,8 @@ public class Input_Shaper
 
     public double shape(double inValue)
     {
-        return Math.pow(inValue, 3);
+        return  inValue * Math.abs(inValue);
+        //return Math.pow(inValue, 3);
 //        inputActive = (Math.abs(inValue) > 0.1);
 //        inputSlow   = (Math.abs(inValue) < 0.8);
 

@@ -2,15 +2,18 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
+@SuppressWarnings("unused")
 @TeleOp(name="Telop Driver", group="Tele")
 //@Disabled
 public class Teleop_Driver extends InitLinearOpMode
@@ -22,6 +25,7 @@ public class Teleop_Driver extends InitLinearOpMode
         Input_Shaper ishaper = new Input_Shaper();
         DcMotor.ZeroPowerBehavior zeroPwr = DcMotor.ZeroPowerBehavior.FLOAT;
         double shoot_scale = 0.75;
+        boolean useSetVel = true;
 
         /* Initialize the hardware variables. */
         robot.init(this);
@@ -76,6 +80,7 @@ public class Teleop_Driver extends InitLinearOpMode
             boolean toggle_lpusher    = gpad1.just_pressed(ManagedGamepad.Button.L_TRIGGER);
             boolean step_driveType    = gpad1.just_pressed(ManagedGamepad.Button.A);
             boolean toggle_float      = gpad1.just_pressed(ManagedGamepad.Button.B);
+            boolean toggle_vel        = gpad1.just_pressed(ManagedGamepad.Button.R_BUMP);
             boolean decr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean incr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
             boolean toggle_shoot_mtr  = gpad2.just_pressed(ManagedGamepad.Button.R_TRIGGER);
@@ -123,6 +128,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
                 case ARCADE_DRIVE:
                     turn = (1 - Math.abs(speed)) * turn;
+                    if(turn < 0.75) turn /= 2.0;
                     left  = speed + turn;
                     right = speed - turn;
                     break;
@@ -147,6 +153,8 @@ public class Teleop_Driver extends InitLinearOpMode
                 right /= max;
             }
 
+            if(toggle_vel) useSetVel = !useSetVel;
+
             dashboard.displayPrintf(3, "SPEED %4.2f", speed);
             dashboard.displayPrintf(4, "TURN  %4.2f", turn);
             dashboard.displayPrintf(5, "L_OUT %4.2f", left);
@@ -159,9 +167,25 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(12,"RMODE " + robot.leftMotor.getMode());
             dashboard.displayPrintf(13,"L_DIR " + robot.leftMotor.getDirection());
             dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
+            dashboard.displayPrintf(15,"SVEL " + useSetVel);
 
-            robot.leftMotor.setPower(left);
-            robot.rightMotor.setPower(right);
+            lex = (DcMotorEx)(robot.leftMotor);
+            rex = (DcMotorEx)(robot.rightMotor);
+            double maxIPS = 60.0;
+            double maxRPS = maxIPS/(4.0*Math.PI);
+            double maxDPS = maxRPS*360.0;
+
+
+            if(useSetVel)
+            {
+                lex.setVelocity(maxDPS*left,  AngleUnit.DEGREES);
+                rex.setVelocity(maxDPS*right, AngleUnit.DEGREES);
+            }
+            else
+            {
+                robot.leftMotor.setPower(left);
+                robot.rightMotor.setPower(right);
+            }
 
             if(decr_shoot_scale)      shoot_scale -= 0.05;
             else if(incr_shoot_scale) shoot_scale += 0.05;
@@ -279,11 +303,11 @@ public class Teleop_Driver extends InitLinearOpMode
                         driveType = TELEOP_DRIVE_TYPE.ARCADE_DRIVE;
                         break;
                     case ARCADE_DRIVE:
-                        driveType = TELEOP_DRIVE_TYPE.CAR_DRIVE;
+                        driveType = TELEOP_DRIVE_TYPE.ARCADE_DRIVE;
                         break;
-                    case CAR_DRIVE:
-                        driveType = TELEOP_DRIVE_TYPE.TANK_DRIVE;
-                        break;
+//                    case CAR_DRIVE:
+//                        driveType = TELEOP_DRIVE_TYPE.TANK_DRIVE;
+//                        break;
                 }
             }
 
@@ -316,6 +340,9 @@ public class Teleop_Driver extends InitLinearOpMode
     private final static double R_DN_PUSH_POS = 0.05;
     private final static double L_UP_PUSH_POS = 0.05;
     private final static double R_UP_PUSH_POS = 1.0;
+
+    private DcMotorEx lex = null;
+    private DcMotorEx rex = null;
 
     private ShelbyBot robot = new TilerunnerGtoBot();
     private Drivetrain dtrn = new Drivetrain();
