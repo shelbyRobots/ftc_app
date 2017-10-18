@@ -302,7 +302,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                         RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
 
-                        Point2d cboxPt = alignSeg.getTgtPt();
+                        Point2d cboxPt = new Point2d("AlnPt",
+                                                     alignSeg.getTgtPt().getX(),
+                                                     alignSeg.getTgtPt().getY());
                         Point2d dropPt = new Point2d("DropPt",
                                                      cboxPt.getX(),
                                                      cboxPt.getY());
@@ -379,12 +381,14 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             case RED:
                 badJewel = MajorColorDetector.Color.BLUE;
                 if(alliance == Field.Alliance.RED)
+                    ddir = Drivetrain.Direction.REVERSE;
                     pushSign = -1;
                 break;
 
             case BLUE:
                 badJewel = MajorColorDetector.Color.RED;
                 if(alliance == Field.Alliance.BLUE)
+                    ddir = Drivetrain.Direction.REVERSE;
                     pushSign = -1;
                 break;
         }
@@ -398,11 +402,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 pushStart.getX() + jewelPushDist * pushSign,
                 pushStart.getY());
 
+        ShelbyBot.DriveDir segDir = ShelbyBot.DriveDir.SWEEPER;
+        if(ddir == Drivetrain.Direction.REVERSE)
+        {
+            if(postPushSeg.getDir() == ShelbyBot.DriveDir.SWEEPER)
+                segDir = ShelbyBot.DriveDir.PUSHER;
+        }
+        robot.setDriveDir(segDir);
+
         boolean curRampDown = drvTrn.getRampDown();
         drvTrn.setRampDown(false);
         Segment pushSeg = new Segment("PushSeg", pushStart, pushEnd);
         pushSeg.setAction(Segment.Action.NOTHING);
-        pushSeg.setDir(postPushSeg.getDir());
+        pushSeg.setDir(segDir);
         pushSeg.setSpeed(jewelPushSpd);
         doMove(pushSeg);
         drvTrn.setRampDown(curRampDown);
@@ -488,7 +500,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             Point2d cept = new Point2d(pct * (ept.getX() - spt.getX()) + spt.getX(),
                                        pct * (ept.getY() - spt.getY()) + spt.getY());
 
-            int targetHdg = (int) Math.round(fhd);
+            double targetHdg = fhd;
 
             double colDist = cept.distance(ept);
             double ovrDist = 2.0;
