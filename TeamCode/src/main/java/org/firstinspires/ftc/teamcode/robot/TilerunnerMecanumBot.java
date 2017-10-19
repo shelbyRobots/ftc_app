@@ -33,11 +33,6 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     {
         super();
 
-        motors.put("FR", rfMotor);
-        motors.put("BR", rrMotor);
-        motors.put("BL", lrMotor);
-        motors.put("FL", lfMotor);
-
         COUNTS_PER_MOTOR_REV = 28;
         DRIVE_GEARS = new double[]{20.0, 1.0};
 
@@ -66,6 +61,10 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             lrMotor = hwMap.dcMotor.get("BL");
             rfMotor = hwMap.dcMotor.get("FR");
             rrMotor = hwMap.dcMotor.get("BR");
+            motors.put("FR", rfMotor);
+            motors.put("BR", rrMotor);
+            motors.put("BL", lrMotor);
+            motors.put("FL", lfMotor);
             capMap.put("drivetrain", true);
         }
         catch (Exception e)

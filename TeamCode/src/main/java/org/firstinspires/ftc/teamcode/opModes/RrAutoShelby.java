@@ -299,6 +299,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     {
 
                         Segment alignSeg = pathSegs.get(i+1);
+                        Segment postDropSeg = pathSegs.get(i+2);
 
                         RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
 
@@ -310,20 +311,23 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                                                      cboxPt.getY());
                         double offset = 7.63;
                         double loc = cboxPt.getX();
+                        int rbDir = 1;
+                        if(alliance == Field.Alliance.BLUE) rbDir = -1;
+
                         if (startPos == Field.StartPos.START_1)
                         {
                             switch (key)
                             {
                                 case LEFT:
-                                    loc += offset;
+                                    loc += rbDir * offset;
                                     break;
                                 case RIGHT:
-                                    loc -= offset;
+                                    loc -= rbDir * offset;
                                     break;
                             }
                             cboxPt.setX(loc);
                             dropPt.setX(loc);
-                            dropPt.setY(-52.0);
+                            dropPt.setY(-54.0);
                         }
 
                         if (startPos == Field.StartPos.START_2)
@@ -331,21 +335,23 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                             switch (key)
                             {
                                 case LEFT:
-                                    loc += offset;
+                                    loc -= rbDir * offset;
                                     break;
                                 case RIGHT:
-                                    loc -= offset;
+                                    loc += rbDir * offset;
                                     break;
                             }
                             cboxPt.setY(loc);
                             dropPt.setY(loc);
-                            dropPt.setX(52.0);
+                            dropPt.setX(54.0);
                         }
 
                         alignSeg.setEndPt(cboxPt);
+                        postDropSeg.setStrtPt(dropPt);
                         Segment dropSeg = new Segment("DropSeg", cboxPt, dropPt);
                         dropSeg.setDir(curSeg.getDir());
                         dropSeg.setSpeed(0.2);
+
                         RobotLog.dd(TAG, "Post alignSeg %s", alignSeg.toString());
                         RobotLog.dd(TAG, "dropSeg  %s", dropSeg.toString());
 
