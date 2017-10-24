@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robot;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -21,6 +22,11 @@ public class TilerunnerGtoBot extends ShelbyBot
     private Acceleration gravity;
 
     private ElapsedTime imuTimer = new ElapsedTime();
+
+    public Servo    gpitch     = null;
+    public Servo    gripper    = null;
+    public Servo    jflicker   = null;
+
 
     private static final String TAG = "SJH_GTO";
 
@@ -73,13 +79,16 @@ public class TilerunnerGtoBot extends ShelbyBot
     @Override
     protected void initCollectorLifter()
     {
-        //Add setup of collector/lifter motors
+        gpitch = hwMap.servo.get("gpitch");
+        gripper = hwMap.servo.get("gripper");
+        if(gpitch != null)capMap.put("collector", true);
     }
 
     @Override
     protected void initPushers()
     {
-        //Add setup of pusher
+        jflicker = hwMap.servo.get("jflicker");
+        if(jflicker != null)capMap.put("pusher", true);
     }
 
     @Override

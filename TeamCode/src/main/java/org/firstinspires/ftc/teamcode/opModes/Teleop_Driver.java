@@ -344,7 +344,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private DcMotorEx lex = null;
     private DcMotorEx rex = null;
 
-    private ShelbyBot robot = new TilerunnerGtoBot();
+    private TilerunnerGtoBot robot = new TilerunnerGtoBot();
     private Drivetrain dtrn = new Drivetrain();
 
     private static final String TAG = "SJH_TD";

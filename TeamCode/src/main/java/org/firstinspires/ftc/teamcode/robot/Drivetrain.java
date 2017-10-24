@@ -1166,7 +1166,7 @@ public class Drivetrain
             if(title != null) comment = title;
             dl.addField(comment);
             dl.addField(frame);
-            if(robot.gyro != null) dl.addField(curHdg);
+            if(robot.imu != null || robot.gyro != null) dl.addField(curHdg);
             else                   dl.addField("");
             dl.addField(curLpos);
             dl.addField(curRpos);
