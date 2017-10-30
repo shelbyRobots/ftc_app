@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
-import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
@@ -24,7 +23,6 @@ public class Teleop_Driver extends InitLinearOpMode
         initCommon(this, false, false, false, false);
         Input_Shaper ishaper = new Input_Shaper();
         DcMotor.ZeroPowerBehavior zeroPwr = DcMotor.ZeroPowerBehavior.FLOAT;
-        double shoot_scale = 0.75;
         boolean useSetVel = true;
 
         /* Initialize the hardware variables. */
@@ -37,6 +35,24 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             dtrn.init(robot);
             //robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        }
+
+        if(robot.elevMotor != null)
+        {
+            robot.elevMotor.setTargetPosition(elevPositions[0]);
+            robot.elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.elevMotor.setPower(0.5);
+        }
+
+        if(robot.gripper != null)
+        {
+            robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+        }
+
+        if(robot.gpitch != null)
+        {
+            robot.gpitch.setPosition(GPITCH_UP_POS);
         }
 
         // Send telemetry message to signify robot waiting;
@@ -72,39 +88,31 @@ public class Teleop_Driver extends InitLinearOpMode
             gpad1.update();
             gpad2.update();
 
-            boolean use_auto_shoot = false;
-
             boolean toggle_run_mode   = gpad1.just_pressed(ManagedGamepad.Button.X);
             boolean invert_drive_dir  = gpad1.just_pressed(ManagedGamepad.Button.Y);
-            boolean toggle_rpusher    = gpad1.just_pressed(ManagedGamepad.Button.R_TRIGGER);
-            boolean toggle_lpusher    = gpad1.just_pressed(ManagedGamepad.Button.L_TRIGGER);
+
             boolean step_driveType    = gpad1.just_pressed(ManagedGamepad.Button.A);
             boolean toggle_float      = gpad1.just_pressed(ManagedGamepad.Button.B);
             boolean toggle_vel        = gpad1.just_pressed(ManagedGamepad.Button.R_BUMP);
-            boolean decr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-            boolean incr_shoot_scale  = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
-            boolean toggle_shoot_mtr  = gpad2.just_pressed(ManagedGamepad.Button.R_TRIGGER);
-            boolean toggle_bshoot_mtr = gpad2.just_pressed(ManagedGamepad.Button.L_TRIGGER);
-            boolean auto_shoot        = gpad2.just_pressed(ManagedGamepad.Button.L_BUMP);
+
+            boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+            boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+
+            boolean gripper_open_par  = gpad2.pressed(ManagedGamepad.Button.A);
+            boolean gripper_open      = gpad2.pressed(ManagedGamepad.Button.B);
+            boolean toggle_gpitch     = gpad2.just_pressed(ManagedGamepad.Button.X);
+            boolean toggle_jflicker   = gpad2.just_pressed(ManagedGamepad.Button.Y);
 
             double left         = -gpad1.value(ManagedGamepad.AnalogInput.L_STICK_Y);
             double right        = -gpad1.value(ManagedGamepad.AnalogInput.R_STICK_Y);
             double turn         =  gpad1.value(ManagedGamepad.AnalogInput.R_STICK_X);
-            double shooter      =  gpad2.value(ManagedGamepad.AnalogInput.R_TRIGGER_VAL);
-            double bkwr_shooter =  gpad2.value(ManagedGamepad.AnalogInput.L_TRIGGER_VAL);
-            double elev         =  gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
-            double sweep        =  gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
 
-            int shotmotor1Pos = 0;
-            int shotmotor2Pos = 0;
+            double elev         = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+
             DcMotor.ZeroPowerBehavior zeroPowBeh = DcMotor.ZeroPowerBehavior.UNKNOWN;
 
-            if(robot.shotmotor1 != null) robot.shotmotor1.getCurrentPosition();
-            if(robot.shotmotor2 != null) robot.shotmotor2.getCurrentPosition();
             if(robot.leftMotor  != null) zeroPowBeh = robot.leftMotor.getZeroPowerBehavior();
-
-            if(robot.elevMotor  != null) robot.elevMotor.setPower(elev);
-            if(robot.sweepMotor != null) robot.sweepMotor.setPower(sweep);
 
             // Run wheels in tank mode
             // (note: The joystick goes negative when pushed forwards, so negate it)
@@ -115,6 +123,9 @@ public class Teleop_Driver extends InitLinearOpMode
             left  = ishaper.shape(left);
             right = ishaper.shape(right);
             turn  = ishaper.shape(turn);
+            elev  = ishaper.shape(elev);
+
+            double outPitch = Range.scale(pitch, -1.0, 1.0, GPITCH_MIN, GPITCH_MAX);
 
             double speed = right;
             double arcadeTurnScale = 0.5;
@@ -187,54 +198,27 @@ public class Teleop_Driver extends InitLinearOpMode
                 robot.rightMotor.setPower(right);
             }
 
-            if(decr_shoot_scale)      shoot_scale -= 0.05;
-            else if(incr_shoot_scale) shoot_scale += 0.05;
-            shoot_scale = Range.clip(shoot_scale, 0.0, 1.0);
-
-            if(toggle_shoot_mtr)
+            if(lowerElev && curElevIdx > 0)
             {
-                toggle = !toggle;
-
-                if(toggle)
-                    shooter_motors(shoot_scale);
-                else
-                    shooter_motors(0.0);
+                curElevIdx--;
+                robot.elevMotor.setTargetPosition(elevPositions[curElevIdx]);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.5;
+                robot.elevMotor.setPower(elev);
             }
-
-            if(toggle_bshoot_mtr)
+            else if(raiseElev && curElevIdx < 3)
             {
-                toggle = !toggle;
-
-                if(toggle)
-                    shooter_motors(-1.0);
-                else
-                    shooter_motors(0.0);
+                curElevIdx++;
+                robot.elevMotor.setTargetPosition(elevPositions[curElevIdx]);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.5;
+                robot.elevMotor.setPower(elev);
             }
-
-            if(toggle_rpusher)
+            else if(Math.abs(elev) > 0.001)
             {
-                if(curRpushPos == R_UP_PUSH_POS)
-                {
-                    curRpushPos = R_DN_PUSH_POS;
-                }
-                else
-                {
-                    curRpushPos = R_UP_PUSH_POS;
-                }
-                if(robot.rpusher != null) robot.rpusher.setPosition(curRpushPos);
-            }
-
-            if(toggle_lpusher)
-            {
-                if(curLpushPos == L_UP_PUSH_POS)
-                {
-                    curLpushPos = L_DN_PUSH_POS;
-                }
-                else
-                {
-                    curLpushPos = L_UP_PUSH_POS;
-                }
-                if(robot.lpusher != null) robot.lpusher.setPosition(curLpushPos);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                if(robot.elevMotor.getCurrentPosition() < 10) elev = 0.0;
+                robot.elevMotor.setPower(elev);
             }
 
             if(toggle_float)
@@ -245,34 +229,6 @@ public class Teleop_Driver extends InitLinearOpMode
                     zeroPwr = DcMotor.ZeroPowerBehavior.BRAKE;
                 if(robot.leftMotor  != null) robot.leftMotor.setZeroPowerBehavior(zeroPwr);
                 if(robot.rightMotor != null) robot.rightMotor.setZeroPowerBehavior(zeroPwr);
-            }
-
-            if(auto_shoot)
-            {
-                RobotLog.ii("SJH", "AUTOSHOOT");
-                if(robot.shotmotor1 != null) robot.shotmotor1.setPower(shoot_scale);
-                if(robot.shotmotor2 != null) robot.shotmotor2.setPower(shoot_scale);
-                if(robot.sweepMotor != null) robot.sweepMotor.setPower(-1.0);
-                dtrn.driveDistance(35.0, 0.8, Drivetrain.Direction.REVERSE);
-                while(opModeIsActive() && dtrn.isBusy())
-                {
-                    idle();
-                }
-                dtrn.stopAndReset();
-
-                RobotLog.ii("SJH", "DONE AUTOSHOOT MOVE");
-                if(use_auto_shoot)
-                {
-                    sleep(500);
-                    if(robot.sweepMotor != null) robot.sweepMotor.setPower(-1.0);
-                    if(robot.elevMotor != null) robot.elevMotor.setPower(-1.0);
-                    sleep(1500);
-                    if(robot.shotmotor1 != null) robot.shotmotor1.setPower(0);
-                    if(robot.shotmotor2 != null) robot.shotmotor2.setPower(0);
-                    if(robot.sweepMotor != null) robot.sweepMotor.setPower(0);
-                    if(robot.elevMotor != null) robot.elevMotor.setPower(0);
-                    RobotLog.ii("SJH", "DONE AUTOSHOOT");
-                }
             }
 
             if(invert_drive_dir)
@@ -311,6 +267,40 @@ public class Teleop_Driver extends InitLinearOpMode
                 }
             }
 
+            // Gripper (a: Somewhat Open, b: all the way open, neither: closed)
+            if (gripper_open)
+                robot.gripper.setPosition(GRIPPER_OPEN_POS);
+            else if (gripper_open_par)
+                robot.gripper.setPosition(GRIPPER_MID_POS);
+            else
+                robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+
+            // Pitch (Gripper angle servo) (x: toggles between closed and open position)
+            if (toggle_gpitch)
+            {
+                currentPitchState = (currentPitchState == PitchState.CLOSED) ? PitchState.OPEN : PitchState.CLOSED;
+
+                if (currentPitchState == PitchState.CLOSED)
+                    robot.gpitch.setPosition(GPITCH_UP_POS);
+                else if (currentPitchState == PitchState.OPEN)
+                    robot.gpitch.setPosition(GPITCH_DOWN_POS);
+            }
+            else if(Math.abs(pitch) > 0.001)
+            {
+                robot.gpitch.setPosition(outPitch);
+            }
+
+            // Jewel Flicker (y: toggles between up and down positions)
+            if (toggle_jflicker)
+            {
+                currentFlickerState = (currentFlickerState == FlickerState.DOWN) ? FlickerState.UP : FlickerState.DOWN;
+
+                if (currentFlickerState == FlickerState.DOWN)
+                    robot.jflicker.setPosition(JFLICKER_DOWN_POS);
+                else if (currentFlickerState == FlickerState.UP)
+                    robot.jflicker.setPosition(JFLICKER_UP_POS);
+            }
+
 //            dashboard.displayPrintf(7, "shoot_scale", "%.2f", shoot_scale);
 //            dashboard.displayPrintf(8, "SHT1CNT", "%5d", shotmotor1Pos);
 //            dashboard.displayPrintf(9, "SHT2CNT", "%5d", shotmotor2Pos);
@@ -334,6 +324,16 @@ public class Teleop_Driver extends InitLinearOpMode
         CAR_DRIVE
     }
 
+    private int elevPositions[] =
+            {
+                    TilerunnerGtoBot.LIFT_POS_A,
+                    TilerunnerGtoBot.LIFT_POS_B,
+                    TilerunnerGtoBot.LIFT_POS_C,
+                    TilerunnerGtoBot.LIFT_POS_D
+            };
+
+    private int curElevIdx = 0;
+
     private TELEOP_DRIVE_TYPE driveType = TELEOP_DRIVE_TYPE.TANK_DRIVE;
 
     private final static double L_DN_PUSH_POS = 1.0;
@@ -341,11 +341,30 @@ public class Teleop_Driver extends InitLinearOpMode
     private final static double L_UP_PUSH_POS = 0.05;
     private final static double R_UP_PUSH_POS = 1.0;
 
+    public  final static double JFLICKER_UP_POS = 0.1;
+    public  final static double JFLICKER_DOWN_POS = 0.6;
+
+    public  final static double GRIPPER_CLOSE_POS = 0.83;
+    public  final static double GRIPPER_OPEN_POS = 0.6;
+    public  final static double GRIPPER_MID_POS = 0.75;
+
+    public  final static double GPITCH_UP_POS = 0.9;
+    public  final static double GPITCH_DOWN_POS = 0.4;
+    public  final static double GPITCH_MIN = 0.2;
+    public  final static double GPITCH_MAX = 0.9;
+    public  final static double GPITCH_MID_POS = 0.7;
+
     private DcMotorEx lex = null;
     private DcMotorEx rex = null;
 
     private TilerunnerGtoBot robot = new TilerunnerGtoBot();
     private Drivetrain dtrn = new Drivetrain();
+
+    enum PitchState { CLOSED, OPEN, MID };
+    private PitchState currentPitchState = PitchState.CLOSED;
+
+    private enum FlickerState { UP, DOWN }
+    private FlickerState currentFlickerState = FlickerState.UP;
 
     private static final String TAG = "SJH_TD";
 }

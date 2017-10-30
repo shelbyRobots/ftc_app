@@ -150,29 +150,30 @@ public class ShelbyBot
 
     protected void initDriveMotors()
     {
+        // FORWARD for CCW drive shaft rotation if using AndyMark motors
+        // REVERSE for  CW drive shaft rotation if using AndyMark motors
         try  //Drivetrain
         {
             leftMotor  = hwMap.dcMotor.get("leftdrive");
             rightMotor = hwMap.dcMotor.get("rightdrive");
+
+             leftMotor.setDirection(LEFT_DIR);
+            rightMotor.setDirection(RIGHT_DIR);
+             leftMotor.setPower(0);
+            rightMotor.setPower(0);
+             leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+             leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+             leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
             capMap.put("drivetrain", true);
         }
         catch (Exception e)
         {
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
-
-        // FORWARD for CCW drive shaft rotation if using AndyMark motors
-        // REVERSE for  CW drive shaft rotation if using AndyMark motors
-        if(leftMotor  != null)  leftMotor.setDirection(LEFT_DIR);
-        if(rightMotor != null) rightMotor.setDirection(RIGHT_DIR);
-        if(leftMotor  != null)  leftMotor.setPower(0);
-        if(rightMotor != null) rightMotor.setPower(0);
-        if(leftMotor  != null)  leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        if(rightMotor != null) rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        if(leftMotor  != null)  leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        if(rightMotor != null) rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        if(leftMotor  != null)  leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        if(rightMotor != null) rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     protected void initCollectorLifter()

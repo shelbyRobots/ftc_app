@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -27,6 +28,17 @@ public class TilerunnerGtoBot extends ShelbyBot
     public Servo    gripper    = null;
     public Servo    jflicker   = null;
 
+    private static final int ELEV_COUNTS_PER_MOTOR_REV = 4;
+    private static final double ELEV_GEAR_ONE = 72;
+    private static final double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
+    private static final double ELEV_WHEEL_DIAM = 2.5;
+    private static final double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM);
+    private static final double LIFT_SCALE = 2.0;
+
+    public static final int LIFT_POS_A = (int)( 0.00/LIFT_SCALE * ELEV_CPI);
+    public static final int LIFT_POS_B = (int)( 6.25/LIFT_SCALE * ELEV_CPI);
+    public static final int LIFT_POS_C = (int)(12.25/LIFT_SCALE * ELEV_CPI);
+    public static final int LIFT_POS_D = (int)(18.25/LIFT_SCALE * ELEV_CPI);
 
     private static final String TAG = "SJH_GTO";
 
@@ -79,16 +91,37 @@ public class TilerunnerGtoBot extends ShelbyBot
     @Override
     protected void initCollectorLifter()
     {
-        gpitch = hwMap.servo.get("gpitch");
-        gripper = hwMap.servo.get("gripper");
-        if(gpitch != null)capMap.put("collector", true);
+        try  //Collector
+        {
+            gpitch = hwMap.servo.get("gpitch");
+            gripper = hwMap.servo.get("gripper");
+            elevMotor = hwMap.dcMotor.get("elevmotor");
+
+            elevMotor.setDirection(DcMotor.Direction.FORWARD);
+            elevMotor.setPower(0);
+            elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            capMap.put("collector", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
     }
 
     @Override
     protected void initPushers()
     {
-        jflicker = hwMap.servo.get("jflicker");
-        if(jflicker != null)capMap.put("pusher", true);
+        try
+        {
+            jflicker = hwMap.servo.get("jflicker");
+            capMap.put("pusher", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
     }
 
     @Override

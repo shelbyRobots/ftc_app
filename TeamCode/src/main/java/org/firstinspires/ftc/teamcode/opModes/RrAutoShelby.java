@@ -79,6 +79,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             dashboard.displayPrintf(9, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
             dashboard.displayPrintf(10, "GyroReady %s", gyroReady);
             dashboard.displayPrintf(11, "RGyroReady %s", robot.gyroReady);
+            dashboard.displayPrintf(12, "LENC %d", robot.leftMotor.getCurrentPosition());
+            dashboard.displayPrintf(13, "RENC %d", robot.rightMotor.getCurrentPosition());
+            dashboard.displayPrintf(14, "ELEV %d", robot.elevMotor.getCurrentPosition());
             sleep(10);
         }
         startMode();
@@ -834,12 +837,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     public  final static double JFLICKER_UP_POS = 0.1;
     public  final static double JFLICKER_DOWN_POS = 0.6;
 
-    public  final static double GRIPPER_CLOSE_POS = 0.1;
-    public  final static double GRIPPER_OPEN_POS = 0.4;
+    public  final static double GRIPPER_CLOSE_POS = 0.83;
+    public  final static double GRIPPER_PARTIAL_POS = 0.75;
+    public  final static double GRIPPER_OPEN_POS = 0.6;
 
-    public  final static double GPITCH_UP_POS = 0.1;
-    public  final static double GPITCH_DOWN_POS = 0.7;
-    public  final static double GPITCH_MID_POS = 0.6;
+    public  final static double GPITCH_UP_POS = 0.9;
+    public  final static double GPITCH_DOWN_POS = 0.4;
+    public  final static double GPITCH_MID_POS = 0.7;
 
     private List<Segment> pathSegs = new ArrayList<>();
 
