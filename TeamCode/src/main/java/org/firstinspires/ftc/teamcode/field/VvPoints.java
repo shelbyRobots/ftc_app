@@ -155,7 +155,7 @@ public class VvPoints extends Points
         return bpts;
     }
 
-    Segment[] initSegments(Vector<Point2d> pts)
+    public Segment[] initSegments(Vector<Point2d> pts)
     {
         Segment[] pathSegs = super.initSegments(pts);
 

@@ -31,14 +31,16 @@ public class TilerunnerGtoBot extends ShelbyBot
     private static final int ELEV_COUNTS_PER_MOTOR_REV = 4;
     private static final double ELEV_GEAR_ONE = 72;
     private static final double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
-    private static final double ELEV_WHEEL_DIAM = 2.5;
+    private static final double ELEV_WHEEL_DIAM = 2.35;
     private static final double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM);
-    private static final double LIFT_SCALE = 2.0;
+    private static final double LIFT_SCALE = 1.0;
 
-    public static final int LIFT_POS_A = (int)( 0.00/LIFT_SCALE * ELEV_CPI);
-    public static final int LIFT_POS_B = (int)( 6.25/LIFT_SCALE * ELEV_CPI);
-    public static final int LIFT_POS_C = (int)(12.25/LIFT_SCALE * ELEV_CPI);
+    public static final int LIFT_POS_A = (int)( 0.25/LIFT_SCALE * ELEV_CPI);
+    public static final int LIFT_POS_B = (int)( 6.75/LIFT_SCALE * ELEV_CPI);
+    public static final int LIFT_POS_C = (int)(12.75/LIFT_SCALE * ELEV_CPI);
     public static final int LIFT_POS_D = (int)(18.25/LIFT_SCALE * ELEV_CPI);
+
+    public static double autonEndHdg = 0.0;
 
     private static final String TAG = "SJH_GTO";
 
@@ -97,7 +99,7 @@ public class TilerunnerGtoBot extends ShelbyBot
             gripper = hwMap.servo.get("gripper");
             elevMotor = hwMap.dcMotor.get("elevmotor");
 
-            elevMotor.setDirection(DcMotor.Direction.FORWARD);
+            elevMotor.setDirection(DcMotor.Direction.REVERSE);
             elevMotor.setPower(0);
             elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
