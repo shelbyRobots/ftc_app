@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.internal.system.SystemProperties;
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.field.Points;
 import org.firstinspires.ftc.teamcode.field.RrField;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
+import org.firstinspires.ftc.teamcode.util.AutoTransitioner;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
@@ -90,14 +92,14 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void stopMode()
     {
+        robot.autonEndHdg = robot.getGyroFhdg();
         if(drvTrn != null) drvTrn.cleanup();
         det.cleanupCamera();
     }
 
     private void setup()
     {
-        telemetry.addData("_","PLEASE WAIT - STARTING");
-        telemetry.update();
+        dashboard.displayPrintf(0, "PLEASE WAIT - STARTING");
         logData = true;
 
         dashboard.displayPrintf(2, "STATE: %s", "INITIALIZING - PLEASE WAIT FOR MENU");
@@ -105,8 +107,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
+
         String teleopName = "Teleop Driver";
-        //AutoTransitioner.transitionOnStop(this, teleopName);
+        RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
+        AutoTransitioner.transitionOnStop(this, teleopName);
 
         robot.init(this);
 
@@ -306,11 +310,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     break;
 
                 case SET_KEY:
+                {
+                    Point2d dpt = RrField.getDropPt(Field.Alliance.RED, startPos, key);
+                    RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
+                    pathSegs.get(i+1).setEndPt(dpt);
+                    pathSegs.get(i+2).setStrtPt(dpt);
+                    break;
+                }
+
+                case SET_KEY_OLD:
                     RobotLog.dd(TAG, "In SET_KEY");
                     RobotLog.dd(TAG, "On segment %s", curSeg.toString());
                     if(i+1 < pathSegs.size())
                     {
-
                         Segment alignSeg = pathSegs.get(i+1);
                         Segment postDropSeg = pathSegs.get(i+2);
 
@@ -400,19 +412,18 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         sleep(500);
 
         RobotLog.dd(TAG, "Deploy pusher");
-        MajorColorDetector.Color badJewel = MajorColorDetector.Color.NONE;
+        MajorColorDetector.Color badJewel = MajorColorDetector.Color.BLUE;
+        if(alliance == Field.Alliance.BLUE) badJewel = MajorColorDetector.Color.RED;
         int pushSign = 1;
         switch (jewelColor)
         {
             case RED:
-                badJewel = MajorColorDetector.Color.BLUE;
                 if(alliance == Field.Alliance.RED)
                     ddir = Drivetrain.Direction.REVERSE;
                     pushSign = -1;
                 break;
 
             case BLUE:
-                badJewel = MajorColorDetector.Color.RED;
                 if(alliance == Field.Alliance.BLUE)
                     ddir = Drivetrain.Direction.REVERSE;
                     pushSign = -1;
@@ -780,6 +791,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void doMenus()
     {
+        boolean shortcut = false;
+        if(shortcut) return;
         FtcChoiceMenu<Field.StartPos> startPosMenu =
                 new FtcChoiceMenu<>("START:", null, this);
         FtcChoiceMenu<Field.Alliance> allianceMenu =
@@ -886,8 +899,26 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     public static final void main(String args[])
     {
-        RrAutoShelby vas = new RrAutoShelby();
-        vas.setup();
+        //RrAutoShelby vas = new RrAutoShelby();
+
+        Points pts = new RrPoints(startPos, alliance);
+        List<Segment> pathSegs = new ArrayList<>();
+        pathSegs.addAll(Arrays.asList(pts.getSegments()));
+
+        for(Segment s : pathSegs)
+        {
+            System.out.println("Seg " + s.toString());
+        }
+
+        for(Segment s : pathSegs)
+        {
+            if(s.getName() == "RLTT")
+            {
+                s.getTgtPt().setX(s.getTgtPt().getX()+2.0);
+            }
+            System.out.println("Seg " + s.toString());
+        }
+        //vas.setup();
         //ShelbyBot bot = new TilerunnerGtoBot();
         //bot.init(vas);
         //RobotLog.dd(TAG, "Robot CPI %4.2f", bot.CPI);

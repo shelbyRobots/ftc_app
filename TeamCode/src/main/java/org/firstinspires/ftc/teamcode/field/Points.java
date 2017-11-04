@@ -80,7 +80,7 @@ public abstract class Points
         return bpts;
     }
 
-    Segment[] initSegments(Vector<Point2d> pts)
+    public Segment[] initSegments(Vector<Point2d> pts)
     {
         int numSegs = pts.size() - 1;
         Segment[] pathSegs = new Segment[numSegs];

@@ -133,8 +133,8 @@ public class MecanumTeleop extends InitLinearOpMode
                 speed = dSpd;
             }
 
-            final double direction = Math.PI/2.0 - Math.atan2(fb_y, lr_x) +
-               (fieldAlign ? Math.toRadians(robot.getGyroFhdg()) : 0.0);
+            final double direction = Math.atan2(lr_x, fb_y) +
+               (fieldAlign ? Math.toRadians(Math.PI/2.0 - robot.getGyroFhdg()) : 0.0);
 
             dashboard.displayPrintf(l++, "DIR %4.2f FALGN %s USEVEL %s",
                     direction, fieldAlign, useSetVel);

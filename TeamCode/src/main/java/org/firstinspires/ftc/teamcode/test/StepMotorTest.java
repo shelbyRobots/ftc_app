@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 public class StepMotorTest extends InitLinearOpMode
 {
 
-    private static final double INCREMENT = 0.05;     // amount to step motor each CYCLE_MS cycle
+    private static final double INCREMENT = 0.02;     // amount to step motor each CYCLE_MS cycle
     private static final int     CYCLE_MS = 50;       // period of each cycle
     private static final double   MAX_FWD =  1.0;     // Maximum FWD power applied to motor
     private static final double   MAX_REV = -1.0;     // Maximum REV power applied to motor
@@ -81,26 +81,32 @@ public class StepMotorTest extends InitLinearOpMode
         waitForStart();
 
         // Ramp motor speeds till stop pressed.
+        int lmult = 1;
         while(opModeIsActive())
         {
             gpad1.update();
             boolean step_up    = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
             boolean step_down  = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean zeroize    = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
+            boolean toggle_trn = gpad1.just_pressed(ManagedGamepad.Button.D_LEFT);
 
             if(step_up && power < MAX_FWD)         power += INCREMENT;
             else if(step_down && power > MAX_REV)  power -= INCREMENT;
             else if(zeroize)                       power = 0.0;
 
+            if(toggle_trn) lmult *=-1;
+
             // Display the current value
             dashboard.displayPrintf(MAX_MOTORS, "Motor Power %4.2f", power);
             for(int m = 0; m < MAX_MOTORS; m++)
             {
+                double opwr = power;
                 DcMotor mot = motors.get(m);
                 if(mot != null)
                 {
+                    if(m%2 == 0) opwr = power * lmult;
                     dashboard.displayPrintf(m, "CNT_%d %d", m, mot.getCurrentPosition());
-                    mot.setPower(power);
+                    mot.setPower(opwr);
                 }
             }
 

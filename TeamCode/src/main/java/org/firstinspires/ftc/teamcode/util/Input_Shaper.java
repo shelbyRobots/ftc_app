@@ -9,26 +9,30 @@ public class Input_Shaper
     {
         return  inValue * Math.abs(inValue);
         //return Math.pow(inValue, 3);
-//        inputActive = (Math.abs(inValue) > 0.1);
-//        inputSlow   = (Math.abs(inValue) < 0.8);
+    }
 
-//        double sign = Math.signum(inValue);
-//        if(inputActive)
-//        {
-//            if(inputSlow)
-//            {
-//                double out = sign * (Math.abs(inValue)*4.0/7.0 - 0.4/7.0);
-//                return out;
-//            }
-//            else
-//            {
-//                double out = sign * (Math.abs(inValue)*3.0 - 2.0);
-//                return out;
-//            }
-//        }
-//        else
-//        {
-//            return 0.0f;
-//        }
+    public double shape(double inValue, double minVal)
+    {
+        double deadVal = 0.01;
+        double inAbs = Math.abs(inValue);
+        double outVal = 0.0;
+        if(inAbs <= deadVal)
+        {
+            outVal = 0.0;
+        }
+        else if(inAbs < minVal)
+        {
+            outVal = Math.signum(inValue) * minVal;
+        }
+        else if(inAbs <= 0.95)
+        {
+            double shftVal = inAbs - minVal;
+            outVal = (shftVal) * Math.abs(shftVal) + minVal;
+        }
+        else
+        {
+            outVal = Math.signum(inValue) * 1.0;
+        }
+        return outVal;
     }
 }

@@ -36,6 +36,7 @@ public class AutoTransitioner extends Thread {
                     //If there is a transition set up and the active op mode is no longer the one
                     //the transition was set up with, proceed with the transition
                     if (onStop != null && opModeManager.getActiveOpMode() != onStop) {
+                        Log.d(FtcRobotControllerActivity.TAG, "Loading opmode" + transitionTo);
                         Thread.sleep(1000); //Wait 1 second to prevent weird conditions
                         opModeManager.initActiveOpMode(transitionTo); //Request initialization of the teleop
                         reset(); //Reset the AutoTransitioner
@@ -49,6 +50,7 @@ public class AutoTransitioner extends Thread {
     }
 
     private void setNewTransition(OpMode onStop, String transitionTo) {
+        Log.d(FtcRobotControllerActivity.TAG, "Setting new autoTransitioner transition");
         synchronized (this) { //Synchronized to prevent wierd conditions
             this.onStop = onStop;
             this.transitionTo = transitionTo;
@@ -57,6 +59,7 @@ public class AutoTransitioner extends Thread {
     }
 
     private void reset() {
+        Log.d(FtcRobotControllerActivity.TAG, "Resetting autoTransitioner");
         this.onStop = null;
         this.transitionTo = null;
         this.opModeManager = null;
@@ -68,6 +71,7 @@ public class AutoTransitioner extends Thread {
      * @param transitionTo The name of the program you want to transition to
      */
     public static void transitionOnStop(OpMode onStop, String transitionTo) {
+        Log.d(FtcRobotControllerActivity.TAG, "Setting up autoTransitioner transition");
         INSTANCE.setNewTransition(onStop, transitionTo);
     }
 }
