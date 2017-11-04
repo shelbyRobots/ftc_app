@@ -95,7 +95,7 @@ public class Segment
 
     //enum SegDir {FORWARD, REVERSE}
     public enum Action {NOTHING, SHOOT, SCAN_IMAGE, FIND_BEACON, PUSH,
-        RST_PUSHER, SET_KEY, DROP, SET_KEY_OLD}
+        RST_PUSHER, SET_KEY, DROP, GRAB, SET_KEY_OLD}
     public enum TargetType{ENCODER, TIME, COLOR}
     private static final double DEF_SEG_SPD = 0.5;
     private double  fldHdg = 0.0;

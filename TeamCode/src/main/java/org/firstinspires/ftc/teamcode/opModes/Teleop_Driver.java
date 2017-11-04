@@ -36,7 +36,6 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             dtrn.init(robot);
 
-            dtrn.setUseSpeedThreads(false);
             dtrn.setRampUp(false);
             dtrn.setRampDown(false);
             //robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);

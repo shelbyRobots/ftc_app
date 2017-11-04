@@ -139,8 +139,6 @@ public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
         drvTrn.setRampDown(rampDown);
         drvTrn.setRampUp(rampUp);
         drvTrn.setStopIndividualMotorWhenNotBusy(stopIndiv);
-        drvTrn.setUseSpeedThreads(false);
-        drvTrn.setGangMotors(false);
 
         RobotLog.ii("SJH", "Starting test do_main_loop");
         robot.gyro.resetZAxisIntegrator();

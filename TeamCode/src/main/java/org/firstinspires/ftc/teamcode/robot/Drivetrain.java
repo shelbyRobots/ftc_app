@@ -1,15 +1,16 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.DataLogger;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
+import java.util.List;
 import java.util.Locale;
 
 @SuppressWarnings({"unused", "WeakerAccess", "FieldCanBeLocal", "UnusedAssignment", "SpellCheckingInspection", "UnnecessaryLocalVariable"})
@@ -35,31 +36,22 @@ public class Drivetrain
         curLpower = lPwr;
         curRpower = rPwr;
 
-        RobotLog.dd(TAG, "MOVE: speedThreads " + useSpeedThreads +
-                    " gangMotors " + gangMotors +
+        RobotLog.dd(TAG, "MOVE: " +
                     " lpwr " + lPwr + " rpwr " + rPwr );
-        if(!gangMotors)
+
+        if(lFirst)
         {
-            if(useSpeedThreads)
-            {
-                lSpdTask.setMotor(robot.leftMotor);
-                rSpdTask.setMotor(robot.rightMotor);
-                lSpdTask.setSpeed(curLpower);
-                rSpdTask.setSpeed(curRpower);
-            }
-            else
-            {
-                if(lFirst)
-                {
-                    robot.leftMotor.setPower(curLpower);
-                    robot.rightMotor.setPower(curRpower);
-                }
-                else
-                {
-                    robot.rightMotor.setPower(curRpower);
-                    robot.leftMotor.setPower(curLpower);
-                }
-            }
+            //robot.leftMotor.setPower(curLpower);
+            //robot.rightMotor.setPower(curRpower);
+            setPower(robot.leftMotors, curLpower);
+            setPower(robot.rightMotors, curRpower);
+        }
+        else
+        {
+            //robot.rightMotor.setPower(curRpower);
+            //robot.leftMotor.setPower(curLpower);
+            setPower(robot.rightMotors, curRpower);
+            setPower(robot.leftMotors, curLpower);
         }
     }
 
@@ -76,11 +68,11 @@ public class Drivetrain
 
     private void resetCounts()
     {
-        robot.leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMode(robot.leftMotors, DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMode(robot.rightMotors, DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         op.idle();
-        robot.leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        setMode(robot.leftMotors, DcMotor.RunMode.RUN_USING_ENCODER);
+        setMode(robot.rightMotors, DcMotor.RunMode.RUN_USING_ENCODER);
         curLpos = 0;
         curRpos = 0;
         lastLcnt = 0;
@@ -104,10 +96,10 @@ public class Drivetrain
     public void driveToTarget(double pwr, int thresh)
     {
         setBusyAnd(false);
-        robot.leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.leftMotor.setTargetPosition(trgtLpos);
-        robot.rightMotor.setTargetPosition(trgtRpos);
+        setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
+        setTargetPosition(robot.leftMotors, trgtLpos);
+        setTargetPosition(robot.rightMotors, trgtRpos);
         setInitValues();
         logStartValues("DRIVE_TRGT " + curLpos + " " + curRpos + " - " + trgtLpos + " " + trgtRpos);
         moveInit(pwr, pwr);
@@ -143,11 +135,11 @@ public class Drivetrain
         String dDistStr = String.format(Locale.US, "DRIVE_DIST %4.2f", dst);
         logStartValues(dDistStr);
 
-        robot.leftMotor.setTargetPosition(trgtLpos);
-        robot.rightMotor.setTargetPosition(trgtRpos);
+        setTargetPosition(robot.leftMotors, trgtLpos);
+        setTargetPosition(robot.rightMotors, trgtRpos);
 
-        robot.leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
 
         moveInit(pwr, pwr);
     }
@@ -328,11 +320,11 @@ public class Drivetrain
 
         RobotLog.ii(TAG, "Angle: %5.2f Counts: %4d CHdg: %6.3f", angle, counts, initHdg);
 
-        robot.leftMotor.setTargetPosition(trgtLpos);
-        robot.rightMotor.setTargetPosition(trgtRpos);
+        setTargetPosition(robot.leftMotors, trgtLpos);
+        setTargetPosition(robot.rightMotors, trgtRpos);
 
-        robot.leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
 
         moveInit(pwr, pwr);
     }
@@ -495,8 +487,8 @@ public class Drivetrain
 
         if(doStopAndReset) stopAndReset();
 
-        robot.leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        setMode(robot.leftMotors, DcMotor.RunMode.RUN_USING_ENCODER);
+        setMode(robot.rightMotors, DcMotor.RunMode.RUN_USING_ENCODER);
 
         moveInit(0.0, 0.0);
 
@@ -541,8 +533,8 @@ public class Drivetrain
         int rcnts = angleToCounts(angle, rr);
 
         setBusyAnd(false);
-        robot.leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
+        setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
 
         int lft_target = initLpos + lcnts;
         int rgt_target = initRpos + rcnts;
@@ -555,8 +547,8 @@ public class Drivetrain
         while(trgtHdg <= -180) trgtHdg += 360;
         logStartValues("ENC_CURVE");
 
-        robot.leftMotor.setTargetPosition(lft_target);
-        robot.rightMotor.setTargetPosition(rgt_target);
+        setTargetPosition(robot.leftMotors, lft_target);
+        setTargetPosition(robot.rightMotors, rgt_target);
 
         double arl = Math.abs(rl);
         double arr = Math.abs(rr);
@@ -684,15 +676,6 @@ public class Drivetrain
 
     public void start()
     {
-        if(useSpeedThreads)
-        {
-            lftSpdThread = new Thread(lSpdTask);
-            rgtSpdThread = new Thread(rSpdTask);
-            lftSpdThread.setName("LeftSpeedThread");
-            rgtSpdThread.setName("RightSpeedThread");
-            lftSpdThread.start();
-            rgtSpdThread.start();
-        }
     }
 
     public void cleanup()
@@ -769,83 +752,6 @@ public class Drivetrain
                     frame, curLpower, curRpower, err, steer, rt.seconds(), curHdg, thdg);
         }
     }
-
-//    void makeCorrections(double pwr, Direction dir)
-//    {
-//        double ldp;
-//        double rdp;
-//
-//        double err = getEncoderError();
-//
-//        if(Math.abs(err) > THRESH)
-//        {
-//            double steer = getSteer(err, Kp_EncCorrection);
-//
-//            if(Math.abs(steer) > pwr)  steer = Math.signum(steer) * pwr;
-//            //if (dir == Direction.REVERSE) steer *= -1;
-//
-//            rdp = pwr ;//- steer;
-//            ldp = pwr ;//+ steer;
-//
-//            double max = Math.max(Math.abs(rdp), Math.abs(ldp));
-//            if(max > 1.0)
-//            {
-//                rdp = rdp / max;
-//                ldp = ldp / max;
-//            }
-//
-//            int ldc = robot.leftMotor.getCurrentPosition();
-//            int rdc = robot.rightMotor.getCurrentPosition();
-//            int diff = Math.abs(ldc) - Math.abs(rdc);
-//            int tgtCnts = robot.leftMotor.getTargetPosition();
-//
-//            if(Math.abs(ldc) >= Math.abs(tgtCnts))
-//            {
-//                ldp = 0.0;
-//                robot.leftMotor.setPower(0.0);
-//                robot.leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//                if(Math.abs(diff) < 30)
-//                {
-//                    rdp = 0.0;
-//                    robot.rightMotor.setPower(0.0);
-//                    robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//                }
-//            }
-//            else if(Math.abs(rdc) >= Math.abs(tgtCnts))
-//            {
-//                rdp = 0.0;
-//                robot.rightMotor.setPower(0.0);
-//                robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//                if(Math.abs(diff) < 30)
-//                {
-//                    ldp = 0.0;
-//                    robot.leftMotor.setPower(0.0);
-//                    robot.leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//                }
-//            }
-//            else
-//            {
-//                move(ldp, rdp);
-//            }
-//
-//            double ct = ptmr.seconds();
-//            if (ct > nextPrintTime)
-//            {
-//                nextPrintTime = ct + printTimeout;
-//                RobotLog.ii(TAG, %4d ldc: %6d rdc: %6d diff: %2d " +
-//                                "lpwr: %5.3f rpwr: %5.3f err: %5.3f str %5.3f rt %5.3f",
-//                        frame, ldc, rdc, diff, ldp, rdp, err, steer, rt.seconds());
-//            }
-//
-//            frame++;
-//        }
-//        else
-//        {
-//            ldp = pwr;
-//            rdp = pwr;
-//            move(ldp, rdp);
-//        }
-//    }
 
     private double getEncoderError()
     {
@@ -1122,11 +1028,6 @@ public class Drivetrain
         this.rampDown = rampDown;
     }
 
-    public void setGangMotors(boolean gangMotors)
-    {
-        this.gangMotors = gangMotors;
-    }
-
     public void setStopIndividualMotorWhenNotBusy(boolean stopIndvid)
     {
         this.stopIndividualMotorWhenNotBusy = stopIndvid;
@@ -1151,8 +1052,6 @@ public class Drivetrain
     {
         this.logOverrun = lo;
     }
-
-    public void setUseSpeedThreads(boolean ust) { this.useSpeedThreads = ust; }
 
     public void logData(boolean force, String title)
     {
@@ -1190,6 +1089,25 @@ public class Drivetrain
     public void logData()
     {
         logData(false);
+    }
+
+    private void setMode (List<DcMotor> motors, DcMotor.RunMode mode)
+    {
+        for (DcMotor m : motors)
+            m.setMode(mode);
+    }
+    private void  setPower (List<DcMotor> motors, double power)
+    {
+        for (DcMotor m : motors)
+            m.setPower(power);
+    }
+
+    private  void setTargetPosition(List<DcMotor> motors, int deltaPosition)
+    {
+        for (DcMotor m : motors)
+        {
+            m.setTargetPosition(m.getCurrentPosition() + deltaPosition);
+        }
     }
 
     enum MotorSide {LEFT, RIGHT}
@@ -1325,7 +1243,6 @@ public class Drivetrain
     private boolean rampUp = true;
     private boolean rampDown = true;
     private boolean stopIndividualMotorWhenNotBusy = false;
-    private boolean gangMotors = false;
 
     private int tickRate = 10;
     private static final int DEF_BUSYTHRESH = 16;
@@ -1341,39 +1258,6 @@ public class Drivetrain
 
     private double turnTimeLimit = 5;
 
-    class SpeedSetTask implements Runnable
-    {
-        public void run()
-        {
-            if(op.opModeIsActive())
-            {
-                if(speed != oldSpeed)
-                {
-                    oldSpeed = speed;
-                    if(motor != null) motor.setPower(speed);
-                }
-            }
-
-            try
-            {
-                Thread.sleep(0, 100);
-            }
-            catch (InterruptedException ie)
-            {
-                System.out.println("Interrupted");
-            }
-        }
-
-        public void setMotor(DcMotor motor) {this.motor = motor;}
-        public void setSpeed(double speed)  {this.speed = speed;}
-        private DcMotor motor = null;
-        private double speed    = 0.0;
-        private double oldSpeed = -2.0;
-    }
-
-    private SpeedSetTask lSpdTask = new SpeedSetTask();
-    private SpeedSetTask rSpdTask = new SpeedSetTask();
-    private boolean useSpeedThreads = true;
     private Thread lftSpdThread = null;
     private Thread rgtSpdThread = null;
 

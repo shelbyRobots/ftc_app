@@ -117,7 +117,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         System.out.println("Robot CPI " + robot.CPI);
 
         drvTrn.init(robot);
-        drvTrn.setUseSpeedThreads(false);
         drvTrn.setRampUp(false);
 
         robot.jflicker.setPosition(JFLICKER_UP_POS);
@@ -388,8 +387,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 case DROP:
                     robot.gpitch.setPosition(GPITCH_DOWN_POS);
                     sleep(500);
-                    robot.gripper.setPosition(GRIPPER_OPEN_POS);
+                    robot.gripper.setPosition(GRIPPER_PARTIAL_POS);
+                    robot.gpitch.setPosition(GPITCH_UP_POS);
+                    sleep(300);
+                    break;
+
+                case GRAB:
+                    robot.gpitch.setPosition(GPITCH_DOWN_POS);
                     sleep(500);
+                    robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+                    robot.gpitch.setPosition(GPITCH_UP_POS);
                     break;
             }
         }

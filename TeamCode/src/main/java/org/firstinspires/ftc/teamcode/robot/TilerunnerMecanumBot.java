@@ -65,6 +65,10 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             motors.put("BR", rrMotor);
             motors.put("BL", lrMotor);
             motors.put("FL", lfMotor);
+            leftMotors.add(numLmotors++, lfMotor);
+            leftMotors.add(numLmotors++, lrMotor);
+            rightMotors.add(numRmotors++, rfMotor);
+            rightMotors.add(numRmotors++, rrMotor);
             capMap.put("drivetrain", true);
         }
         catch (Exception e)

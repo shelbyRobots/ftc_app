@@ -19,7 +19,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.Units;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,6 +49,12 @@ public class ShelbyBot
     public DcMotor  shotmotor2  = null;
     public Servo    lpusher     = null;
     public Servo    rpusher     = null;
+
+    public List<DcMotor> leftMotors  = new ArrayList<>();
+    public List<DcMotor> rightMotors = new ArrayList<>();
+
+    public int numLmotors = 0;
+    public int numRmotors = 0;
 
     public ModernRoboticsI2cGyro        gyro        = null;
     public ModernRoboticsI2cColorSensor colorSensor = null;
@@ -156,6 +164,9 @@ public class ShelbyBot
         {
             leftMotor  = hwMap.dcMotor.get("leftdrive");
             rightMotor = hwMap.dcMotor.get("rightdrive");
+
+            leftMotors.add(numLmotors++, leftMotor);
+            rightMotors.add(numRmotors++, rightMotor);
 
              leftMotor.setDirection(LEFT_DIR);
             rightMotor.setDirection(RIGHT_DIR);

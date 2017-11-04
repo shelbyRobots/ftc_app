@@ -27,6 +27,7 @@ public class RrPoints extends Points
         Segment.Action scan    = Segment.Action.SCAN_IMAGE;
         Segment.Action key     = Segment.Action.SET_KEY;
         Segment.Action drop    = Segment.Action.DROP;
+        Segment.Action grab    = Segment.Action.GRAB;
         Segment.TargetType encType = Segment.TargetType.ENCODER;
 
         if(startPos == Field.StartPos.START_1)
@@ -36,7 +37,7 @@ public class RrPoints extends Points
             addPoint(points, fwd, 0.30, 1.00, encType, key,  RrField.RLFP);
             addPoint(points, fwd, 0.45, 1.00, encType, drop, RrField.RLDC);
             addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RLFP);
-            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RLPP);
+            addPoint(points, fwd, 0.60, 1.00, encType, grab, RrField.RLPP);
             addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RLTT);
         }
         else if(startPos == Field.StartPos.START_2)
@@ -45,8 +46,8 @@ public class RrPoints extends Points
             addPoint(points, fwd, 0.45, 1.00, encType, scan, RrField.RRBS);
             addPoint(points, fwd, 0.30, 1.00, encType, key,  RrField.RRFP);
             addPoint(points, fwd, 0.30, 1.00, encType, drop, RrField.RRDC);
-            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRFP);
-            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RRPP);
+            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRTT);
+            addPoint(points, fwd, 0.60, 1.00, encType, grab, RrField.RRPP);
             addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RRTT);
         }
 

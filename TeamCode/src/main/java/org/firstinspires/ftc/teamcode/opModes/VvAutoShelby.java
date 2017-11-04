@@ -87,7 +87,6 @@ public class VvAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.init(this);
 
         drvTrn.init(robot);
-        drvTrn.setUseSpeedThreads(false);
         drvTrn.setRampUp(false);
 
         bd = new BeaconDetector();

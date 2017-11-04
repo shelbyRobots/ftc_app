@@ -31,7 +31,7 @@ public class TilerunnerGtoBot extends ShelbyBot
     private static final int ELEV_COUNTS_PER_MOTOR_REV = 4;
     private static final double ELEV_GEAR_ONE = 72;
     private static final double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
-    private static final double ELEV_WHEEL_DIAM = 2.35;
+    private static final double ELEV_WHEEL_DIAM = 1.5;
     private static final double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM);
     private static final double LIFT_SCALE = 1.0;
 
@@ -99,7 +99,7 @@ public class TilerunnerGtoBot extends ShelbyBot
             gripper = hwMap.servo.get("gripper");
             elevMotor = hwMap.dcMotor.get("elevmotor");
 
-            elevMotor.setDirection(DcMotor.Direction.REVERSE);
+            elevMotor.setDirection(DcMotor.Direction.FORWARD);
             elevMotor.setPower(0);
             elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
