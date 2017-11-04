@@ -46,6 +46,7 @@ public class MecanumTeleop extends InitLinearOpMode
 
 
         // Send telemetry message to signify robot waiting;
+        //*dramatic pause*
         dashboard.displayText(0, "Hello Driver");
 
         while (!isStarted())
@@ -266,14 +267,14 @@ public class MecanumTeleop extends InitLinearOpMode
     public  final static double JFLICKER_UP_POS = 0.1;
     public  final static double JFLICKER_DOWN_POS = 0.6;
 
-    public  final static double GRIPPER_CLOSE_POS = 0.83;
-    public  final static double GRIPPER_OPEN_POS = 0.6;
-    public  final static double GRIPPER_MID_POS = 0.75;
+    public  final static double GRIPPER_CLOSE_POS = 1.0;
+    public  final static double GRIPPER_OPEN_POS = 0.7;
+    public  final static double GRIPPER_MID_POS = 0.85;
 
-    public  final static double GPITCH_UP_POS = 0.9;
-    public  final static double GPITCH_DOWN_POS = 0.4;
-    public  final static double GPITCH_MIN = 0.2;
-    public  final static double GPITCH_MAX = 0.9;
+    public  final static double GPITCH_UP_POS = 0.71;
+    public  final static double GPITCH_DOWN_POS = 0.1;
+    public  final static double GPITCH_MIN = 0;
+    public  final static double GPITCH_MAX = 0.8;
 
 
     enum PitchState { CLOSED, OPEN, MID };
@@ -282,3 +283,4 @@ public class MecanumTeleop extends InitLinearOpMode
     private enum FlickerState { UP, DOWN }
     private FlickerState currentFlickerState = FlickerState.UP;
 }
+// b o n e s

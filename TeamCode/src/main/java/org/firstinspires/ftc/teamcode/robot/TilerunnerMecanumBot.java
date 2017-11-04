@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -48,12 +49,14 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
 
     private ElapsedTime imuTimer = new ElapsedTime();
 
+    private static final String TAG = "SJH_MEC";
+
     public TilerunnerMecanumBot()
     {
         super();
 
         COUNTS_PER_MOTOR_REV = 28;
-        DRIVE_GEARS = new double[]{20.0, 1.0};
+        DRIVE_GEARS = new double[]{40.0, 1.0};
 
         WHEEL_DIAMETER_INCHES = 4.0;
         TUNE = 1.00;
@@ -85,17 +88,6 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             motors.put("BL", lrMotor);
             motors.put("FL", lfMotor);
             capMap.put("drivetrain", true);
-
-            gpitch = hwMap.servo.get("gpitch");
-            gripper = hwMap.servo.get("gripper");
-            elevMotor = hwMap.dcMotor.get("elevmotor");
-
-            elevMotor.setDirection(DcMotor.Direction.FORWARD);
-            elevMotor.setPower(0);
-            elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
         }
         catch (Exception e)
         {
@@ -117,4 +109,65 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         rfMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rrMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
+
+    @Override
+    protected void initCollectorLifter()
+    {
+        try  //Collector
+        {
+            gpitch = hwMap.servo.get("gpitch");
+            gripper = hwMap.servo.get("gripper");
+            elevMotor = hwMap.dcMotor.get("elevmotor");
+
+            elevMotor.setDirection(DcMotor.Direction.REVERSE);
+            elevMotor.setPower(0);
+            elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            capMap.put("collector", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+    }
+
+    @Override
+    protected void initPushers()
+    {
+        try
+        {
+            jflicker = hwMap.servo.get("jflicker");
+            capMap.put("pusher", true);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+    }
+
+    @Override
+    protected void initSensors()
+    {
+        System.out.println("In TilerunnerGtoBot.initSensors");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMU_IMUCalibration.json";
+        parameters.loggingEnabled      = false;
+        parameters.loggingTag          = "IMU";
+        //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        try
+        {
+            imu = (BNO055IMU) com.getHardwareMap().get("imu");
+            imu.initialize(parameters);
+            capMap.put("sensor", true);
+        }
+        catch(Exception e)
+        {
+            RobotLog.ee(TAG, "ERROR get imu\n" + e.toString());
+        }
+    }
+
 }

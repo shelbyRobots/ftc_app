@@ -368,17 +368,30 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private TELEOP_DRIVE_TYPE driveType = TELEOP_DRIVE_TYPE.ARCADE_DRIVE;
 
-    public  final static double JFLICKER_UP_POS   = 0.1;
-    public  final static double JFLICKER_DOWN_POS = 0.75;
+    public  final static double JFLICKER_UP_POS   = 0.71;
+    public  final static double JFLICKER_DOWN_POS = 0.0;
 
-    public  final static double GRIPPER_CLOSE_POS = 0.88;
-    public  final static double GRIPPER_OPEN_POS  = 0.6;
-    public  final static double GRIPPER_MID_POS   = 0.75;
+    public  final static double GRIPPER_CLOSE_POS = 0.85;
+    public  final static double GRIPPER_OPEN_POS  = 0.0;
+    public  final static double GRIPPER_MID_POS   = 0.71;
 
-    public  final static double GPITCH_DOWN_POS = 0.4;
-    public  final static double GPITCH_UP_POS   = 0.9;
-    public  final static double GPITCH_MIN      = 0.2;
-    public  final static double GPITCH_MAX      = 0.9;
+    public  final static double GPITCH_DOWN_POS = 0.64;
+    public  final static double GPITCH_UP_POS   = 0.1;
+    public  final static double GPITCH_MIN      = 0.1;
+    public  final static double GPITCH_MAX      = 0.8;
+
+    // GTO1
+//    public  final static double JFLICKER_UP_POS   = 0.1;
+//    public  final static double JFLICKER_DOWN_POS = 0.75;
+//
+//    public  final static double GRIPPER_CLOSE_POS = 0.88;
+//    public  final static double GRIPPER_OPEN_POS  = 0.6;
+//    public  final static double GRIPPER_MID_POS   = 0.75;
+//
+//    public  final static double GPITCH_DOWN_POS = 0.4;
+//    public  final static double GPITCH_UP_POS   = 0.9;
+//    public  final static double GPITCH_MIN      = 0.2;
+//    public  final static double GPITCH_MAX      = 0.9;
 
     public final double minPwr = 0.10;
     public final double minTrn = 0.10;
