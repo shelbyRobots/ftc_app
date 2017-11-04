@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerMecanumBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
@@ -29,6 +32,18 @@ public class MecanumTeleop extends InitLinearOpMode
         double dSpd = 0.0;
 
         robot.init(this);
+
+
+        if(robot.gripper != null)
+        {
+            robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+        }
+
+        if(robot.gpitch != null)
+        {
+            robot.gpitch.setPosition(GPITCH_UP_POS);
+        }
+
 
         // Send telemetry message to signify robot waiting;
         dashboard.displayText(0, "Hello Driver");
@@ -60,6 +75,19 @@ public class MecanumTeleop extends InitLinearOpMode
             boolean incr = gpad1.just_pressed(ManagedGamepad.Button.R_BUMP);
             boolean decr = gpad1.just_pressed(ManagedGamepad.Button.L_BUMP);
             boolean toggleVel = gpad1.just_pressed(ManagedGamepad.Button.Y);
+
+            boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+            boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+
+            boolean gripper_open_par  = gpad2.pressed(ManagedGamepad.Button.A);
+            boolean gripper_open      = gpad2.pressed(ManagedGamepad.Button.B);
+            boolean toggle_gpitch     = gpad2.just_pressed(ManagedGamepad.Button.X);
+            boolean toggle_jflicker   = gpad2.just_pressed(ManagedGamepad.Button.Y);
+
+            double elev         = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+
+            double outPitch = Range.scale(pitch, -1.0, 1.0, GPITCH_MIN, GPITCH_MAX);
 
             boolean step_driveType = gpad1.just_pressed(ManagedGamepad.Button.A);
 
@@ -163,6 +191,94 @@ public class MecanumTeleop extends InitLinearOpMode
                 robot.lrMotor.setPower(lr);
                 robot.rrMotor.setPower(rr);
             }
+
+            if(lowerElev && curElevIdx > 0)
+            {
+                curElevIdx--;
+                robot.elevMotor.setTargetPosition(elevPositions[curElevIdx]);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.5;
+                robot.elevMotor.setPower(elev);
+            }
+            else if(raiseElev && curElevIdx < 3)
+            {
+                curElevIdx++;
+                robot.elevMotor.setTargetPosition(elevPositions[curElevIdx]);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.5;
+                robot.elevMotor.setPower(elev);
+            }
+            else if(Math.abs(elev) > 0.001)
+            {
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                if(robot.elevMotor.getCurrentPosition() < 10) elev = 0.0;
+                robot.elevMotor.setPower(elev);
+            }
+
+            // Gripper (a: Somewhat Open, b: all the way open, neither: closed)
+            if (gripper_open)
+                robot.gripper.setPosition(GRIPPER_OPEN_POS);
+            else if (gripper_open_par)
+                robot.gripper.setPosition(GRIPPER_MID_POS);
+            else
+                robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+
+            // Pitch (Gripper angle servo) (x: toggles between closed and open position)
+            if (toggle_gpitch)
+            {
+                currentPitchState = (currentPitchState == Teleop_Driver.PitchState.CLOSED) ?
+                        Teleop_Driver.PitchState.OPEN : Teleop_Driver.PitchState.CLOSED;
+
+                if (currentPitchState == Teleop_Driver.PitchState.CLOSED)
+                    robot.gpitch.setPosition(GPITCH_UP_POS);
+                else if (currentPitchState == Teleop_Driver.PitchState.OPEN)
+                    robot.gpitch.setPosition(GPITCH_DOWN_POS);
+            }
+            else if(Math.abs(pitch) > 0.001)
+            {
+                robot.gpitch.setPosition(outPitch);
+            }
+
+            // Jewel Flicker (y: toggles between up and down positions)
+            if (toggle_jflicker)
+            {
+                currentFlickerState = (currentFlickerState == MecanumTeleop.FlickerState.DOWN) ?
+                        MecanumTeleop.FlickerState.UP : MecanumTeleop.FlickerState.DOWN;
+
+                if (currentFlickerState == MecanumTeleop.FlickerState.DOWN)
+                    robot.jflicker.setPosition(JFLICKER_DOWN_POS);
+                else if (currentFlickerState == MecanumTeleop.FlickerState.UP)
+                    robot.jflicker.setPosition(JFLICKER_UP_POS);
+            }
         }
     }
+
+    private int elevPositions[] =
+            {
+                    TilerunnerGtoBot.LIFT_POS_A,
+                    TilerunnerGtoBot.LIFT_POS_B,
+                    TilerunnerGtoBot.LIFT_POS_C,
+                    TilerunnerGtoBot.LIFT_POS_D
+            };
+
+    private int curElevIdx = 0;
+
+    public  final static double JFLICKER_UP_POS = 0.1;
+    public  final static double JFLICKER_DOWN_POS = 0.6;
+
+    public  final static double GRIPPER_CLOSE_POS = 0.83;
+    public  final static double GRIPPER_OPEN_POS = 0.6;
+    public  final static double GRIPPER_MID_POS = 0.75;
+
+    public  final static double GPITCH_UP_POS = 0.9;
+    public  final static double GPITCH_DOWN_POS = 0.4;
+    public  final static double GPITCH_MIN = 0.2;
+    public  final static double GPITCH_MAX = 0.9;
+
+
+    enum PitchState { CLOSED, OPEN, MID };
+    private Teleop_Driver.PitchState currentPitchState = Teleop_Driver.PitchState.CLOSED;
+
+    private enum FlickerState { UP, DOWN }
+    private MecanumTeleop.FlickerState currentFlickerState = MecanumTeleop.FlickerState.UP;
 }
