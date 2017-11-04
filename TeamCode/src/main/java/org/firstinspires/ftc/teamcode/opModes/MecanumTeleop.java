@@ -226,12 +226,12 @@ public class MecanumTeleop extends InitLinearOpMode
             // Pitch (Gripper angle servo) (x: toggles between closed and open position)
             if (toggle_gpitch)
             {
-                currentPitchState = (currentPitchState == Teleop_Driver.PitchState.CLOSED) ?
-                        Teleop_Driver.PitchState.OPEN : Teleop_Driver.PitchState.CLOSED;
+                currentPitchState = (currentPitchState == PitchState.CLOSED) ?
+                       PitchState.OPEN : PitchState.CLOSED;
 
-                if (currentPitchState == Teleop_Driver.PitchState.CLOSED)
+                if (currentPitchState == PitchState.CLOSED)
                     robot.gpitch.setPosition(GPITCH_UP_POS);
-                else if (currentPitchState == Teleop_Driver.PitchState.OPEN)
+                else if (currentPitchState == PitchState.OPEN)
                     robot.gpitch.setPosition(GPITCH_DOWN_POS);
             }
             else if(Math.abs(pitch) > 0.001)
@@ -242,12 +242,12 @@ public class MecanumTeleop extends InitLinearOpMode
             // Jewel Flicker (y: toggles between up and down positions)
             if (toggle_jflicker)
             {
-                currentFlickerState = (currentFlickerState == MecanumTeleop.FlickerState.DOWN) ?
-                        MecanumTeleop.FlickerState.UP : MecanumTeleop.FlickerState.DOWN;
+                currentFlickerState = (currentFlickerState == FlickerState.DOWN) ?
+                        FlickerState.UP : FlickerState.DOWN;
 
-                if (currentFlickerState == MecanumTeleop.FlickerState.DOWN)
+                if (currentFlickerState == FlickerState.DOWN)
                     robot.jflicker.setPosition(JFLICKER_DOWN_POS);
-                else if (currentFlickerState == MecanumTeleop.FlickerState.UP)
+                else if (currentFlickerState == FlickerState.UP)
                     robot.jflicker.setPosition(JFLICKER_UP_POS);
             }
         }
@@ -277,8 +277,8 @@ public class MecanumTeleop extends InitLinearOpMode
 
 
     enum PitchState { CLOSED, OPEN, MID };
-    private Teleop_Driver.PitchState currentPitchState = Teleop_Driver.PitchState.CLOSED;
+    private PitchState currentPitchState = PitchState.CLOSED;
 
     private enum FlickerState { UP, DOWN }
-    private MecanumTeleop.FlickerState currentFlickerState = MecanumTeleop.FlickerState.UP;
+    private FlickerState currentFlickerState = FlickerState.UP;
 }
