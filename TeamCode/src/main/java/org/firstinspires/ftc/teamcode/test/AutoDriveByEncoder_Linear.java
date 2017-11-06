@@ -79,7 +79,7 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
 
     private static int frame = 0;
 
-    private ShelbyBot.DriveDir startDir = ShelbyBot.DriveDir.SWEEPER;
+    private ShelbyBot.DriveDir startDir = ShelbyBot.DriveDir.INTAKE;
 
     private final static String TAG = "SJH_ADBE";
 
@@ -175,22 +175,22 @@ public class AutoDriveByEncoder_Linear extends InitLinearOpMode
         }
 
         robot.turnColorOn();
-        telemetry.addData("SEG", "SWEEPER FWD " + DD);
+        telemetry.addData("SEG", "INTAKE FWD " + DD);
         telemetry.update();
         encoderDrive(spd,  DD,  DD, 30.0);
         robot.turnColorOff();
         r = 0;
         g = 0;
         b = 0;
-        telemetry.addData("SEG", "SWEEPER LFT " + TD);
+        telemetry.addData("SEG", "INTAKE LFT " + TD);
         telemetry.update();
         encoderDrive(trnspd, TD, -TD, 30.0);
         robot.turnColorOn();
-        telemetry.addData("SEG", "SWEEPER BCK " + DD);
+        telemetry.addData("SEG", "INTAKE BCK " + DD);
         telemetry.update();
         encoderDrive(spd, -DD, -DD, 30.0);
         //turnColorOff();
-        //telemetry.addData("SEG", "SWEEPER RGT " + TD);
+        //telemetry.addData("SEG", "INTAKE RGT " + TD);
         //telemetry.update();
         //encoderDrive(trnspd, -TD, TD, 30.0);
     }

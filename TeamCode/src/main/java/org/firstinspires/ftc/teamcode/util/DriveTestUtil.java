@@ -40,8 +40,8 @@ public class DriveTestUtil
      */
     public void doMaxSpeedTest(DcMotor.RunMode runMode)
     {
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
-        dl.addField("RUNNING MAX DRIVE SPEED TEST SWEEPER " + runMode.toString()); dl.newLine();
+        robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
+        dl.addField("RUNNING MAX DRIVE SPEED TEST INTAKE " + runMode.toString()); dl.newLine();
         drvTrn.stopAndReset();
         op.sleep(50);
         robot.leftMotor.setMode(runMode);
@@ -95,7 +95,7 @@ public class DriveTestUtil
         double spdStep = 0.01;
         double spdDur  = 1.0;
         int    MOVE_THRESH = 10;
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
         dl.addField("RUNNING MIN SPEED TEST"); dl.newLine();
         robot.leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -123,8 +123,8 @@ public class DriveTestUtil
     public void doSpeedTest(DcMotor.RunMode runMode, double spd,
                             double atime, double rtime, double dtime)
     {
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
-        dl.addField("RUNNING MAX DRIVE SPEED TEST SWEEPER " + runMode.toString());
+        robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
+        dl.addField("RUNNING MAX DRIVE SPEED TEST INTAKE " + runMode.toString());
         dl.newLine();
         drvTrn.logData(true, "SETTING POWER " + spd);
         et.reset();
@@ -165,7 +165,7 @@ public class DriveTestUtil
         Point2d tgtPt = new Point2d(dist, 0);
         drvTrn.setCurrPt(strtPt);
         drvTrn.stopAndReset();
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
         dl.addField("TEST DRIVE DISTANCE at power");
         dl.addField("", dist); dl.addField("", pwr); dl.newLine();
         op.sleep(200);
@@ -179,7 +179,7 @@ public class DriveTestUtil
 
     public void findBestDriveSpeed()
     {
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
         double distances[] = {48}; //{24, 43};
         double tHdg = 0.0;
         op.sleep(200);

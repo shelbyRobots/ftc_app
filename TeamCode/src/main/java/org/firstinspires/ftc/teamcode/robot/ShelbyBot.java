@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Units;
 
 import java.util.ArrayList;
@@ -50,8 +51,8 @@ public class ShelbyBot
     public Servo    lpusher     = null;
     public Servo    rpusher     = null;
 
-    public List<DcMotor> leftMotors  = new ArrayList<>();
-    public List<DcMotor> rightMotors = new ArrayList<>();
+    public List<DcMotor> leftMotors  = new ArrayList<>(2);
+    public List<DcMotor> rightMotors = new ArrayList<>(2);
 
     public int numLmotors = 0;
     public int numRmotors = 0;
@@ -59,6 +60,8 @@ public class ShelbyBot
     public ModernRoboticsI2cGyro        gyro        = null;
     public ModernRoboticsI2cColorSensor colorSensor = null;
     public DeviceInterfaceModule        dim         = null;
+
+    protected CommonUtil com = CommonUtil.getInstance();
 
     public BNO055IMU imu = null;
 
@@ -72,13 +75,17 @@ public class ShelbyBot
     protected static float CAMERA_Z_IN_BOT;
 
     private int colorPort = 0;
-    private DriveDir ddir = DriveDir.UNKNOWN;
+    private final DriveDir defDriveDir = DriveDir.INTAKE;
+    private DriveDir ddir = defDriveDir;
     public DriveDir calibrationDriveDir = DriveDir.UNKNOWN;
     protected HardwareMap hwMap = null;
+
+    protected String name = "ShelbyBot";
 
     boolean colorEnabled = false;
 
     private int initHdg = 0;
+    public static double autonEndHdg = 0.0;
 
     //The values below are for the 6 wheel 2016-2017 drop center bot
     //with center wheels powered by Neverest 40 motors.
@@ -96,6 +103,8 @@ public class ShelbyBot
 
     public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
     public static DcMotor.Direction RIGHT_DIR = DcMotor.Direction.REVERSE;
+
+    protected Map<String, DcMotor> motors = new HashMap<>();
 
     public boolean gyroReady = false;
     Map<String, Boolean> capMap = new HashMap<>();
@@ -137,8 +146,6 @@ public class ShelbyBot
     /* Initialize standard Hardware interfaces */
     public void init(LinearOpMode op)
     {
-        System.out.println("In ShelbyBot.init");
-        RobotLog.dd(TAG, "in robot init");
         computeCPI();
 
         initOp(op);
@@ -148,6 +155,12 @@ public class ShelbyBot
         initPushers();
         initSensors();
         initCapabilities();
+    }
+
+    public void init(LinearOpMode op, String name)
+    {
+        this.name = name;
+        init(op);
     }
 
     protected void initOp(LinearOpMode op)
@@ -170,20 +183,25 @@ public class ShelbyBot
 
              leftMotor.setDirection(LEFT_DIR);
             rightMotor.setDirection(RIGHT_DIR);
-             leftMotor.setPower(0);
-            rightMotor.setPower(0);
-             leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-             leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-             leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motors.put("FL", leftMotor);
+            motors.put("FR", rightMotor);
 
             capMap.put("drivetrain", true);
         }
         catch (Exception e)
         {
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+        }
+
+        for(DcMotor mot : motors.values())
+        {
+            if(mot != null)
+            {
+                mot.setPower(0);
+                mot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                mot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                mot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
         }
     }
 
@@ -264,10 +282,6 @@ public class ShelbyBot
 
         if(colorSensor != null)
         {
-            //colorPort = colorSensor.getPort();
-            //RobotLog.ii("SJH", "I2C Controller version %d",
-            //        colorSensor.getI2cController().getVersion());
-
             RobotLog.ii("SJH", "COLOR_SENSOR");
             RobotLog.ii("SJH", "ConnectionInfo %s", colorSensor.getConnectionInfo());
             RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(colorSensor.getI2cAddress().get8Bit()));
@@ -313,8 +327,8 @@ public class ShelbyBot
     {
         if(ddir == DriveDir.UNKNOWN)
         {
-            RobotLog.ee("SJH", "ERROR - setDriveDir UNKNOWN not allowed.  Setting SWEEPER.");
-            ddir = DriveDir.SWEEPER;
+            RobotLog.ee(TAG, "setDriveDir called with UNKNOWN");
+            return;
         }
 
         if(calibrationDriveDir == DriveDir.UNKNOWN) calibrationDriveDir = ddir;
@@ -324,39 +338,33 @@ public class ShelbyBot
 
         this.ddir = ddir;
 
-        RobotLog.ii("SJH", "Setting Drive Direction to " + ddir);
+        RobotLog.ii(TAG, "Setting Drive Direction to " + ddir);
+        RobotLog.ii(TAG, " #LM %d #RM %d", numLmotors, numRmotors);
 
-        switch (ddir)
+        int n = numLmotors - 1;
+        for(int m = 0; m < numRmotors; m++)
         {
-            case PUSHER:
-            {
-                leftMotor   = hwMap.dcMotor.get("rightdrive");
-                rightMotor  = hwMap.dcMotor.get("leftdrive");
-                break;
-            }
-            case SWEEPER:
-            case UNKNOWN:
-            {
-                leftMotor   = hwMap.dcMotor.get("leftdrive");
-                rightMotor  = hwMap.dcMotor.get("rightdrive");
-            }
+            DcMotor lMotor = leftMotors.get(m);
+            lMotor.setDirection(RIGHT_DIR);
+            DcMotor rMotor = rightMotors.get(n);
+            rMotor.setDirection(LEFT_DIR);
+            RobotLog.dd(TAG, "Setting l(%d) to r(%d)", m, n);
+            leftMotors.set(m, rMotor);
+            RobotLog.dd(TAG, "Setting r(%d) to l(%d)", n, m);
+            rightMotors.set(n, lMotor);
+            n--;
         }
-
-        leftMotor.setDirection(LEFT_DIR);
-        rightMotor.setDirection(RIGHT_DIR);
     }
 
     public DriveDir invertDriveDir()
     {
         DriveDir inDir  = getDriveDir();
-        DriveDir outDir = DriveDir.SWEEPER;
+        DriveDir outDir = DriveDir.INTAKE;
 
         switch(inDir)
         {
-            case SWEEPER: outDir = DriveDir.PUSHER;  break;
-            case PUSHER:
-            case UNKNOWN:
-                outDir = DriveDir.SWEEPER; break;
+            case INTAKE: outDir = DriveDir.PUSHER; break;
+            case PUSHER: outDir = DriveDir.INTAKE; break;
         }
 
         RobotLog.ii("SJH", "Changing from %s FWD to %s FWD", inDir, outDir);
@@ -380,8 +388,8 @@ public class ShelbyBot
         if(calibrationDriveDir == DriveDir.UNKNOWN)
         {
             RobotLog.ii("SJH", "calibrateGyro called without having set a drive Direction. " +
-                       "Defaulting to SWEEPER.");
-            setDriveDir(DriveDir.SWEEPER);
+                       "Defaulting to INTAKE.");
+            setDriveDir(DriveDir.INTAKE);
         }
 
         RobotLog.ii("SJH", "Starting gyro calibration");
@@ -420,8 +428,7 @@ public class ShelbyBot
 
     public double getGyroHdg()
     {
-        double rawGyroHdg = gyro.getIntegratedZValue();
-        return rawGyroHdg;
+        return gyro.getIntegratedZValue();
     }
 
     public double getGyroFhdg()
@@ -457,10 +464,11 @@ public class ShelbyBot
         return cHdg;
     }
 
+    //INTAKE is the intake side and should have configured left motors to left.
     public enum DriveDir
     {
         UNKNOWN,
-        SWEEPER,
+        INTAKE,
         PUSHER
     }
 

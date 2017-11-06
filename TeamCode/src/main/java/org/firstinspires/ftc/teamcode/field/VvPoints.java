@@ -48,7 +48,7 @@ public class VvPoints extends Points
 
         //convenience declarations to make call params shorter
         ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.PUSHER;
-        ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.SWEEPER;
+        ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.INTAKE;
         Segment.Action none   = Segment.Action.NOTHING;
         Segment.Action shoot  = Segment.Action.SHOOT;
         Segment.Action beacon = Segment.Action.FIND_BEACON;

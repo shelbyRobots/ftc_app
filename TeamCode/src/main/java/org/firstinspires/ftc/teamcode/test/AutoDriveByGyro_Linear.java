@@ -77,7 +77,7 @@ public class AutoDriveByGyro_Linear extends InitLinearOpMode
     private int curLftTarget = 0;
     private int curRgtTarget = 0;
 
-    ShelbyBot.DriveDir startDir = ShelbyBot.DriveDir.SWEEPER;
+    ShelbyBot.DriveDir startDir = ShelbyBot.DriveDir.INTAKE;
 
     @Override
     public void runOpMode()

@@ -16,12 +16,12 @@ public class RrPoints extends Points
         Vector<Point2d> points = new Vector<>(MAX_SEGMENTS);
 
         //convenience declarations to make call params shorter
-        ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.SWEEPER;
+        ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.INTAKE;
         ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.PUSHER;
         if(alliance == Field.Alliance.BLUE)
         {
             fwd = ShelbyBot.DriveDir.PUSHER;
-            rev = ShelbyBot.DriveDir.SWEEPER;
+            rev = ShelbyBot.DriveDir.INTAKE;
         }
         Segment.Action none    = Segment.Action.NOTHING;
         Segment.Action scan    = Segment.Action.SCAN_IMAGE;
@@ -46,8 +46,10 @@ public class RrPoints extends Points
             addPoint(points, fwd, 0.45, 1.00, encType, scan, RrField.RRBS);
             addPoint(points, fwd, 0.30, 1.00, encType, key,  RrField.RRFP);
             addPoint(points, fwd, 0.30, 1.00, encType, drop, RrField.RRDC);
-            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRTT);
+            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRFP);
+            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRXP);
             addPoint(points, fwd, 0.60, 1.00, encType, grab, RrField.RRPP);
+            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRXP);
             addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RRTT);
         }
 

@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerMecanumBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
@@ -36,12 +35,14 @@ public class MecanumTeleop extends InitLinearOpMode
 
         if(robot.gripper != null)
         {
-            robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+            robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+            robot.rgripper.setPosition(robot.RGRIPPER_CLOSE_POS);
         }
 
         if(robot.gpitch != null)
         {
-            robot.gpitch.setPosition(GPITCH_UP_POS);
+            robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+            currentPitchState = PitchState.PITCH_UP;
         }
 
 
@@ -88,7 +89,8 @@ public class MecanumTeleop extends InitLinearOpMode
             double elev         = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
             double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
 
-            double outPitch = Range.scale(pitch, -1.0, 1.0, GPITCH_MIN, GPITCH_MAX);
+            double outPitch = Range.scale(pitch, -1.0, 1.0,
+                    robot.GPITCH_MIN, robot.GPITCH_MAX);
 
             boolean step_driveType = gpad1.just_pressed(ManagedGamepad.Button.A);
 
@@ -196,7 +198,7 @@ public class MecanumTeleop extends InitLinearOpMode
             if(lowerElev && curElevIdx > 0)
             {
                 curElevIdx--;
-                robot.elevMotor.setTargetPosition(elevPositions[curElevIdx]);
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elev = 0.5;
                 robot.elevMotor.setPower(elev);
@@ -204,7 +206,7 @@ public class MecanumTeleop extends InitLinearOpMode
             else if(raiseElev && curElevIdx < 3)
             {
                 curElevIdx++;
-                robot.elevMotor.setTargetPosition(elevPositions[curElevIdx]);
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elev = 0.5;
                 robot.elevMotor.setPower(elev);
@@ -218,24 +220,38 @@ public class MecanumTeleop extends InitLinearOpMode
 
             // Gripper (a: Somewhat Open, b: all the way open, neither: closed)
             if (gripper_open)
-                robot.gripper.setPosition(GRIPPER_OPEN_POS);
+            {
+                robot.gripper.setPosition(robot.GRIPPER_OPEN_POS);
+                robot.rgripper.setPosition(robot.RGRIPPER_OPEN_POS);
+            }
             else if (gripper_open_par)
-                robot.gripper.setPosition(GRIPPER_MID_POS);
+            {
+                robot.gripper.setPosition(robot.GRIPPER_PARTIAL_POS);
+                robot.rgripper.setPosition(robot.RGRIPPER_PARTIAL_POS);
+            }
             else
-                robot.gripper.setPosition(GRIPPER_CLOSE_POS);
+            {
+                robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+                robot.rgripper.setPosition(robot.RGRIPPER_PARTIAL_POS);
+            }
 
             // Pitch (Gripper angle servo) (x: toggles between closed and open position)
             if (toggle_gpitch)
             {
-                currentPitchState = (currentPitchState == PitchState.CLOSED) ?
-                       PitchState.OPEN : PitchState.CLOSED;
+                currentPitchState = (currentPitchState == PitchState.PITCH_UP) ?
+                                            PitchState.PITCH_DOWN : PitchState.PITCH_UP;
 
-                if (currentPitchState == PitchState.CLOSED)
-                    robot.gpitch.setPosition(GPITCH_UP_POS);
-                else if (currentPitchState == PitchState.OPEN)
-                    robot.gpitch.setPosition(GPITCH_DOWN_POS);
+                switch (currentPitchState)
+                {
+                    case PITCH_UP:
+                        robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+                        break;
+                    case PITCH_DOWN:
+                        robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
+                        break;
+                }
             }
-            else if(Math.abs(pitch) > 0.001)
+            else if(Math.abs(pitch) > 0.05)
             {
                 robot.gpitch.setPosition(outPitch);
             }
@@ -246,39 +262,23 @@ public class MecanumTeleop extends InitLinearOpMode
                 currentFlickerState = (currentFlickerState == FlickerState.DOWN) ?
                         FlickerState.UP : FlickerState.DOWN;
 
-                if (currentFlickerState == FlickerState.DOWN)
-                    robot.jflicker.setPosition(JFLICKER_DOWN_POS);
-                else if (currentFlickerState == FlickerState.UP)
-                    robot.jflicker.setPosition(JFLICKER_UP_POS);
+                switch (currentFlickerState)
+                {
+                    case DOWN:
+                        robot.jflicker.setPosition(robot.JFLICKER_DOWN_POS);
+                        break;
+                    case UP:
+                        robot.jflicker.setPosition(robot.JFLICKER_UP_POS);
+                        break;
+                }
             }
         }
     }
 
-    private int elevPositions[] =
-            {
-                    TilerunnerGtoBot.LIFT_POS_A,
-                    TilerunnerGtoBot.LIFT_POS_B,
-                    TilerunnerGtoBot.LIFT_POS_C,
-                    TilerunnerGtoBot.LIFT_POS_D
-            };
-
     private int curElevIdx = 0;
 
-    public  final static double JFLICKER_UP_POS = 0.1;
-    public  final static double JFLICKER_DOWN_POS = 0.6;
-
-    public  final static double GRIPPER_CLOSE_POS = 1.0;
-    public  final static double GRIPPER_OPEN_POS = 0.7;
-    public  final static double GRIPPER_MID_POS = 0.85;
-
-    public  final static double GPITCH_UP_POS = 0.71;
-    public  final static double GPITCH_DOWN_POS = 0.1;
-    public  final static double GPITCH_MIN = 0;
-    public  final static double GPITCH_MAX = 0.8;
-
-
-    enum PitchState { CLOSED, OPEN, MID };
-    private PitchState currentPitchState = PitchState.CLOSED;
+    private enum PitchState { PITCH_UP, PITCH_DOWN }
+    private PitchState currentPitchState = PitchState.PITCH_UP;
 
     private enum FlickerState { UP, DOWN }
     private FlickerState currentFlickerState = FlickerState.UP;

@@ -204,7 +204,7 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
         tseg.setPostTurn(testPost + initHdg);
         tseg.setDrvTuner(testK);
         drvTrn.setDrvTuner(testK);
-        tseg.setDir(ShelbyBot.DriveDir.SWEEPER);
+        tseg.setDir(ShelbyBot.DriveDir.INTAKE);
         tseg.setTgtType(Segment.TargetType.TIME);
         tseg.setAction(Segment.Action.NOTHING);
 

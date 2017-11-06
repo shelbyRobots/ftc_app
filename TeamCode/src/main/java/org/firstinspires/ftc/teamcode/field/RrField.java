@@ -82,6 +82,7 @@ public class RrField extends Field
 
     static final Point2d RRTT = new Point2d("RRTT",  48.0,  -36.0);
     static final Point2d RRPP = new Point2d("RRPP",   0.0,  -12.0);
+    static final Point2d RRXP = new Point2d("RRXP",  48.0,  -24.0);
 
     static final Point2d RARZ = new Point2d("RARZ", -72.0,  -12.0);
 

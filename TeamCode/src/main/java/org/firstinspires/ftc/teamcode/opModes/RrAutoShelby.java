@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.internal.system.SystemProperties;
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.field.Points;
 import org.firstinspires.ftc.teamcode.field.RrField;
@@ -19,7 +18,7 @@ import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
-import org.firstinspires.ftc.teamcode.util.AutoTransitioner;
+import org.firstinspires.ftc.teamcode.robot.TilerunnerMecanumBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
@@ -92,7 +91,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void stopMode()
     {
-        robot.autonEndHdg = robot.getGyroFhdg();
         if(drvTrn != null) drvTrn.cleanup();
         det.cleanupCamera();
     }
@@ -103,39 +101,50 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         logData = true;
 
         dashboard.displayPrintf(2, "STATE: %s", "INITIALIZING - PLEASE WAIT FOR MENU");
-        RobotLog.ii("SJH", "SETUP");
+        RobotLog.ii(TAG, "SETUP");
+
+        doMenus();
+
+        String teleopName = "TeleopDriver";
+
+        if(robotName.equals("MEC1"))
+        {
+            robot = new TilerunnerMecanumBot();
+            teleopName = "Mecanum";
+        }
+        else
+        {
+            robot = new TilerunnerGtoBot();
+        }
 
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
+//        RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
+//        AutoTransitioner.transitionOnStop(this, teleopName);
 
-        String teleopName = "Teleop Driver";
-        RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
-        AutoTransitioner.transitionOnStop(this, teleopName);
-
-        robot.init(this);
+        robot.init(this, robotName);
 
         System.out.println("Robot CPI " + robot.CPI);
 
         drvTrn.init(robot);
         drvTrn.setRampUp(false);
 
-        robot.jflicker.setPosition(JFLICKER_UP_POS);
-        robot.gripper.setPosition(GRIPPER_CLOSE_POS);
-        robot.gpitch.setPosition(GPITCH_UP_POS);
+        robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_UP_POS);
+        robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_CLOSE_POS);
+        robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
 
         det = new MajorColorDetector();
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
-
         tracker.setTrackableRelativeCropCorners(RrField.getTrackableRelativeCropCorners());
 
-        doMenus();
         setupLogger();
 
         dl.addField("Start: " + startPos.toString());
         dl.addField("Alliance: " + alliance.toString());
-        RobotLog.ii("SJH", "STARTPOS %s", startPos);
-        RobotLog.ii("SJH", "ALLIANCE %s", alliance);
-        RobotLog.ii("SJH", "DELAY    %4.2f", delay);
+        RobotLog.ii(TAG, "STARTPOS %s", startPos);
+        RobotLog.ii(TAG, "ALLIANCE %s", alliance);
+        RobotLog.ii(TAG, "DELAY    %4.2f", delay);
+        RobotLog.ii(TAG, "BOT      %s", robotName);
 
         Points pts = new RrPoints(startPos, alliance);
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
@@ -157,7 +166,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         if(alliance == Field.Alliance.BLUE) drvTrn.setLFirst(false);
 
-        RobotLog.ii("SJH", "ROUTE: \n" + pts.toString());
+        RobotLog.ii(TAG, "ROUTE: \n" + pts.toString());
 
         Point2d currPoint = pathSegs.get(0).getStrtPt();
         drvTrn.setCurrPt(currPoint);
@@ -165,10 +174,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setStartHdg(initHdg);
         robot.setInitHdg(initHdg);
 
-        RobotLog.ii("SJH", "Start %s.", currPoint);
+        RobotLog.ii(TAG, "Start %s.", currPoint);
         dashboard.displayPrintf(3, "PATH: Start at %s", currPoint);
 
-        RobotLog.ii("SJH", "IHDG %4.2f", initHdg);
+        RobotLog.ii(TAG, "IHDG %4.2f", initHdg);
 
         det.setTelemetry(telemetry);
     }
@@ -179,7 +188,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         startTimer.reset();
         dl.resetTime();
 
-        RobotLog.ii("SJH", "STARTING AT %4.2f", timer.seconds());
+        RobotLog.ii(TAG, "STARTING AT %4.2f", timer.seconds());
         if(logData)
         {
             Point2d spt = pathSegs.get(0).getStrtPt();
@@ -190,16 +199,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             dl.newLine();
         }
 
-        RobotLog.ii("SJH", "Delaying for %4.2f seconds", delay);
+        RobotLog.ii(TAG, "Delaying for %4.2f seconds", delay);
         ElapsedTime delayTimer = new ElapsedTime();
         while (opModeIsActive() && delayTimer.seconds() < delay)
         {
             idle();
         }
 
-        RobotLog.ii("SJH", "Done delay");
+        RobotLog.ii(TAG, "Done delay");
 
-        RobotLog.ii("SJH", "START CHDG %6.3f", robot.getGyroHdg());
+        RobotLog.ii(TAG, "START CHDG %6.3f", robot.getGyroHdg());
 
         robot.resetGyro();
 
@@ -209,17 +218,17 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             if(!opModeIsActive() || isStopRequested()) break;
 
             String segName = pathSegs.get(i).getName();
-            RobotLog.ii("SJH", "Starting segment %s at %4.2f", segName,
+            RobotLog.ii(TAG, "Starting segment %s at %4.2f", segName,
                     startTimer.seconds());
 
             //noinspection ConstantConditions
             if (SkipNextSegment)
             {
                 SkipNextSegment = false;
-                RobotLog.ii("SJH", "Skipping segment %s", pathSegs.get(i).getName());
+                RobotLog.ii(TAG, "Skipping segment %s", pathSegs.get(i).getName());
                 if(i < pathSegs.size() - 1)
                 {
-                    RobotLog.ii("SJH", "Setting segment %s start pt to %s",
+                    RobotLog.ii(TAG, "Setting segment %s start pt to %s",
                             pathSegs.get(i+1).getName(),
                             pathSegs.get(i).getStrtPt());
                     pathSegs.get(i+1).setStrtPt(pathSegs.get(i).getStrtPt());
@@ -249,20 +258,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     curSeg.getFieldHeading());
             drvTrn.logData(true, segName + " " + segLogStr);
 
-            RobotLog.ii("SJH", "ENCODER TURN %s", curSeg.getName());
+            RobotLog.ii(TAG, "ENCODER TURN %s", curSeg.getName());
 
-//            if (curSeg.getAction() == Segment.Action.SHOOT)
-//            {
-//                robot.shotmotor1.setPower(DEF_SHT_PWR);
-//                robot.shotmotor2.setPower(DEF_SHT_PWR);
-//                //robot.sweepMotor.setPower(-DEF_SWP_PWR * 0.1);
-//            }
-            if(curSeg.getStrtPt().getX() == curSeg.getTgtPt().getX() &&
-               curSeg.getStrtPt().getY() == curSeg.getTgtPt().getY())
-            {
-                //No move needed
-            }
-            else
+            if(curSeg.getLength() >= 0.01)
             {
                 doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
                 doGyroTurn(curSeg.getFieldHeading(), segName + " gyroTurn");
@@ -273,10 +271,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             Double pturn = curSeg.getPostTurn();
             if(usePostTurn && pturn != null)
             {
-                RobotLog.ii("SJH", "ENCODER POST TURN %s", curSeg.getName());
+                RobotLog.ii(TAG, "ENCODER POST TURN %s", curSeg.getName());
                 doEncoderTurn(pturn, segName + " postEncoderTurn");
 
-//                RobotLog.ii("SJH", "GRYO POST TURN %s", curSeg.getName());
+//                RobotLog.ii(TAG, "GRYO POST TURN %s", curSeg.getName());
 //                doGyroTurn(pturn, segName + " postGyroTurn");
             }
 
@@ -286,7 +284,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 break;
             }
 
-            RobotLog.ii("SJH", "Planned pos: %s %s",
+            RobotLog.ii(TAG, "Planned pos: %s %s",
                     pathSegs.get(i).getTgtPt(),
                     pathSegs.get(i).getFieldHeading());
 
@@ -385,21 +383,29 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     break;
 
                 case DROP:
-                    robot.gpitch.setPosition(GPITCH_DOWN_POS);
+                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_DOWN_POS);
                     sleep(500);
-                    robot.gripper.setPosition(GRIPPER_PARTIAL_POS);
-                    robot.gpitch.setPosition(GPITCH_UP_POS);
+                    robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_PARTIAL_POS);
+                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
                     sleep(300);
                     break;
 
                 case GRAB:
-                    robot.gpitch.setPosition(GPITCH_DOWN_POS);
+                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_DOWN_POS);
                     sleep(500);
-                    robot.gripper.setPosition(GRIPPER_CLOSE_POS);
-                    robot.gpitch.setPosition(GPITCH_UP_POS);
+                    robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_CLOSE_POS);
+                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
                     break;
             }
         }
+
+        ShelbyBot.autonEndHdg = robot.getGyroFhdg();
+
+        while(opModeIsActive() && !isStopRequested())
+        {
+            idle();
+        }
+
     }
 
     private void doScanPush(Segment postPushSeg)
@@ -409,13 +415,14 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
 
         key = getKey();
+        MajorColorDetector.Color jewelColor;
         jewelColor = getJewelColor();
         RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
                 key, jewelColor);
         if(jewelColor == MajorColorDetector.Color.NONE)
             return;
 
-        robot.jflicker.setPosition(JFLICKER_DOWN_POS);
+        robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_DOWN_POS);
         sleep(500);
 
         RobotLog.dd(TAG, "Deploy pusher");
@@ -446,10 +453,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 pushStart.getX() + jewelPushDist * pushSign,
                 pushStart.getY());
 
-        ShelbyBot.DriveDir segDir = ShelbyBot.DriveDir.SWEEPER;
+        ShelbyBot.DriveDir segDir = ShelbyBot.DriveDir.INTAKE;
         if(ddir == Drivetrain.Direction.REVERSE)
         {
-            if(postPushSeg.getDir() == ShelbyBot.DriveDir.SWEEPER)
+            if(postPushSeg.getDir() == ShelbyBot.DriveDir.INTAKE)
                 segDir = ShelbyBot.DriveDir.PUSHER;
         }
         robot.setDriveDir(segDir);
@@ -463,7 +470,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         doMove(pushSeg);
         drvTrn.setRampDown(curRampDown);
 
-        robot.jflicker.setPosition(JFLICKER_UP_POS);
+        robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_UP_POS);
         sleep(500);
 
         RobotLog.dd(TAG, "Retract pusher");
@@ -478,7 +485,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         if(!opModeIsActive() || isStopRequested()) return;
 
         drvTrn.setInitValues();
-        RobotLog.ii("SJH", "Setting drive tuner to %4.2f", seg.getDrvTuner());
+        RobotLog.ii(TAG, "Setting drive tuner to %4.2f", seg.getDrvTuner());
         drvTrn.logData(true, seg.getName() + " move");
         drvTrn.setDrvTuner(seg.getDrvTuner());
 
@@ -492,7 +499,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         double fudge = seg.getDrvTuner();
         Segment.TargetType ttype = seg.getTgtType();
 
-        RobotLog.ii("SJH", "Drive %s %s %s %6.2f %3.2f %s tune: %4.2f %s",
+        RobotLog.ii(TAG, "Drive %s %s %s %6.2f %3.2f %s tune: %4.2f %s",
                 snm, spt, ept, fhd, speed, dir, fudge, ttype);
 
         dashboard.displayPrintf(2, "STATE: %s %s %s - %s %6.2f %3.2f %s",
@@ -535,18 +542,24 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             drvTrn.setInitValues();
             double pct = 0.90;
             double fullSegLen = seg.getLength();
-            int colSegLbeg = drvTrn.curLpos;
-            int colSegRbeg = drvTrn.curRpos;
-            int colSegLend = colSegLbeg + drvTrn.distanceToCounts(fullSegLen);
-            int colSegRend = colSegRbeg + drvTrn.distanceToCounts(fullSegLen);
+            List<Integer> colSegLbegs = new ArrayList<>(robot.liftPositions.size());
+            List<Integer> colSegRbegs = new ArrayList<>(robot.liftPositions.size());
+            drvTrn.setPositions(colSegLbegs, drvTrn.curLpositions, 0);
+            drvTrn.setPositions(colSegRbegs, drvTrn.curRpositions, 0);
 
-            int linLpos = colSegLend;
-            int linRpos = colSegRend;
+            List<Integer> colSegLends = new ArrayList<>(robot.liftPositions.size());
+            List<Integer> colSegRends = new ArrayList<>(robot.liftPositions.size());
+            int fullSegLenCnts = drvTrn.distanceToCounts(fullSegLen);
+            drvTrn.setPositions(colSegLends, colSegLbegs, fullSegLenCnts);
+            drvTrn.setPositions(colSegRends, colSegRbegs, fullSegLenCnts);
+
+            List<Integer> linLpositions = new ArrayList<>(robot.liftPositions.size());
+            List<Integer> linRpositions = new ArrayList<>(robot.liftPositions.size());
+            drvTrn.setPositions(linLpositions, colSegLends, 0);
+            drvTrn.setPositions(linRpositions, colSegRends, 0);
 
             Point2d cept = new Point2d(pct * (ept.getX() - spt.getX()) + spt.getX(),
                                        pct * (ept.getY() - spt.getY()) + spt.getY());
-
-            double targetHdg = fhd;
 
             double colDist = cept.distance(ept);
             double ovrDist = 2.0;
@@ -556,18 +569,18 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             //noinspection ConstantConditions
             if(singleSeg)
             {
-                drvTrn.driveDistanceLinear(fullSegLen, speed, ddir, targetHdg, true);
+                drvTrn.driveDistanceLinear(fullSegLen, speed, ddir, fhd, true);
             }
             else
             {
-                drvTrn.driveToPointLinear(cept, speed, ddir, targetHdg);
+                drvTrn.driveToPointLinear(cept, speed, ddir, fhd);
                 //drvTrn.driveToTarget(0.2, 20);
                 robot.turnColorOn();
 
                 sleep(10);
 
                 double colSpd = 0.10;
-                RobotLog.ii("SJH", "Color Driving to pt %s at speed %4.2f", ept, colSpd);
+                RobotLog.ii(TAG, "Color Driving to pt %s at speed %4.2f", ept, colSpd);
                 String colDistStr = String.format(Locale.US, "%4.2f %s",
                         colDist,
                         cept.toString());
@@ -580,26 +593,29 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     drvTrn.setCurValues();
                     drvTrn.logData();
 
-                    int lTrav = Math.abs(drvTrn.curLpos  - drvTrn.initLpos);
-                    int rTrav = Math.abs(drvTrn.curRpos  - drvTrn.initRpos);
+                    int lTrav = Math.abs(drvTrn.curLpositions.get(0) -
+                                         drvTrn.begLpositions.get(0));
+                    int rTrav = Math.abs(drvTrn.curRpositions.get(0) -
+                                         drvTrn.begRpositions.get(0));
 
                     int totColor = drvTrn.curRed + drvTrn.curGrn + drvTrn.curBlu;
 
                     if (totColor > COLOR_THRESH)
                     {
-                        linLpos = drvTrn.curLpos;
-                        linRpos = drvTrn.curRpos;
+                        drvTrn.setPositions(linLpositions, drvTrn.curLpositions, 0);
+                        drvTrn.setPositions(linRpositions, drvTrn.curRpositions, 0);
                         colGyroOffset = 50;
                         if(snm.equals("BECN2"))
                         {
-                            linLpos -= colGyroOffset;
-                            linRpos -= colGyroOffset;
+                            drvTrn.setPositions(linLpositions, linLpositions, -colGyroOffset);
+                            drvTrn.setPositions(linRpositions, linRpositions, -colGyroOffset);
                         }
                         drvTrn.stopMotion();
-                        drvTrn.setEndValues("COLOR_FIND " + linLpos + " " + linRpos);
-                        RobotLog.ii("SJH", "FOUND LINE");
-                        drvTrn.trgtLpos = linLpos;
-                        drvTrn.trgtRpos = linRpos;
+                        drvTrn.setEndValues("COLOR_FIND " + linLpositions.get(0) + " " +
+                                                            linRpositions.get(0));
+                        RobotLog.ii(TAG, "FOUND LINE");
+                        drvTrn.setPositions(drvTrn.tgtLpositions, linLpositions, 0);
+                        drvTrn.setPositions(drvTrn.tgtRpositions, linRpositions, 0);
                         drvTrn.logOverrun(0.1);
                         break;
                     }
@@ -608,15 +624,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                        rTrav > (colCnts + ovrCnts))
                     {
                         drvTrn.stopMotion();
-                        drvTrn.setEndValues("COLOR_MISS - go to" + linLpos + " " + linRpos);
-                        RobotLog.ii("SJH", "REACHED OVERRUN PT - Backing up a bit");
-                        drvTrn.trgtLpos = linLpos;
-                        drvTrn.trgtRpos = linRpos;
+                        drvTrn.setEndValues("COLOR_MISS - go to" + linLpositions.get(0) + " " +
+                                                    linRpositions.get(0));
+                        RobotLog.ii(TAG, "REACHED OVERRUN PT - Backing up a bit");
+                        drvTrn.setPositions(drvTrn.tgtLpositions, linLpositions, 0);
+                        drvTrn.setPositions(drvTrn.tgtRpositions, linRpositions, 0);
                         drvTrn.logOverrun(0.1);
                         break;
                     }
 
-                    drvTrn.makeGyroCorrections(colSpd, targetHdg, Drivetrain.Direction.FORWARD);
+                    drvTrn.makeGyroCorrections(colSpd, fhd, Drivetrain.Direction.FORWARD);
 
                     drvTrn.frame++;
                     robot.waitForTick(10);
@@ -633,7 +650,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         drvTrn.setCurrPt(ept);
 
-        RobotLog.ii("SJH", "Completed move %s. Time: %6.3f HDG: %6.3f",
+        RobotLog.ii(TAG, "Completed move %s. Time: %6.3f HDG: %6.3f",
                 seg.getName(), timer.time(), robot.getGyroFhdg());
     }
 
@@ -645,20 +662,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
         double cHdg = drvTrn.curHdg;
-        double tHdg = fHdg;
-        double angle = tHdg - cHdg;
-        RobotLog.ii("SJH", "doEncoderTurn CHDG %6.3f THDG %6.3f", cHdg, tHdg);
+        double angle = fHdg - cHdg;
+        RobotLog.ii(TAG, "doEncoderTurn CHDG %6.3f THDG %6.3f", cHdg, fHdg);
 
         while (angle <= -180.0) angle += 360.0;
         while (angle >   180.0) angle -= 360.0;
         if(Math.abs(angle) <= 2.0) return;
 
-        RobotLog.ii("SJH", "Turn %5.2f", angle);
+        RobotLog.ii(TAG, "Turn %5.2f", angle);
         dashboard.displayPrintf(2, "STATE: %s %5.2f", "TURN", angle);
         timer.reset();
         drvTrn.ctrTurnLinear(angle, DEF_ENCTRN_PWR, thresh);
         cHdg = robot.getGyroFhdg();
-        RobotLog.ii("SJH", "Completed turn %5.2f. Time: %6.3f CHDG: %6.3f",
+        RobotLog.ii(TAG, "Completed turn %5.2f. Time: %6.3f CHDG: %6.3f",
                 angle, timer.time(), cHdg);
     }
 
@@ -675,23 +691,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         drvTrn.setInitValues();
         drvTrn.logData(true, prefix);
         double cHdg = drvTrn.curHdg;
-        double tHdg = fHdg;
 
-        RobotLog.ii("SJH", "doGyroTurn CHDG %4.2f THDG %4.2f", cHdg, tHdg);
+        RobotLog.ii(TAG, "doGyroTurn CHDG %4.2f THDG %4.2f", cHdg, fHdg);
 
-        if(Math.abs(tHdg-cHdg) < 1.0)
+        if(Math.abs(fHdg-cHdg) < 1.0)
             return;
 
         timer.reset();
-        drvTrn.ctrTurnToHeading(tHdg, DEF_GYRTRN_PWR);
+        drvTrn.ctrTurnToHeading(fHdg, DEF_GYRTRN_PWR);
 
         cHdg = drvTrn.curHdg;
-        RobotLog.ii("SJH", "Completed turnGyro %4.2f. Time: %6.3f CHDG: %4.2f",
-                tHdg, timer.time(), cHdg);
+        RobotLog.ii(TAG, "Completed turnGyro %4.2f. Time: %6.3f CHDG: %4.2f",
+                fHdg, timer.time(), cHdg);
     }
-
-    //TODO:  ADD Glyph placer
-    //TODO:  ADD Glyph getter
 
     //
     // Implements FtcMenu.MenuButtons interface.
@@ -703,7 +715,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         tracker.setActive(true);
         RobotLog.dd(TAG, "Finding VuMark first");
 
-        while (opModeIsActive() && key == RelicRecoveryVuMark.UNKNOWN)
+        double keyTimeout = 1.0;
+        ElapsedTime ktimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+
+        while (opModeIsActive()                   &&
+               key == RelicRecoveryVuMark.UNKNOWN &&
+               ktimer.seconds() < keyTimeout)
         {
             ElapsedTime itimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
@@ -724,9 +741,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             if ( sensedBotPos != null )
             {
                 double t = itimer.seconds();
-                RobotLog.ii("SJH", "Senesed Pos: %s %5.2f %2.3f",
+                RobotLog.ii(TAG, "Senesed Pos: %s %5.2f %2.3f",
                         sensedBotPos, sensedFldHdg, t);
-                RobotLog.ii("SJH", "IMG %s frame %d",
+                RobotLog.ii(TAG, "IMG %s frame %d",
                         tracker.getLocString(), frm);
                 dashboard.displayPrintf(1, "SLOC: %s %4.1f",
                         sensedBotPos, sensedFldHdg);
@@ -753,7 +770,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         det.startSensing();
 
         MajorColorDetector.Color leftJewelColor = MajorColorDetector.Color.NONE;
-        while(opModeIsActive() && leftJewelColor == MajorColorDetector.Color.NONE)
+
+        double jewelTimeout = 1.0;
+        ElapsedTime jtimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        while(opModeIsActive()                                &&
+              leftJewelColor == MajorColorDetector.Color.NONE &&
+              jtimer.seconds() < jewelTimeout)
         {
             Bitmap rgbImage;
             rgbImage = tracker.getLastCroppedImage();
@@ -798,30 +820,37 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void doMenus()
     {
-        boolean shortcut = false;
-        if(shortcut) return;
         FtcChoiceMenu<Field.StartPos> startPosMenu =
                 new FtcChoiceMenu<>("START:", null, this);
         FtcChoiceMenu<Field.Alliance> allianceMenu =
                 new FtcChoiceMenu<>("ALLIANCE:", startPosMenu, this);
-        FtcValueMenu delayMenu     = new FtcValueMenu("DELAY:", allianceMenu, this,
+        FtcChoiceMenu<String> robotNameMenu =
+                new FtcChoiceMenu<>("BOT_NAME:", allianceMenu, this);
+        FtcValueMenu delayMenu     = new FtcValueMenu("DELAY:", robotNameMenu, this,
                 0.0, 20.0, 1.0, 0.0, "%5.2f");
 
         startPosMenu.addChoice("Start_A", Field.StartPos.START_1, allianceMenu);
         startPosMenu.addChoice("Start_B", Field.StartPos.START_2, allianceMenu);
 
-        allianceMenu.addChoice("RED",  Field.Alliance.RED,  delayMenu);
-        allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, delayMenu);
+        allianceMenu.addChoice("RED",  Field.Alliance.RED,  robotNameMenu);
+        allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, robotNameMenu);
+
+        robotNameMenu.addChoice("GTO1", "GTO1", delayMenu);
+        robotNameMenu.addChoice("GTO2", "GTO2", delayMenu);
+        robotNameMenu.addChoice("MEC1", "MEC1", delayMenu);
 
         FtcMenu.walkMenuTree(startPosMenu, this);
 
         startPos = startPosMenu.getCurrentChoiceObject();
         alliance = allianceMenu.getCurrentChoiceObject();
+        robotName = robotNameMenu.getCurrentChoiceObject();
         delay = delayMenu.getCurrentValue();
 
         int lnum = 3;
         dashboard.displayPrintf(lnum++, "START: %s", startPos);
         dashboard.displayPrintf(lnum++, "ALLIANCE: %s", alliance);
+        //noinspection UnusedAssignment
+        dashboard.displayPrintf(lnum++, "NAME: %s", robotName);
     }
 
     private void setupLogger()
@@ -854,33 +883,22 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private final static double DEF_ENCTRN_PWR  = 0.4;
     private final static double DEF_GYRTRN_PWR = 0.4;
 
-    public  final static double JFLICKER_UP_POS = 0.1;
-    public  final static double JFLICKER_DOWN_POS = 0.6;
-
-    public  final static double GRIPPER_CLOSE_POS = 0.83;
-    public  final static double GRIPPER_PARTIAL_POS = 0.75;
-    public  final static double GRIPPER_OPEN_POS = 0.6;
-
-    public  final static double GPITCH_UP_POS = 0.9;
-    public  final static double GPITCH_DOWN_POS = 0.4;
-    public  final static double GPITCH_MID_POS = 0.7;
-
     private List<Segment> pathSegs = new ArrayList<>();
 
-    private TilerunnerGtoBot   robot = new TilerunnerGtoBot();
+    private TilerunnerGtoBot   robot;
     private ElapsedTime timer = new ElapsedTime();
     private ElapsedTime startTimer = new ElapsedTime();
     private Drivetrain drvTrn = new Drivetrain();
 
     private Detector det;
     private static ImageTracker tracker;
-    private static RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
-    private static MajorColorDetector.Color jewelColor = MajorColorDetector.Color.NONE;
+    private RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
 
     private static Point2d curPos;
     private static double  curHdg;
     private double initHdg = 0.0;
     private boolean gyroReady;
+    @SuppressWarnings("FieldCanBeLocal")
     private boolean usePostTurn = true;
 
     private static Field.StartPos startPos = Field.StartPos.START_1;
@@ -890,45 +908,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private int RED_THRESH = 15;
     private int GRN_THRESH = 15;
     private int BLU_THRESH = 15;
+    @SuppressWarnings("FieldCanBeLocal")
     private int COLOR_THRESH = 20;
 
     private double delay = 0.0;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private boolean useImageLoc  = false;
-
     private boolean firstInState = true;
 
     private int postSleep = 150;
 
     private int colSegNum = 0;
 
+    private String robotName = "";
     private static final String TAG = "SJH_RRA";
-
-    public static final void main(String args[])
-    {
-        //RrAutoShelby vas = new RrAutoShelby();
-
-        Points pts = new RrPoints(startPos, alliance);
-        List<Segment> pathSegs = new ArrayList<>();
-        pathSegs.addAll(Arrays.asList(pts.getSegments()));
-
-        for(Segment s : pathSegs)
-        {
-            System.out.println("Seg " + s.toString());
-        }
-
-        for(Segment s : pathSegs)
-        {
-            if(s.getName() == "RLTT")
-            {
-                s.getTgtPt().setX(s.getTgtPt().getX()+2.0);
-            }
-            System.out.println("Seg " + s.toString());
-        }
-        //vas.setup();
-        //ShelbyBot bot = new TilerunnerGtoBot();
-        //bot.init(vas);
-        //RobotLog.dd(TAG, "Robot CPI %4.2f", bot.CPI);
-    }
 }
-

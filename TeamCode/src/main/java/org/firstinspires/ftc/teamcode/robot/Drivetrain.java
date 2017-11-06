@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.DataLogger;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,15 +42,11 @@ public class Drivetrain
 
         if(lFirst)
         {
-            //robot.leftMotor.setPower(curLpower);
-            //robot.rightMotor.setPower(curRpower);
             setPower(robot.leftMotors, curLpower);
             setPower(robot.rightMotors, curRpower);
         }
         else
         {
-            //robot.rightMotor.setPower(curRpower);
-            //robot.leftMotor.setPower(curLpower);
             setPower(robot.rightMotors, curRpower);
             setPower(robot.leftMotors, curLpower);
         }
@@ -73,10 +70,16 @@ public class Drivetrain
         op.idle();
         setMode(robot.leftMotors, DcMotor.RunMode.RUN_USING_ENCODER);
         setMode(robot.rightMotors, DcMotor.RunMode.RUN_USING_ENCODER);
-        curLpos = 0;
-        curRpos = 0;
-        lastLcnt = 0;
-        lastRcnt = 0;
+        for(int l = 0; l < robot.leftMotors.size(); l++)
+        {
+            begLpositions.set(l, 0);
+            lstLpositions.set(l, 0);
+        }
+        for(int r = 0; r < robot.rightMotors.size(); r++)
+        {
+            begRpositions.set(r, 0);
+            lstRpositions.set(r, 0);
+        }
     }
 
     public void stopAndReset()
@@ -89,8 +92,8 @@ public class Drivetrain
     {
         accelTimer.reset();
         noMoveTimer.reset();
-        lposLast = robot.leftMotor.getCurrentPosition();
-        rposLast = robot.rightMotor.getCurrentPosition();
+        setPos(lstLpositions, robot.leftMotors);
+        setPos(lstRpositions, robot.rightMotors);
     }
 
     public void driveToTarget(double pwr, int thresh)
@@ -98,10 +101,11 @@ public class Drivetrain
         setBusyAnd(false);
         setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
         setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
-        setTargetPosition(robot.leftMotors, trgtLpos);
-        setTargetPosition(robot.rightMotors, trgtRpos);
+        setTargetPositions(robot.leftMotors, tgtLpositions);
+        setTargetPositions(robot.rightMotors, tgtRpositions);
         setInitValues();
-        logStartValues("DRIVE_TRGT " + curLpos + " " + curRpos + " - " + trgtLpos + " " + trgtRpos);
+        logStartValues("DRIVE_TRGT " + curLpositions.get(0) + " " + curRpositions.get(0)+
+                               " - " + tgtLpositions.get(0) + " " + tgtRpositions.get(0));
         moveInit(pwr, pwr);
         while(isBusy(thresh)         &&
               !op.isStopRequested()  &&
@@ -130,13 +134,13 @@ public class Drivetrain
         }
 
         setInitValues();
-        trgtLpos = initLpos + counts;
-        trgtRpos = initRpos + counts;
+        setPositions(tgtLpositions, begLpositions, counts);
+        setPositions(tgtRpositions, begRpositions, counts);
         String dDistStr = String.format(Locale.US, "DRIVE_DIST %4.2f", dst);
         logStartValues(dDistStr);
 
-        setTargetPosition(robot.leftMotors, trgtLpos);
-        setTargetPosition(robot.rightMotors, trgtRpos);
+        setTargetPositions(robot.leftMotors, tgtLpositions);
+        setTargetPositions(robot.rightMotors, tgtRpositions);
 
         setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
         setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
@@ -174,8 +178,8 @@ public class Drivetrain
                 dst, pwr, pwrIncr, dir, rampUp, rampDown, useCol);
 
         driveDistance(dst, startPwr, dir);
-        int linLpos = trgtLpos;
-        int linRpos = trgtRpos;
+        int linLpos = tgtLpositions.get(0);
+        int linRpos = tgtRpositions.get(0);
 
         while(op.opModeIsActive()    &&
               !op.isStopRequested()  &&
@@ -200,12 +204,13 @@ public class Drivetrain
 
             if(rampDown)
             {
-                int lcnt = curLpos;
-                int rcnt = curRpos;
+                int lcnt = curLpositions.get(0);
+                int rcnt = curRpositions.get(0);
                 int hiSlow  = 960;
                 int midSlow = 480 + colOverCnt/4;
                 int lowSlow = 240 + colOverCnt;
-                int remaining = Math.abs(((trgtLpos - lcnt) + (trgtRpos - rcnt)) / 2);
+                int remaining = Math.abs(((tgtLpositions.get(0) - lcnt)
+                                        + (tgtRpositions.get(0) - rcnt)) / 2);
                 if (Math.abs(remaining) < hiSlow)  ppwr = Math.min(ppwr, 0.5);
                 if (Math.abs(remaining) < midSlow) ppwr = Math.min(ppwr, 0.25);
                 if (Math.abs(remaining) < lowSlow) ppwr = Math.min(ppwr, 0.09);
@@ -215,8 +220,10 @@ public class Drivetrain
                     ppwr, curLpower, curRpower, pwrIncr);
 
             int COLOR_THRESH = 30;
-            double lRem = countsToDistance(Math.abs(trgtLpos - curLpos));
-            double rRem = countsToDistance(Math.abs(trgtRpos - curRpos));
+            double lRem = countsToDistance(Math.abs(tgtLpositions.get(0) -
+                                                            curLpositions.get(0)));
+            double rRem = countsToDistance(Math.abs(tgtRpositions.get(0) -
+                                                            curRpositions.get(0)));
             double colOnDist = 24.0;
             if(useCol && !robot.colorEnabled && (lRem < colOnDist || rRem < colOnDist))
             {
@@ -225,16 +232,12 @@ public class Drivetrain
 
             if(useCol && (curRed + curGrn + curBlu) > COLOR_THRESH)
             {
-                linLpos = curLpos;
-                linRpos = curRpos;
-                linLpos -= colGyroOffset;
-                linRpos -= colGyroOffset;
                 stopMotion();
                 setEndValues("COLOR_FIND " + linLpos + " " + linRpos);
                 RobotLog.ii(TAG, "FOUND LINE");
                 foundLine = true;
-                trgtLpos = linLpos;
-                trgtRpos = linRpos;
+                setPositions(tgtLpositions, curLpositions, -colGyroOffset);
+                setPositions(tgtRpositions, curRpositions, -colGyroOffset);
                 break;
             }
             else
@@ -258,8 +261,11 @@ public class Drivetrain
         int kludge = 160;
         if(useCol && !foundLine)
         {
-            trgtLpos -= (colOverCnt + kludge);
-            trgtRpos -= (colOverCnt + kludge);
+            int overK = colOverCnt + kludge;
+            int tmpLpos = tgtLpositions.get(0) - overK;
+            int tmpRpos = tgtRpositions.get(0) - overK;
+            setPositions(tgtLpositions, tgtLpositions, -overK);
+            setPositions(tgtRpositions, tgtRpositions, -overK);
         }
 
         if(useCol) robot.turnColorOff();
@@ -268,7 +274,18 @@ public class Drivetrain
         stopMotion();
         if(logOverrun) logOverrun(overtime);
 
-        return((doneLpos - initLpos + doneRpos - initRpos)/2);
+        int lBegTotal = 0;
+        int rBegTotal = 0;
+        int lEndTotal = 0;
+        int rEndTotal = 0;
+
+        for(int pos : begLpositions) lBegTotal += pos;
+        for(int pos : begRpositions) rBegTotal += pos;
+        for(int pos : endLpositions) lEndTotal += pos;
+        for(int pos : endRpositions) rEndTotal += pos;
+
+        return((lEndTotal - lBegTotal + rEndTotal - rBegTotal)/
+                       (begLpositions.size() + begRpositions.size()));
     }
 
     public int driveDistanceLinear(double dst, double pwr, Direction dir, double targetHdg)
@@ -310,8 +327,8 @@ public class Drivetrain
         int counts = angleToCounts(angle, robot.BOT_WIDTH/2.0);
 
         setInitValues();
-        trgtLpos = initLpos - counts;
-        trgtRpos = initRpos + counts;
+        setPositions(tgtLpositions, begLpositions, -counts);
+        setPositions(tgtRpositions, begRpositions,  counts);
         trgtHdg  = initHdg  + (int) Math.round(angle);
         while(trgtHdg >   180) trgtHdg -= 360;
         while(trgtHdg <= -180) trgtHdg += 360;
@@ -320,8 +337,8 @@ public class Drivetrain
 
         RobotLog.ii(TAG, "Angle: %5.2f Counts: %4d CHdg: %6.3f", angle, counts, initHdg);
 
-        setTargetPosition(robot.leftMotors, trgtLpos);
-        setTargetPosition(robot.rightMotors, trgtRpos);
+        setTargetPositions(robot.leftMotors, tgtLpositions);
+        setTargetPositions(robot.rightMotors, tgtRpositions);
 
         setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
         setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
@@ -440,9 +457,10 @@ public class Drivetrain
 
             if(rampDown)
             {
-                int lcnt = curLpos;
-                int rcnt = curRpos;
-                int remaining = (Math.abs(trgtLpos - lcnt) + Math.abs(trgtRpos - rcnt)) / 2;
+                int lcnt = curLpositions.get(0);
+                int rcnt = curRpositions.get(0);
+                int remaining = (Math.abs(tgtLpositions.get(0) - lcnt) +
+                                 Math.abs(tgtRpositions.get(0) - rcnt)) / 2;
 
                 if (Math.abs(remaining) < 960) ppwr = Math.min(ppwr, 0.5);
                 if (Math.abs(remaining) < 480) ppwr = Math.min(ppwr, 0.25);
@@ -493,8 +511,9 @@ public class Drivetrain
         moveInit(0.0, 0.0);
 
         setInitValues();
-        trgtLpos = 0;
-        trgtRpos = 0;
+        setPositions(tgtLpositions, 0);
+        setPositions(tgtRpositions, 0);
+
         trgtHdg = (int) tgtHdg;
         String gyroStr = String.format(Locale.US, "GYRO_TURN %4.1f", tgtHdg);
         logStartValues(gyroStr);
@@ -536,19 +555,17 @@ public class Drivetrain
         setMode(robot.leftMotors, DcMotor.RunMode.RUN_TO_POSITION);
         setMode(robot.rightMotors, DcMotor.RunMode.RUN_TO_POSITION);
 
-        int lft_target = initLpos + lcnts;
-        int rgt_target = initRpos + rcnts;
-
         setInitValues();
-        trgtLpos = lft_target;
-        trgtRpos = rgt_target;
+
+        setPositions(tgtLpositions, begLpositions, lcnts);
+        setPositions(tgtRpositions, begRpositions, rcnts);
         trgtHdg  = initHdg  + (int) Math.round(angle);
         while(trgtHdg >   180) trgtHdg -= 360;
         while(trgtHdg <= -180) trgtHdg += 360;
         logStartValues("ENC_CURVE");
 
-        setTargetPosition(robot.leftMotors, lft_target);
-        setTargetPosition(robot.rightMotors, rgt_target);
+        setPos(tgtLpositions, robot.leftMotors);
+        setPos(tgtRpositions, robot.rightMotors);
 
         double arl = Math.abs(rl);
         double arr = Math.abs(rr);
@@ -623,20 +640,20 @@ public class Drivetrain
 
     public void estimatePosition()
     {
-        int curLcnt = curLpos;
-        int curRcnt = curRpos;
+        int curLcnt = curLpositions.get(0);
+        int curRcnt = curRpositions.get(0);
         double radHdg = Math.toRadians(curHdg);
 
         if(curDriveDir != robot.getDriveDir())
         {
             curDriveDir = robot.getDriveDir();
-            lastLcnt = curLcnt;
-            lastRcnt = curRcnt;
+            setPositions(lstLpositions, curLpositions, 0);
+            setPositions(lstRpositions, curRpositions, 0);
             logData(true, "DDIR=" + curDriveDir.toString());
         } 
 
-        int dCntL = curLcnt - lastLcnt;
-        int dCntR = curRcnt - lastRcnt;
+        int dCntL = curLcnt - lstLpositions.get(0);
+        int dCntR = curRcnt - lstRpositions.get(0);
         double dX = 0.5*(dCntL+dCntR)/DEF_CPI * Math.cos(radHdg);
         double dY = 0.5*(dCntL+dCntR)/DEF_CPI * Math.sin(radHdg);
         xPos += dX;
@@ -645,8 +662,8 @@ public class Drivetrain
         estPos.setY(yPos);
         double dH = (dCntR-dCntL)/CPI/ robot.BOT_WIDTH;
         estHdg += dH;
-        lastLcnt = curLcnt;
-        lastRcnt = curRcnt;
+        setPositions(lstLpositions, curLpositions, 0);
+        setPositions(lstRpositions, curRpositions, 0);
     }
 
     public void setStartHdg(double startHdg)
@@ -667,11 +684,23 @@ public class Drivetrain
 
         RobotLog.ii(TAG, "CPI: %5.2f", CPI);
 
-        robot.leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
         curDriveDir = robot.getDriveDir();
         lastDriveDir = curDriveDir;
+
+        RobotLog.dd(TAG, "Drivetrain.init");
+        RobotLog.dd(TAG, " numLmotors %d", robot.numLmotors);
+        RobotLog.dd(TAG, " numRmotors %d", robot.numRmotors);
+
+        initLPositions(begLpositions, 0);
+        initRPositions(begRpositions, 0);
+        initLPositions(curLpositions, 0);
+        initRPositions(curRpositions, 0);
+        initLPositions(tgtLpositions, 0);
+        initRPositions(tgtRpositions, 0);
+        initLPositions(endLpositions, 0);
+        initRPositions(endRpositions, 0);
+        initLPositions(lstLpositions, 0);
+        initRPositions(lstRpositions, 0);
     }
 
     public void start()
@@ -682,8 +711,6 @@ public class Drivetrain
     {
         stopMotion();
         RobotLog.ii(TAG, "CLOSING Drivetrain");
-        if(lftSpdThread != null) lftSpdThread.interrupt();
-        if(rgtSpdThread != null) rgtSpdThread.interrupt();
     }
 
     public void waitForTick(long periodMs)
@@ -755,8 +782,8 @@ public class Drivetrain
 
     private double getEncoderError()
     {
-        int ldc = Math.abs(curLpos);
-        int rdc = Math.abs(curRpos);
+        int ldc = Math.abs(curLpositions.get(0));
+        int rdc = Math.abs(curRpositions.get(0));
 
         //convert LR count difference to angle
         return countsToAngle(rdc - ldc, robot.BOT_WIDTH);
@@ -779,20 +806,20 @@ public class Drivetrain
 
     public void setInitValues()
     {
-        initLpos = robot.leftMotor.getCurrentPosition();
-        initRpos = robot.rightMotor.getCurrentPosition();
+        setPos(begLpositions, robot.leftMotors);
+        setPos(begRpositions, robot.rightMotors);
         initHdg = robot.getGyroFhdg();
         while (initHdg <= -180) initHdg += 360;
         while (initHdg >   180) initHdg -= 360;
-        curLpos = initLpos;
-        curRpos = initRpos;
+        setPos(curLpositions, robot.leftMotors);
+        setPos(curRpositions, robot.rightMotors);
         curHdg  = initHdg;
     }
 
     public void setCurValues()
     {
-        curLpos = robot.leftMotor.getCurrentPosition();
-        curRpos = robot.rightMotor.getCurrentPosition();
+        setPos(curLpositions, robot.leftMotors);
+        setPos(curRpositions, robot.rightMotors);
         curHdg  = robot.getGyroFhdg();
         if(robot.colorEnabled)
         {
@@ -816,28 +843,28 @@ public class Drivetrain
             dl.addField("BEGIN " + note);
             dl.addField(frame);
             dl.addField(initHdg);
-            dl.addField(initLpos);
-            dl.addField(initRpos);
+            dl.addField(begLpositions.get(0));
+            dl.addField(begRpositions.get(0));
             dl.addField(trgtHdg);
-            dl.addField(trgtLpos);
-            dl.addField(trgtRpos);
+            dl.addField(tgtLpositions.get(0));
+            dl.addField(tgtRpositions.get(0));
             dl.addField("");
             dl.newLine();
         }
         RobotLog.ii(TAG, "Begin ldc %6d rdc %6d Hdg %6.3f",
-                initLpos, initRpos, initHdg);
+                begLpositions.get(0), begRpositions.get(0), initHdg);
     }
 
     public void setEndValues(String note)
     {
-        doneLpos = robot.leftMotor.getCurrentPosition();
-        doneRpos = robot.rightMotor.getCurrentPosition();
+        setPos(endLpositions, robot.leftMotors);
+        setPos(endRpositions, robot.rightMotors);
         doneHdg  = robot.getGyroFhdg();
         logData(true, "DONE " + note);
 
         RobotLog.ii(TAG, "End ldc %6d rdc " +
                                    "%6d Hdg %6.3f",
-                doneLpos, doneRpos, doneHdg);
+                endLpositions.get(0), endRpositions.get(0), doneHdg);
     }
 
     public void logOverrun(double t)
@@ -846,8 +873,8 @@ public class Drivetrain
         logData(true, "LOGGING OVERRUN");
         int overCnt = 0;
         int goodCnt = 0;
-        int overLpos = curLpos;
-        int overRpos = curRpos;
+        int overLpos = curLpositions.get(0);
+        int overRpos = curRpositions.get(0);
         int overThresh = 3;
         ElapsedTime et = new ElapsedTime();
         while(op.opModeIsActive() && et.seconds() < t)
@@ -855,16 +882,16 @@ public class Drivetrain
             setCurValues();
             logData();
 
-            if(Math.abs(curLpos - overLpos) <= overThresh &&
-               Math.abs(curRpos - overRpos) <= overThresh)
+            if(Math.abs(curLpositions.get(0) - overLpos) <= overThresh &&
+               Math.abs(curRpositions.get(0) - overRpos) <= overThresh)
             {
                goodCnt++;
             }
             else
             {
                goodCnt = 0;
-               overLpos = curLpos;
-               overRpos = curRpos;
+               overLpos = curLpositions.get(0);
+               overRpos = curRpositions.get(0);
             }
 
             if(overCnt >= 4 && goodCnt >=3)
@@ -888,14 +915,14 @@ public class Drivetrain
 
             if(accelTimer.seconds() < 0.5)
             {
-                lposLast = curLpos;
-                rposLast = curRpos;
+                setPositions(lstLpositions, curLpositions, 0);
+                setPositions(lstRpositions, curRpositions, 0);
                 noMoveTimer.reset();
                 return false;
             }
 
-            int dLpos = Math.abs(lposLast - curLpos);
-            int dRpos = Math.abs(rposLast - curRpos);
+            int dLpos = Math.abs(lstLpositions.get(0) - curLpositions.get(0));
+            int dRpos = Math.abs(lstRpositions.get(0) - curRpositions.get(0));
 
             //If power is above threshold and encoders aren't changing,
             //stop after noMoveTimeout
@@ -908,8 +935,8 @@ public class Drivetrain
                             lp, rp);
                     return true;
                 }
-                lposLast = curLpos;
-                rposLast = curRpos;
+                setPositions(lstLpositions, curLpositions, 0);
+                setPositions(lstRpositions, curRpositions, 0);
                 noMoveTimer.reset();
             }
         }
@@ -925,14 +952,14 @@ public class Drivetrain
 
             if(accelTimer.seconds() < 0.5)
             {
-                lposLast = curLpos;
-                rposLast = curRpos;
+                setPositions(lstLpositions, curLpositions, 0);
+                setPositions(lstRpositions, curRpositions, 0);
                 noMoveTimer.reset();
                 return false;
             }
 
-            int dLpos = Math.abs(lposLast - curLpos);
-            int dRpos = Math.abs(rposLast - curRpos);
+            int dLpos = Math.abs(lstLpositions.get(0) - curLpositions.get(0));
+            int dRpos = Math.abs(lstRpositions.get(0) - curRpositions.get(0));
 
             //If power is above threshold and encoders aren't changing,
             //stop after noMoveTimeout
@@ -952,8 +979,9 @@ public class Drivetrain
                             lp, rp);
                     return true;
                 }
-                lposLast = curLpos;
-                rposLast = curRpos;
+
+                setPositions(lstLpositions, curLpositions, 0);
+                setPositions(lstRpositions, curRpositions, 0);
                 noMoveTimer.reset();
             }
         }
@@ -966,13 +994,13 @@ public class Drivetrain
         boolean motorBusy;
         if(side == MotorSide.LEFT)
         {
-            motorBusy = Math.abs(trgtLpos - curLpos) > BUSYTHRESH;
+            motorBusy = Math.abs(tgtLpositions.get(0) - curLpositions.get(0)) > BUSYTHRESH;
             if(motorBusy) lBusyTime = btime + busyTimeOut;
             else if(btime < lBusyTime) motorBusy = true;
         }
         else
         {
-            motorBusy = Math.abs(trgtRpos - curRpos) > BUSYTHRESH;
+            motorBusy = Math.abs(tgtRpositions.get(0) - curRpositions.get(0)) > BUSYTHRESH;
             if(motorBusy) rBusyTime = btime + busyTimeOut;
             else if(btime < rBusyTime) motorBusy = true;
         }
@@ -987,7 +1015,8 @@ public class Drivetrain
         {
             nextBusyPrintTime = ct + printTimeout;
             RobotLog.ii(TAG, "ldc %6d rdc %6d  mptimer: %4.2f chdg %6.3f",
-                    curLpos, curRpos, noMoveTimer.seconds(), curHdg);
+                    curLpositions.get(0), curRpositions.get(0),
+                    noMoveTimer.seconds(), curHdg);
         }
 
         BUSYTHRESH = thresh;
@@ -1067,8 +1096,8 @@ public class Drivetrain
             dl.addField(frame);
             if(robot.imu != null || robot.gyro != null) dl.addField(curHdg);
             else                   dl.addField("");
-            dl.addField(curLpos);
-            dl.addField(curRpos);
+            dl.addField(curLpositions.get(0));
+            dl.addField(curRpositions.get(0));
             dl.addField(curLpower);
             dl.addField(curRpower);
             dl.addField(curRed);
@@ -1091,8 +1120,9 @@ public class Drivetrain
         logData(false);
     }
 
-    private void setMode (List<DcMotor> motors, DcMotor.RunMode mode)
+    public void setMode (List<DcMotor> motors, DcMotor.RunMode mode)
     {
+        RobotLog.dd(TAG, "Setting mode %s on %d motors", mode, motors.size());
         for (DcMotor m : motors)
             m.setMode(mode);
     }
@@ -1102,11 +1132,58 @@ public class Drivetrain
             m.setPower(power);
     }
 
-    private  void setTargetPosition(List<DcMotor> motors, int deltaPosition)
+    private void setPos(List<Integer> positions, List<DcMotor> motors)
     {
-        for (DcMotor m : motors)
+        for(int i = 0; i < motors.size(); i++)
         {
-            m.setTargetPosition(m.getCurrentPosition() + deltaPosition);
+            DcMotor mot = motors.get(i);
+            positions.set(i, mot.getCurrentPosition());
+        }
+    }
+
+    private  void setTargetPositions(List<DcMotor> motors,
+                                     List<Integer> tgtPositions)
+    {
+        for (int m = 0; m < motors.size(); m++)
+        {
+            motors.get(m).setTargetPosition(tgtPositions.get(m));
+        }
+    }
+
+    public  void setPositions(List<Integer> dstPos,
+                               List<Integer> srcPos,
+                               int deltaPosition)
+    {
+        for (int p = 0; p < srcPos.size(); p++)
+        {
+            dstPos.set(p, srcPos.get(p) + deltaPosition);
+        }
+    }
+
+    public  void setPositions(List<Integer> positions,
+                               int tgtPosition)
+    {
+        for (int p = 0; p < positions.size(); p++)
+        {
+            positions.set(p, tgtPosition);
+        }
+    }
+
+    public  void initLPositions(List<Integer> positions,
+                              int tgtPosition)
+    {
+        for (int p = 0; p < robot.numLmotors; p++)
+        {
+            positions.add(p, tgtPosition);
+        }
+    }
+
+    public  void initRPositions(List<Integer> positions,
+                                int tgtPosition)
+    {
+        for (int p = 0; p < robot.numRmotors; p++)
+        {
+            positions.add(p, tgtPosition);
         }
     }
 
@@ -1153,17 +1230,16 @@ public class Drivetrain
     private ElapsedTime rt = new ElapsedTime();
     private ElapsedTime ptmr = new ElapsedTime();
 
-    private int lposLast;
-    private int rposLast;
-
-    public int initLpos;
-    public int initRpos;
-    public int curLpos;
-    public int curRpos;
-    public int trgtLpos;
-    public int trgtRpos;
-    private int doneLpos;
-    private int doneRpos;
+    public List<Integer> begLpositions = new ArrayList<>();
+    public List<Integer> begRpositions = new ArrayList<>();
+    public List<Integer> curLpositions = new ArrayList<>();
+    public List<Integer> curRpositions = new ArrayList<>();
+    public List<Integer> tgtLpositions = new ArrayList<>();
+    public List<Integer> tgtRpositions = new ArrayList<>();
+    public List<Integer> endLpositions = new ArrayList<>();
+    public List<Integer> endRpositions = new ArrayList<>();
+    private List<Integer> lstLpositions = new ArrayList<>();
+    private List<Integer> lstRpositions = new ArrayList<>();
     private int overLpos;
     private int overRpos;
 
@@ -1189,8 +1265,6 @@ public class Drivetrain
     private double yPos = 0.0;
     public Point2d estPos = new Point2d(xPos, yPos);
     private double  estHdg = 0.0;
-    private int lastLcnt = 0;
-    private int lastRcnt = 0;
     private int numPts = 0;
 
     private double noMoveTimeout = 1.0;
@@ -1257,9 +1331,6 @@ public class Drivetrain
     private boolean lFirst = true;
 
     private double turnTimeLimit = 5;
-
-    private Thread lftSpdThread = null;
-    private Thread rgtSpdThread = null;
 
     private static final String TAG = "SJH_DTRN";
 }

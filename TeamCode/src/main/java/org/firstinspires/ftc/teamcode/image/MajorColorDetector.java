@@ -27,7 +27,7 @@ import hallib.HalDashboard;
  */
 
 public class MajorColorDetector extends Detector {
-    private static final double THRESHOLD = .5;
+    private static final double THRESHOLD = 0.4;
     private static final int BINS = 8;
     private static final float MIN_VALUE = 0.0f;
     private static final float MAX_VALUE = 255.0f;
@@ -78,7 +78,7 @@ public class MajorColorDetector extends Detector {
         Mat histSaturation = new Mat();
 
         Imgproc.cvtColor(showImg, hsvImage, Imgproc.COLOR_RGB2HSV);
-        List<Mat> channels = new ArrayList<Mat>();
+        List<Mat> channels = new ArrayList<>();
         Core.split(hsvImage, channels);
 
         //Histogram for hue
@@ -125,11 +125,11 @@ public class MajorColorDetector extends Detector {
         redPct = redp;
         bluPct = bluep;
 
-        if(redp >= THRESHOLD){
+        if(redp >= THRESHOLD && redp > bluep){
             //yayRed!!! :D
             foundColor = Color.RED;
         }
-        else if(bluep >= THRESHOLD)
+        else if(bluep >= THRESHOLD && bluep > redp)
         {
             //yayBlue!!! :D
             foundColor = Color.BLUE;

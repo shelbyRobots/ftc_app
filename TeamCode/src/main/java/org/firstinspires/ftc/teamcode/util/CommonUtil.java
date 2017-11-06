@@ -50,6 +50,8 @@ public class CommonUtil
     private VuforiaInitializer vufInit;
     private static VuforiaLocalizer vuforia = null;
 
+    private static final String TAG = "SJH_COM";
+
     private CommonUtil()
     {
     }
@@ -120,7 +122,7 @@ public class CommonUtil
         }
         else
         {
-            RobotLog.ee("SJH_CU", "h.appContext is not an Activity");
+            RobotLog.ee(TAG, "h.appContext is not an Activity");
         }
     }
 
@@ -146,14 +148,14 @@ public class CommonUtil
 
     private void initOpenCV()
     {
-        RobotLog.dd("SJH_COM", "initOpenCV: " +
+        RobotLog.dd(TAG, "initOpenCV: " +
                     " useOpenCV: " + useOpenCV +
                     " useOcvCamera: " + useOcvCamera);
         if(!useOpenCV) return;
 
-        RobotLog.dd("SJH_LEDA", "Creating new OpenCvInitializer");
+        RobotLog.dd(TAG, "Creating new OpenCvInitializer");
         ocvInit = new OpenCvInitializer(useOcvCamera);
-        RobotLog.dd("SJH_LEDA", "Back from Creating new OpenCvInitializer");
+        RobotLog.dd(TAG, "Back from Creating new OpenCvInitializer");
 
          if(cfgLayout)
         {
@@ -163,7 +165,7 @@ public class CommonUtil
 
     private void initOpenCvCamera()
     {
-        RobotLog.dd("SJH_COM", "initOpenCvCamera: " +
+        RobotLog.dd(TAG, "initOpenCvCamera: " +
                     " useOpenCV: " + useOpenCV +
                     " useOcvCamera: " + useOcvCamera +
                     " ocvInit null: " + (ocvInit == null ? "true" : "false"));
@@ -291,7 +293,7 @@ public class CommonUtil
         final Activity act = getActivity();
         final ViewGroup group = act.findViewById(containerId);
 
-        RobotLog.dd("SJH_IMG", "Emptying ViewId " + containerId);
+        RobotLog.dd(TAG, "Emptying ViewId " + containerId);
 
         act.runOnUiThread(new Runnable()
         {
@@ -330,7 +332,7 @@ public class CommonUtil
             @Override
             public void run()
             {
-                RobotLog.dd("SJH_IMG", "Setting up ImageLayout");
+                RobotLog.dd(TAG, "Setting up ImageLayout");
                 ViewGroup top = act.findViewById(R.id.entire_screen);
                 ViewGroup cmv = act.findViewById(R.id.cameraMonitorViewId);
                 for (int v = 0; v < top.getChildCount(); v++)
@@ -361,12 +363,16 @@ public class CommonUtil
         ElapsedTime layoutTimer = new ElapsedTime();
         while(!lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
         {
-            try
+            if(l != null) l.sleep(5);
+            else
             {
-                Thread.sleep(5);
-            } catch (InterruptedException e)
-            {
-                e.printStackTrace();
+                try
+                {
+                    Thread.sleep(5);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -378,7 +384,7 @@ public class CommonUtil
         if(!cfgLayout || !layoutModified) return;
         final Activity act = getActivity();
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        RobotLog.dd("SJH_IMG", "Restoring Layout");
+        RobotLog.dd(TAG, "Restoring Layout");
 
         class LayoutRunnable implements Runnable
         {
@@ -390,6 +396,7 @@ public class CommonUtil
                 ViewGroup top = act.findViewById(R.id.entire_screen);
                 for (int v = 0; v < top.getChildCount() - 1; v++)
                 {
+                    RobotLog.dd(TAG, "Restoring child %d of %d", v, top.getChildCount());
                     top.getChildAt(v).setVisibility(View.VISIBLE);
                 }
                 layoutConfigured = false;
@@ -399,15 +406,20 @@ public class CommonUtil
         LayoutRunnable lrun = new LayoutRunnable();
         act.runOnUiThread(lrun);
 
+        RobotLog.dd(TAG, "Waiting for restoreLayout to complete");
         ElapsedTime layoutTimer = new ElapsedTime();
         while(lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
         {
-            try
+            if(l != null) l.sleep(5);
+            else
             {
-                Thread.sleep(5);
-            } catch (InterruptedException e)
-            {
-                e.printStackTrace();
+                try
+                {
+                    Thread.sleep(5);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
 

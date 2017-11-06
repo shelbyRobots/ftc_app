@@ -161,12 +161,20 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
             while(loading && loadTimer.seconds() < 2)
             {
                 RobotLog.dd(TAG, "OpenCV still loading");
-                try
+
+                if(loccom.getLinearOpMode() != null)
                 {
-                    Thread.sleep(2);
-                } catch (InterruptedException e)
+                    loccom.getLinearOpMode().sleep(2);
+                }
+                else
                 {
-                    e.printStackTrace();
+                    try
+                    {
+                        Thread.sleep(2);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

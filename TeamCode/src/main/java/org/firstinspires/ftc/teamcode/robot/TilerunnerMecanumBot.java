@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.Units;
 
 import java.util.HashMap;
@@ -17,37 +12,16 @@ import java.util.Map;
 
 public class TilerunnerMecanumBot extends TilerunnerGtoBot
 {
-    private CommonUtil com = CommonUtil.getInstance();
-
     public DcMotor lfMotor = null;
     public DcMotor lrMotor = null;
     public DcMotor rfMotor = null;
     public DcMotor rrMotor = null;
 
-    private Map<String, DcMotor> motors = new HashMap<>();
+    public Servo rgripper    = null;
 
-    private Orientation angles;
-    private Acceleration gravity;
-
-    public Servo gpitch     = null;
-    public Servo gripper    = null;
-    public Servo jflicker   = null;
-
-    private static final int ELEV_COUNTS_PER_MOTOR_REV = 28;
-    private static final double ELEV_GEAR_ONE = 60;
-    private static final double ELEV_GEAR_TWO = 40.0/16.0;
-    private static final double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE * ELEV_GEAR_TWO;
-    private static final double ELEV_ARM_LENGTH = 14;
-    private static final double ELEV_CPI = ELEV_CPR/(Math.PI * 2 * ELEV_ARM_LENGTH);
-    private static final double LIFT_SCALE = 2.0;
-
-    public static final int LIFT_POS_A = (int)( 0.00/LIFT_SCALE * ELEV_CPI);
-    public static final int LIFT_POS_B = (int)( 6.25/LIFT_SCALE * ELEV_CPI);
-    public static final int LIFT_POS_C = (int)(12.25/LIFT_SCALE * ELEV_CPI);
-    public static final int LIFT_POS_D = (int)(18.25/LIFT_SCALE * ELEV_CPI);
-
-
-    private ElapsedTime imuTimer = new ElapsedTime();
+    public double RGRIPPER_CLOSE_POS   = 0.83;
+    public double RGRIPPER_PARTIAL_POS = 0.75;
+    public double RGRIPPER_OPEN_POS    = 0.5;
 
     private static final String TAG = "SJH_MEC";
 
@@ -117,61 +91,47 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     @Override
     protected void initCollectorLifter()
     {
-        try  //Collector
-        {
-            gpitch = hwMap.servo.get("gpitch");
-            gripper = hwMap.servo.get("gripper");
-            elevMotor = hwMap.dcMotor.get("elevmotor");
+        gpitch = hwMap.servo.get("gpitch");
+        gripper = hwMap.servo.get("gripper");
+        gripper = hwMap.servo.get("rgripper");
+        elevMotor = hwMap.dcMotor.get("elevmotor");
 
-            elevMotor.setDirection(DcMotor.Direction.REVERSE);
-            elevMotor.setPower(0);
-            elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        elevMotor.setPower(0);
+        elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        elevMotor.setDirection(DcMotor.Direction.REVERSE);
 
-            capMap.put("collector", true);
-        }
-        catch (Exception e)
-        {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
-        }
+        double ELEV_COUNTS_PER_MOTOR_REV = 28;
+        double ELEV_GEAR_ONE = 60.0;
+        double ELEV_GEAR_TWO = 40.0/16.0;
+        double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE * ELEV_GEAR_TWO;
+        double ELEV_ARM_LENGTH = 14;
+        double ELEV_CPI = ELEV_CPR/(Math.PI * 2 * ELEV_ARM_LENGTH);
+        double LIFT_SCALE = 1.0;
+
+        liftPositions.add((int)( 0.25/LIFT_SCALE * ELEV_CPI));
+        liftPositions.add((int)( 6.75/LIFT_SCALE * ELEV_CPI));
+        liftPositions.add((int)(12.75/LIFT_SCALE * ELEV_CPI));
+        liftPositions.add((int)(18.25/LIFT_SCALE * ELEV_CPI));
+
+        GRIPPER_CLOSE_POS = 1.0;
+        GRIPPER_OPEN_POS = 0.7;
+        GRIPPER_PARTIAL_POS = 0.85;
+
+        RGRIPPER_CLOSE_POS = 0.7;
+        RGRIPPER_OPEN_POS = 0.85;
+        RGRIPPER_PARTIAL_POS = 0.77;
+
+        GPITCH_UP_POS = 0.71;
+        GPITCH_DOWN_POS = 0.0;
+        GPITCH_MIN = 0.0;
+        GPITCH_MAX = 0.8;
     }
 
     @Override
     protected void initPushers()
     {
-        try
-        {
-            jflicker = hwMap.servo.get("jflicker");
-            capMap.put("pusher", true);
-        }
-        catch (Exception e)
-        {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
-        }
+        JFLICKER_UP_POS = 0.1;
+        JFLICKER_DOWN_POS = 0.6;
     }
-
-    @Override
-    protected void initSensors()
-    {
-        System.out.println("In TilerunnerGtoBot.initSensors");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMU_IMUCalibration.json";
-        parameters.loggingEnabled      = false;
-        parameters.loggingTag          = "IMU";
-        //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-
-        try
-        {
-            imu = (BNO055IMU) com.getHardwareMap().get("imu");
-            imu.initialize(parameters);
-            capMap.put("sensor", true);
-        }
-        catch(Exception e)
-        {
-            RobotLog.ee(TAG, "ERROR get imu\n" + e.toString());
-        }
-    }
-
 }

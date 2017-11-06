@@ -79,7 +79,7 @@ public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
 
         robot.turnColorOff();
 
-        robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+        robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
 
         if (robot.leftMotor != null &&
             robot.rightMotor != null &&
@@ -201,7 +201,7 @@ public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
         if(testMap.get("doDriveDist"))
         {
             double dist[] = {48.0};
-            robot.setDriveDir(ShelbyBot.DriveDir.SWEEPER);
+            robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
             for (double aDist : dist)
             {
                 drvTrn.setCurrPt(new Point2d(0, 0));
