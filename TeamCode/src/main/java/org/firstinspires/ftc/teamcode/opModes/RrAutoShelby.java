@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerMecanumBot;
+import org.firstinspires.ftc.teamcode.util.AutoTransitioner;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
@@ -119,8 +120,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
-//        RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
-//        AutoTransitioner.transitionOnStop(this, teleopName);
+        RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
+        AutoTransitioner.transitionOnStop(this, teleopName);
 
         robot.init(this, robotName);
 
@@ -399,13 +400,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             }
         }
 
+        RobotLog.dd(TAG, "Finished auton segments");
         ShelbyBot.autonEndHdg = robot.getGyroFhdg();
 
         while(opModeIsActive() && !isStopRequested())
         {
             idle();
         }
-
     }
 
     private void doScanPush(Segment postPushSeg)

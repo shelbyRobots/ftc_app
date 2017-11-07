@@ -1268,9 +1268,9 @@ public class Drivetrain
     private int numPts = 0;
 
     private double noMoveTimeout = 1.0;
-    private double noDriveMoveTimeout = 0.25;
-    private int noMoveThreshLow = 4;
-    private int noMoveThreshHi = 20;
+    private double noDriveMoveTimeout = 0.5;
+    private int noMoveThreshLow = 10;
+    private int noMoveThreshHi = 40;
     private double noMovePwrHi = 0.15;
     private ElapsedTime accelTimer  = new ElapsedTime();
     private ElapsedTime noMoveTimer = new ElapsedTime();

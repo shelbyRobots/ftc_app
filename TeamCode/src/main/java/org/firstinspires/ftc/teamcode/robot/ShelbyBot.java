@@ -190,7 +190,7 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
 
         for(DcMotor mot : motors.values())
@@ -215,7 +215,7 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
 
         if(elevMotor  != null)  elevMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -236,7 +236,7 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
 
         if(shotmotor1 != null) shotmotor1.setDirection(DcMotor.Direction.FORWARD);
@@ -260,13 +260,12 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
     }
 
     protected void initSensors()
     {
-        System.out.println("In ShelbyBot.initSensors");
         try  //I2C and DAIO
         {
             dim = hwMap.deviceInterfaceModule.get("dim");
@@ -277,15 +276,15 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
 
         if(colorSensor != null)
         {
-            RobotLog.ii("SJH", "COLOR_SENSOR");
-            RobotLog.ii("SJH", "ConnectionInfo %s", colorSensor.getConnectionInfo());
-            RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(colorSensor.getI2cAddress().get8Bit()));
-            RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(colorSensor.getI2cAddress().get7Bit()));
+            RobotLog.ii(TAG, "COLOR_SENSOR");
+            RobotLog.ii(TAG, "ConnectionInfo %s", colorSensor.getConnectionInfo());
+            RobotLog.ii(TAG, "I2cAddr %s", Integer.toHexString(colorSensor.getI2cAddress().get8Bit()));
+            RobotLog.ii(TAG, "I2cAddr %s", Integer.toHexString(colorSensor.getI2cAddress().get7Bit()));
 
             colorSensor.enableLed(false);
             colorSensor.enableLed(true);
@@ -295,10 +294,10 @@ public class ShelbyBot
 
         if(gyro != null)
         {
-            RobotLog.ii("SJH", "GYRO_SENSOR");
-            RobotLog.ii("SJH", "ConnectionInfo %s", gyro.getConnectionInfo());
-            RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(gyro.getI2cAddress().get8Bit()));
-            RobotLog.ii("SJH", "I2cAddr %s", Integer.toHexString(gyro.getI2cAddress().get7Bit()));
+            RobotLog.ii(TAG, "GYRO_SENSOR");
+            RobotLog.ii(TAG, "ConnectionInfo %s", gyro.getConnectionInfo());
+            RobotLog.ii(TAG, "I2cAddr %s", Integer.toHexString(gyro.getI2cAddress().get8Bit()));
+            RobotLog.ii(TAG, "I2cAddr %s", Integer.toHexString(gyro.getI2cAddress().get7Bit()));
         }
     }
 
@@ -367,7 +366,7 @@ public class ShelbyBot
             case PUSHER: outDir = DriveDir.INTAKE; break;
         }
 
-        RobotLog.ii("SJH", "Changing from %s FWD to %s FWD", inDir, outDir);
+        RobotLog.ii(TAG, "Changing from %s FWD to %s FWD", inDir, outDir);
         setDriveDir(outDir);
         return outDir;
     }
@@ -381,18 +380,18 @@ public class ShelbyBot
     {
         if(gyro == null)
         {
-            RobotLog.ee("SJH", "NO GYRO FOUND TO CALIBRATE");
+            RobotLog.ee(TAG, "NO GYRO FOUND TO CALIBRATE");
             return false;
         }
 
         if(calibrationDriveDir == DriveDir.UNKNOWN)
         {
-            RobotLog.ii("SJH", "calibrateGyro called without having set a drive Direction. " +
+            RobotLog.ii(TAG, "calibrateGyro called without having set a drive Direction. " +
                        "Defaulting to INTAKE.");
             setDriveDir(DriveDir.INTAKE);
         }
 
-        RobotLog.ii("SJH", "Starting gyro calibration");
+        RobotLog.ii(TAG, "Starting gyro calibration");
         gyro.calibrate();
 
         double gyroInitTimout = 5.0;
@@ -405,12 +404,12 @@ public class ShelbyBot
             op.sleep(50);
             if(gyroTimer.seconds() > gyroInitTimout)
             {
-                RobotLog.ii("SJH", "GYRO INIT TIMED OUT!!");
+                RobotLog.ii(TAG, "GYRO INIT TIMED OUT!!");
                 gyroCalibTimedout = true;
                 break;
             }
         }
-        RobotLog.ii("SJH", "Gyro calibrated in %4.2f seconds", gyroTimer.seconds());
+        RobotLog.ii(TAG, "Gyro calibrated in %4.2f seconds", gyroTimer.seconds());
 
         boolean gyroReady = !gyroCalibTimedout;
         if(gyroReady) gyro.resetZAxisIntegrator();
@@ -481,7 +480,7 @@ public class ShelbyBot
     public void turnColorOn()
     {
         if(colorSensor == null) return;
-        RobotLog.ii("SJH", "Turning on colorSensor LED");
+        RobotLog.ii(TAG, "Turning on colorSensor LED");
         colorEnabled = true;
         //colorSensor.getI2cController().registerForI2cPortReadyCallback(colorSensor,
         //        getColorPort());

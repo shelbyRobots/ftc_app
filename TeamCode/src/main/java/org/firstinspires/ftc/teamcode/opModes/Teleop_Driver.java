@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -51,6 +50,7 @@ public class Teleop_Driver extends InitLinearOpMode
         if(robot.gpitch != null)
         {
             robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+            currentPitchState = PitchState.PITCH_UP;
         }
 
         if(robot.elevMotor != null)
@@ -127,7 +127,7 @@ public class Teleop_Driver extends InitLinearOpMode
             double outPitch = Range.scale(pitch, -1.0, 1.0,
                     robot.GPITCH_MIN, robot.GPITCH_MAX);
 
-            double speed = right;
+            double speed = left;
             double arcadeTurnScale = 0.5;
 
             switch (driveType)
@@ -158,6 +158,7 @@ public class Teleop_Driver extends InitLinearOpMode
             double step_spd  = 0.4;
             double step_ang  = 5.0;
 
+            double fHdg = robot.getGyroFhdg();
             if(fwd_step)
             {
                 RobotLog.dd(TAG, "In fwd_step");
@@ -173,13 +174,17 @@ public class Teleop_Driver extends InitLinearOpMode
             else if(left_step)
             {
                 RobotLog.dd(TAG, "In left_step");
-                dtrn.ctrTurnLinear(step_ang, step_spd, 5);
+                //dtrn.ctrTurnLinear(step_ang, step_spd, 5);
+                dtrn.setInitValues();
+                dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
                 RobotLog.dd(TAG, "Done left_step");
             }
             else if(right_step)
             {
                 RobotLog.dd(TAG, "In right_step");
-                dtrn.ctrTurnLinear(-step_ang, step_spd, 5);
+                dtrn.setInitValues();
+                //dtrn.ctrTurnLinear(-step_ang, step_spd, 5);
+                dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
                 RobotLog.dd(TAG, "Done right_step");
             }
             else
@@ -229,23 +234,25 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
             dashboard.displayPrintf(15,"SVEL " + useSetVel);
 
-            if(lowerElev && curElevIdx > 0)
+            if(Math.abs(elev) < 0.001)
             {
-                curElevIdx--;
-                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.75;
-                robot.elevMotor.setPower(elev);
+                if (lowerElev && curElevIdx > 0)
+                {
+                    curElevIdx--;
+                    robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elev = 0.75;
+                    robot.elevMotor.setPower(elev);
+                } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
+                {
+                    curElevIdx++;
+                    robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elev = 0.85;
+                    robot.elevMotor.setPower(elev);
+                }
             }
-            else if(raiseElev && curElevIdx < robot.liftPositions.size() - 1)
-            {
-                curElevIdx++;
-                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.85;
-                robot.elevMotor.setPower(elev);
-            }
-            else if(Math.abs(elev) > 0.001)
+            else
             {
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 int minElev = robot.liftPositions.get(0) + 40;
@@ -309,7 +316,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
 
             // Pitch (Gripper angle servo) (x: toggles between closed and open position)
-            if (toggle_gpitch)
+            if (toggle_gpitch && Math.abs(pitch) < 0.001)
             {
                 currentPitchState = (currentPitchState == PitchState.PITCH_UP) ?
                                             PitchState.PITCH_DOWN : PitchState.PITCH_UP;
@@ -319,7 +326,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 else if (currentPitchState == PitchState.PITCH_DOWN)
                     robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
             }
-            else if(Math.abs(pitch) > 0.05)
+            else
             {
                 robot.gpitch.setPosition(outPitch);
             }
