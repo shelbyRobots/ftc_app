@@ -4,6 +4,8 @@ import android.util.SparseArray;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
@@ -50,6 +52,21 @@ public class StepMotorTest extends InitLinearOpMode
             try
             {
                 mot = hardwareMap.dcMotor.get(motorName);
+
+                if (mot instanceof DcMotorEx)
+                {
+                    DcMotorEx lex = (DcMotorEx) mot;
+                    PIDCoefficients pid;
+                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+                    RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f",
+                            pid.p, pid.i, pid.d);
+                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                    RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
+                            pid.p, pid.i, pid.d);
+                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
+                            pid.p, pid.i, pid.d);
+                }
             }
             catch(Exception e)
             {

@@ -171,6 +171,7 @@ public class CommonUtil
                     " ocvInit null: " + (ocvInit == null ? "true" : "false"));
         //if(!useOcvCamera || ocvInit == null) return;
         if(useVuforia || ocvInit == null) return;
+        if(useOpenCV == false) return;
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         ocvInit.setupCameraView();
     }

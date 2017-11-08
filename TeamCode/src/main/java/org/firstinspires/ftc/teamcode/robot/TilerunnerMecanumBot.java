@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -72,6 +74,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             RobotLog.ee("SJH", "ERROR get hardware map\n" + e.toString());
         }
 
+        int mnum = 0;
         for(DcMotor mot : motors.values())
         {
             if(mot != null)
@@ -81,7 +84,23 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
                 mot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 mot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 mot.setDirection(DcMotorSimple.Direction.FORWARD);
+
+                if (mot instanceof DcMotorEx)
+                {
+                    DcMotorEx lex = (DcMotorEx) mot;
+                    PIDCoefficients pid;
+                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+                    RobotLog.dd(TAG, "RUN_TO_POS Motor %d PIDs. P:%.2f I:%.2f D:%.2f",
+                            mnum, pid.p, pid.i, pid.d);
+                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                    RobotLog.dd(TAG, "RUN_USING_ENC Motor %d PIDs. P:%.2f I:%.2f D:%.2f",
+                            mnum, pid.p, pid.i, pid.d);
+                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor %d PIDs. P:%.2f I:%.2f D:%.2f",
+                            mnum, pid.p, pid.i, pid.d);
+                }
             }
+            mnum++;
         }
 
         rfMotor.setDirection(DcMotorSimple.Direction.REVERSE);

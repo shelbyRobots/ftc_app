@@ -6,8 +6,10 @@ import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -186,6 +188,21 @@ public class ShelbyBot
             rightMotor.setDirection(RIGHT_DIR);
             motors.put("FL", leftMotor);
             motors.put("FR", rightMotor);
+
+            if (leftMotor instanceof DcMotorEx)
+            {
+                DcMotorEx lex = (DcMotorEx) leftMotor;
+                PIDCoefficients pid;
+                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+                RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f",
+                        pid.p, pid.i, pid.d);
+                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
+                        pid.p, pid.i, pid.d);
+                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
+                        pid.p, pid.i, pid.d);
+            }
 
             capMap.put("drivetrain", true);
         }
