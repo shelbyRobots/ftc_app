@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerMecanumBot;
 import org.firstinspires.ftc.teamcode.util.AutoTransitioner;
+import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
 
@@ -69,8 +71,25 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     @Override
     public void runOpMode() throws InterruptedException
     {
+        RobotLog.dd(TAG, "initCommon");
         initCommon(this, true, true, false, true);
-        super.runOpMode();
+        //RobotLog.dd(TAG, "super.runOpMode");
+        //super.runOpMode();
+
+        RobotLog.dd(TAG, "getBotName");
+        robotName = pmgr.getBotName();
+
+        RobotLog.dd(TAG, "logPrefs");
+        pmgr.logPrefs();
+
+        alliance = Field.Alliance.valueOf(pmgr.getAllianceColor());
+        startPos = Field.StartPos.valueOf(pmgr.getStartPosition());
+        delay    = pmgr.getDelay();
+
+        dashboard.displayPrintf(2, "Pref BOT: %s", robotName);
+        dashboard.displayPrintf(3, "Pref Alliance: %s", alliance);
+        dashboard.displayPrintf(4, "Pref StartPos: %s", startPos);
+        dashboard.displayPrintf(5, "Pref Delay: %.2f", delay);
 
         setup();
         //waitForStart();
@@ -81,9 +100,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             dashboard.displayPrintf(9, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
             dashboard.displayPrintf(10, "GyroReady %s", gyroReady);
             dashboard.displayPrintf(11, "RGyroReady %s", robot.gyroReady);
-            dashboard.displayPrintf(12, "LENC %d", robot.leftMotor.getCurrentPosition());
-            dashboard.displayPrintf(13, "RENC %d", robot.rightMotor.getCurrentPosition());
-            dashboard.displayPrintf(14, "ELEV %d", robot.elevMotor.getCurrentPosition());
+            if(robot.leftMotor != null)
+                dashboard.displayPrintf(12, "LENC %d", robot.leftMotor.getCurrentPosition());
+            if(robot.leftMotor != null)
+                dashboard.displayPrintf(13, "RENC %d", robot.rightMotor.getCurrentPosition());
+            if(robot.elevMotor != null)
+                dashboard.displayPrintf(14, "ELEV %d", robot.elevMotor.getCurrentPosition());
             sleep(10);
         }
         startMode();
@@ -98,17 +120,28 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void setup()
     {
-        dashboard.displayPrintf(0, "PLEASE WAIT - STARTING");
+        dashboard.displayPrintf(0, "PLEASE WAIT - STARTING - CHECK DEFAULTS");
         logData = true;
 
-        dashboard.displayPrintf(2, "STATE: %s", "INITIALIZING - PLEASE WAIT FOR MENU");
+        dashboard.displayPrintf(1, "STATE: %s", "INITIALIZING - HIT B FOR MENU");
         RobotLog.ii(TAG, "SETUP");
 
-        doMenus();
+        ElapsedTime mTimer = new ElapsedTime();
+        boolean doMen = false;
+        while(doMen == false && mTimer.seconds() < 1.0)
+        {
+            gpad1.update();
+            if(gpad1.just_pressed(ManagedGamepad.Button.B))
+            {
+                doMen = true;
+            }
+        }
+
+        if(doMen) doMenus();
 
         String teleopName = "TeleopDriver";
 
-        if(robotName.equals("MEC1"))
+        if(robotName.equals("MEC"))
         {
             robot = new TilerunnerMecanumBot();
             teleopName = "Mecanum";
@@ -117,6 +150,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         {
             robot = new TilerunnerGtoBot();
         }
+
+        RobotLog.dd(TAG, "setName");
+        robot.setName(robotName);
 
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
@@ -838,7 +874,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         robotNameMenu.addChoice("GTO1", "GTO1", delayMenu);
         robotNameMenu.addChoice("GTO2", "GTO2", delayMenu);
-        robotNameMenu.addChoice("MEC1", "MEC1", delayMenu);
+        robotNameMenu.addChoice("MEC", "MEC", delayMenu);
 
         FtcMenu.walkMenuTree(startPosMenu, this);
 

@@ -931,7 +931,8 @@ public class Drivetrain
                 if ((lp >= 0.0 && dLpos < noMoveThreshLow) &&
                     (rp >= 0.0 && dRpos < noMoveThreshLow))
                 {
-                    RobotLog.ii(TAG, "MOTORS HAVE POWER BUT AREN'T MOVING - STOPPING %4.2f %4.2f",
+                    RobotLog.ii(TAG,
+                            "MOTORS HAVE POWER BUT AREN'T MOVING - STOPPING %4.2f %4.2f",
                             lp, rp);
                     return true;
                 }

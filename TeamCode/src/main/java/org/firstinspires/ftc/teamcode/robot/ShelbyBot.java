@@ -171,6 +171,7 @@ public class ShelbyBot
 
     protected void initDriveMotors()
     {
+        RobotLog.dd(TAG, "Initializing shelbyBot drive motors");
         // FORWARD for CCW drive shaft rotation if using AndyMark motors
         // REVERSE for  CW drive shaft rotation if using AndyMark motors
         try  //Drivetrain
@@ -462,6 +463,9 @@ public class ShelbyBot
 
         return cHdg;
     }
+
+    public String getName() {return name;}
+    public void setName(String name) {this.name = name;}
 
     //INTAKE is the intake side and should have configured left motors to left.
     public enum DriveDir

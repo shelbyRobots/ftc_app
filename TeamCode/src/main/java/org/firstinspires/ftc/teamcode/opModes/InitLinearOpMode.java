@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.firstinspires.ftc.teamcode.util.DataLogger;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
@@ -19,7 +18,7 @@ public abstract class InitLinearOpMode extends LinearOpMode
     protected ManagedGamepad gpad1;
     protected ManagedGamepad gpad2;
 
-    protected Drivetrain.DrivetrainType dtrnType = Drivetrain.DrivetrainType.NONE;
+    protected PreferenceMgr pmgr;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -41,9 +40,9 @@ public abstract class InitLinearOpMode extends LinearOpMode
         gpad1 = new ManagedGamepad(gamepad1);
         gpad2 = new ManagedGamepad(gamepad2);
 
-        PreferenceMgr pmgr = new PreferenceMgr();
+        pmgr = new PreferenceMgr();
         pmgr.readPrefs();
-        dtrnType = Drivetrain.DrivetrainType.valueOf(pmgr.getRobotConfig());
+        //dtrnType = Drivetrain.DrivetrainType.valueOf(pmgr.getRobotConfig());
     }
 
     public void cleanup()

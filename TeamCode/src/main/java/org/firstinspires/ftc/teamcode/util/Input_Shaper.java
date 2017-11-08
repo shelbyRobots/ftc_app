@@ -27,7 +27,7 @@ public class Input_Shaper
         else if(inAbs <= 0.95)
         {
             double shftVal = inAbs - minVal;
-            outVal = (shftVal) * Math.abs(shftVal) + minVal;
+            outVal = Math.signum(inValue) * (shftVal * Math.abs(shftVal) + minVal);
         }
         else
         {

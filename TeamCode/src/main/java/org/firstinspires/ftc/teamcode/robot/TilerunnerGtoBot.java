@@ -75,6 +75,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     @Override
     protected void initDriveMotors()
     {
+        RobotLog.dd(TAG, "Initializing GTO drive motors");
         super.initDriveMotors();
     }
 

@@ -26,6 +26,8 @@ public class Teleop_Driver extends InitLinearOpMode
         DcMotor.ZeroPowerBehavior zeroPwr = DcMotor.ZeroPowerBehavior.BRAKE;
         boolean useSetVel = true;
 
+        robot.setName(pmgr.getBotName());
+
         /* Initialize the hardware variables. */
         RobotLog.dd(TAG, "Initialize robot");
         robot.init(this);

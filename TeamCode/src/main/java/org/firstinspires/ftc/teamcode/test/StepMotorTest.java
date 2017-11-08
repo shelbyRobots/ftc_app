@@ -10,16 +10,12 @@ import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
 /**
- * This OpMode steps a single motor speed up and down based on D-Pad user inputs.
- * The code is structured as a LinearOpMode
- *
+ * This OpMode steps n motors speed up and down based on D-Pad user inputs.
  * This code assumes a DC motor configured with the name "testmotor#".
+ * If motors are on a bot, left side motors should be odd and right side even
  *
  * INCREMENT sets how much to increase/decrease the power each cycle
  * CYCLE_MS sets the update period.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 @Autonomous(name = "Concept: Step Motor Speed", group = "Test")
 //@Disabled
@@ -63,11 +59,15 @@ public class StepMotorTest extends InitLinearOpMode
 
             motors.put(m, mot);
             RobotLog.dd(TAG, "Found motor " + motorName);
-            if(mot != null) mot.setDirection(LEFT_DIR);
+            if(mot != null)
+            {
+                mot.setDirection(LEFT_DIR);
+                mot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
         }
 
         // Wait for the start button
-        dashboard.displayText(0, "Press Start to run Motors.");
+        dashboard.displayPrintf(0, "Press Start to run Motors.");
         while(!isStarted())
         {
             for(int m = 0; m < MAX_MOTORS; m++)
@@ -89,12 +89,26 @@ public class StepMotorTest extends InitLinearOpMode
             boolean step_down  = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean zeroize    = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
             boolean toggle_trn = gpad1.just_pressed(ManagedGamepad.Button.D_LEFT);
+            boolean toggle_mod = gpad1.just_pressed(ManagedGamepad.Button.R_BUMP);
 
             if(step_up && power < MAX_FWD)         power += INCREMENT;
             else if(step_down && power > MAX_REV)  power -= INCREMENT;
             else if(zeroize)                       power = 0.0;
 
             if(toggle_trn) lmult *=-1;
+
+            if(toggle_mod)
+            {
+                DcMotor.RunMode newMode = DcMotor.RunMode.RUN_USING_ENCODER;
+                DcMotor.RunMode curMode = motors.get(0).getMode();
+                if(curMode == DcMotor.RunMode.RUN_USING_ENCODER)
+                    newMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+                for(int m = 0; m < MAX_MOTORS; m++)
+                {
+                    DcMotor mot = motors.get(m);
+                    if(mot != null) mot.setMode(newMode);
+                }
+            }
 
             // Display the current value
             dashboard.displayPrintf(MAX_MOTORS, "Motor Power %4.2f", power);
@@ -105,12 +119,18 @@ public class StepMotorTest extends InitLinearOpMode
                 if(mot != null)
                 {
                     if(m%2 == 0) opwr = power * lmult;
-                    dashboard.displayPrintf(m, "CNT_%d %d", m, mot.getCurrentPosition());
+                    dashboard.displayPrintf(m, "Mot_%d CNT:%d PWR:%.2f MOD:%s",
+                            m, mot.getCurrentPosition(), opwr, mot.getMode());
                     mot.setPower(opwr);
                 }
             }
 
-            dashboard.displayText(MAX_MOTORS + 1, "Press Stop to end test." );
+            dashboard.displayPrintf(MAX_MOTORS + 1, "Press Stop to end test.");
+            dashboard.displayPrintf(MAX_MOTORS + 2, "Incr power : Dpad up");
+            dashboard.displayPrintf(MAX_MOTORS + 3, "Decr power : Dpad down");
+            dashboard.displayPrintf(MAX_MOTORS + 4, "Zero power : Dpad right");
+            dashboard.displayPrintf(MAX_MOTORS + 5, "Toggle turn: Dpad left");
+            dashboard.displayPrintf(MAX_MOTORS + 6, "Toggle mode: Right bumper");
 
             sleep(CYCLE_MS);
         }

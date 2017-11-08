@@ -30,6 +30,8 @@ public class MecanumTeleop extends InitLinearOpMode
         initCommon(this, false, false, false, false);
         Input_Shaper ishaper = new Input_Shaper();
 
+        robot.setName(pmgr.getBotName());
+
         double dSpd = 0.0;
 
         robot.init(this);
@@ -69,7 +71,7 @@ public class MecanumTeleop extends InitLinearOpMode
         }
 
         // Send telemetry message to signify robot waiting;
-        dashboard.displayText(0, "Hello Driver");
+        dashboard.displayPrintf(0, "Hello Driver - I'm %s", robot.getName());
 
         while (!isStarted())
         {
@@ -160,7 +162,7 @@ public class MecanumTeleop extends InitLinearOpMode
             }
 
             final double direction = Math.atan2(lr_x, fb_y) +
-               (fieldAlign ? Math.toRadians(Math.PI/2.0 - robot.getGyroFhdg()) : 0.0);
+               (fieldAlign ? Math.toRadians(90.0 - robot.getGyroFhdg()) : 0.0);
 
             dashboard.displayPrintf(l++, "DIR %4.2f FALGN %s USEVEL %s",
                     direction, fieldAlign, useSetVel);
@@ -184,9 +186,6 @@ public class MecanumTeleop extends InitLinearOpMode
                 rr /= max;
             }
 
-            dashboard.displayPrintf(l++, "lf %4.2f rf %4.2f lr %4.2f rr %4.2f",
-                    lf, rf, lr, rr);
-
             dashboard.displayPrintf(l++, "LFC %d RFC %d LRC %d RRC %d",
                     robot.lfMotor.getCurrentPosition(),
                     robot.rfMotor.getCurrentPosition(),
@@ -198,7 +197,7 @@ public class MecanumTeleop extends InitLinearOpMode
                 double diam = 4.0;  //Inches
 
                 double maxIPS = 30.0;
-                double maxRPS = maxIPS/(4.0*Math.PI);
+                double maxRPS = maxIPS/(diam*Math.PI);
                 double maxDPS = maxRPS*360.0;
 
                 double lfSpd = lf * maxDPS;
@@ -210,7 +209,7 @@ public class MecanumTeleop extends InitLinearOpMode
                 ((DcMotorEx) robot.lrMotor).setVelocity(lrSpd, AngleUnit.DEGREES);
                 ((DcMotorEx) robot.rrMotor).setVelocity(rrSpd, AngleUnit.DEGREES);
 
-                dashboard.displayPrintf(l, "lf %4.2f rf %4.2f lr %4.2f rr %4.2f",
+                dashboard.displayPrintf(l, "OUT: lf %4.2f rf %4.2f lr %4.2f rr %4.2f",
                         lfSpd, rfSpd, lrSpd, rrSpd);
             } else
             {
@@ -218,6 +217,8 @@ public class MecanumTeleop extends InitLinearOpMode
                 robot.rfMotor.setPower(rf);
                 robot.lrMotor.setPower(lr);
                 robot.rrMotor.setPower(rr);
+                dashboard.displayPrintf(l, "OUT: lf %4.2f rf %4.2f lr %4.2f rr %4.2f",
+                        lf, rf, lr, rr);
             }
 
             if(Math.abs(elev) < 0.001)

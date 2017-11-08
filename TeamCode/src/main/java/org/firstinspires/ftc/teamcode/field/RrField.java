@@ -97,6 +97,7 @@ public class RrField extends Field
                     case LEFT:   retPt = RLDL; break;
                     case CENTER: retPt = RLDC; break;
                     case RIGHT:  retPt = RLDR; break;
+                    case UNKNOWN: retPt = RLDC; break;
                 }
                 break;
             case START_2:
@@ -105,6 +106,7 @@ public class RrField extends Field
                     case LEFT:   retPt = RRDL; break;
                     case CENTER: retPt = RRDC; break;
                     case RIGHT:  retPt = RRDR; break;
+                    case UNKNOWN: retPt = RRDC; break;
                 }
         }
 

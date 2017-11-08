@@ -26,6 +26,8 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     {
         super();
 
+        name= "MEC";
+
         COUNTS_PER_MOTOR_REV = 28;
         DRIVE_GEARS = new double[]{40.0, 1.0};
 
@@ -48,6 +50,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     @Override
     protected void initDriveMotors()
     {
+        RobotLog.dd(TAG, "Initializing mecanum drive motors");
         try  //Drivetrain
         {
             lfMotor = hwMap.dcMotor.get("FL");
