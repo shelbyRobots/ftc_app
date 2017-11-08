@@ -95,9 +95,9 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
                     pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
                     RobotLog.dd(TAG, "RUN_USING_ENC Motor %d PIDs. P:%.2f I:%.2f D:%.2f",
                             mnum, pid.p, pid.i, pid.d);
-                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor %d PIDs. P:%.2f I:%.2f D:%.2f",
-                            mnum, pid.p, pid.i, pid.d);
+                    //pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    //RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor %d PIDs. P:%.2f I:%.2f D:%.2f",
+                    //        mnum, pid.p, pid.i, pid.d);
                 }
             }
             mnum++;
@@ -135,18 +135,18 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             liftPositions.add((int) (12.75 / LIFT_SCALE * ELEV_CPI));
             liftPositions.add((int) (18.25 / LIFT_SCALE * ELEV_CPI));
 
-            GRIPPER_CLOSE_POS = 1.0;
-            GRIPPER_OPEN_POS = 0.7;
-            GRIPPER_PARTIAL_POS = 0.92;
+            GRIPPER_CLOSE_POS    = 0.89;
+            GRIPPER_OPEN_POS     = 0.767;
+            GRIPPER_PARTIAL_POS  = 0.83;
 
-            RGRIPPER_CLOSE_POS = 0.68;
-            RGRIPPER_OPEN_POS = 0.95;
-            RGRIPPER_PARTIAL_POS = 0.75;
+            RGRIPPER_CLOSE_POS   = 0.64;
+            RGRIPPER_OPEN_POS    = 0.82;
+            RGRIPPER_PARTIAL_POS = 0.70;
 
-            GPITCH_UP_POS = 0.71;
-            GPITCH_DOWN_POS = 0.7;
-            GPITCH_MIN = 0.0;
-            GPITCH_MAX = 0.8;
+            GPITCH_UP_POS         = 0.8;
+            GPITCH_DOWN_POS       = 0.4;
+            GPITCH_MIN            = 0.0;
+            GPITCH_MAX            = 0.8;
         }
         catch (Exception e)
         {
@@ -161,8 +161,8 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         {
             jflicker = hwMap.servo.get("jflicker");
 
-            JFLICKER_UP_POS = 0.85;
-            JFLICKER_DOWN_POS = 0.3;
+            JFLICKER_UP_POS = 0.75;
+            JFLICKER_DOWN_POS = 0.39;
 
             capMap.put("pusher", true);
 

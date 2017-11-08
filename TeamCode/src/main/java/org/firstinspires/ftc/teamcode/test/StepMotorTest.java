@@ -58,14 +58,14 @@ public class StepMotorTest extends InitLinearOpMode
                     DcMotorEx lex = (DcMotorEx) mot;
                     PIDCoefficients pid;
                     pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-                    RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                            pid.p, pid.i, pid.d);
+                    RobotLog.dd(TAG, "RUN_TO_POS Motor %s PIDs. P:%.2f I:%.2f D:%.2f",
+                            motorName, pid.p, pid.i, pid.d);
                     pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-                    RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                            pid.p, pid.i, pid.d);
-                    pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                            pid.p, pid.i, pid.d);
+                    RobotLog.dd(TAG, "RUN_USING_ENC Motor %s PIDs. P:%.2f I:%.2f D:%.2f",
+                            motorName, pid.p, pid.i, pid.d);
+                    //pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    //RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor %s PIDs. P:%.2f I:%.2f D:%.2f",
+                    //        motorName, pid.p, pid.i, pid.d);
                 }
             }
             catch(Exception e)
