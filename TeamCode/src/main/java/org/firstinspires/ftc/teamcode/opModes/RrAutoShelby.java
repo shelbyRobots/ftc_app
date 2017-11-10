@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -169,6 +168,22 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_UP_POS);
         robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_CLOSE_POS);
         robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
+
+        RobotLog.dd(TAG, "JLICKER_UP_POS %.2f", TilerunnerGtoBot.JFLICKER_UP_POS);
+        RobotLog.dd(TAG, "JLICKER_DOWN_POS %.2f", TilerunnerGtoBot.JFLICKER_DOWN_POS);
+        RobotLog.dd(TAG, "GPITCH_UP_POS %.2f", TilerunnerGtoBot.GPITCH_UP_POS);
+        RobotLog.dd(TAG, "GPITCH_DOWN_POS %.2f", TilerunnerGtoBot.GPITCH_DOWN_POS);
+        RobotLog.dd(TAG, "GRIPPER_OPEN_POS %.2f", TilerunnerGtoBot.GRIPPER_OPEN_POS);
+        RobotLog.dd(TAG, "GRIPPER_PART %.2f", TilerunnerGtoBot.GRIPPER_PARTIAL_POS);
+        RobotLog.dd(TAG, "GRIPPER_CLOSE_POS %.2f", TilerunnerGtoBot.GRIPPER_CLOSE_POS);
+
+        RobotLog.dd(TAG, "JLICKER_UP_POS %.2f", TilerunnerMecanumBot.JFLICKER_UP_POS);
+        RobotLog.dd(TAG, "JLICKER_DOWN_POS %.2f", TilerunnerMecanumBot.JFLICKER_DOWN_POS);
+        RobotLog.dd(TAG, "GPITCH_UP_POS %.2f", TilerunnerMecanumBot.GPITCH_UP_POS);
+        RobotLog.dd(TAG, "GPITCH_DOWN_POS %.2f", TilerunnerMecanumBot.GPITCH_DOWN_POS);
+        RobotLog.dd(TAG, "GRIPPER_OPEN_POS %.2f", TilerunnerMecanumBot.GRIPPER_OPEN_POS);
+        RobotLog.dd(TAG, "GRIPPER_PART %.2f", TilerunnerMecanumBot.GRIPPER_PARTIAL_POS);
+        RobotLog.dd(TAG, "GRIPPER_CLOSE_POS %.2f", TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
 
         det = new MajorColorDetector();
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);

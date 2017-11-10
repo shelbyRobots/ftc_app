@@ -108,9 +108,9 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             if(name.equals("GTO1"))
             {
                 elevMotor.setDirection(DcMotor.Direction.REVERSE);
-                GRIPPER_CLOSE_POS = 0.88;
-                GRIPPER_OPEN_POS = 0.6;
-                GRIPPER_PARTIAL_POS = 0.75;
+                GRIPPER_CLOSE_POS = 0.9;
+                GRIPPER_OPEN_POS = 0.5;
+                GRIPPER_PARTIAL_POS = 0.7;
                 GPITCH_DOWN_POS = 0.4;
                 GPITCH_UP_POS = 0.9;
                 GPITCH_MIN = 0.2;
@@ -119,11 +119,11 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             else if(name.equals("GTO2"))
             {
                 elevMotor.setDirection(DcMotor.Direction.FORWARD);
-                GRIPPER_CLOSE_POS = 0.85;
-                GRIPPER_OPEN_POS = 0.0;
-                GRIPPER_PARTIAL_POS = 0.71;
+                GRIPPER_CLOSE_POS = 0.98;
+                GRIPPER_OPEN_POS = 0.4;
+                GRIPPER_PARTIAL_POS = 0.76;
 
-                GPITCH_DOWN_POS = 0.64;
+                GPITCH_DOWN_POS = 0.84;
                 GPITCH_UP_POS = 0.1;
                 GPITCH_MIN = 0.1;
                 GPITCH_MAX = 0.8;
@@ -156,8 +156,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             }
             else if(name.equals("GTO2"))
             {
-                JFLICKER_UP_POS   = 0.71;
-                JFLICKER_DOWN_POS = 0.0;
+                JFLICKER_UP_POS   = 0.58;
+                JFLICKER_DOWN_POS = 0.12;
             }
 
             capMap.put("pusher", true);

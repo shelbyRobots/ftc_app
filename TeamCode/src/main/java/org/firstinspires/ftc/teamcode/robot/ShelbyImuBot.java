@@ -6,15 +6,20 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.ImuRunner;
 
 import java.util.Locale;
 
-public class ShelbyImuBot extends ShelbyBot
+class ShelbyImuBot extends ShelbyBot
 {
     private Orientation angles;
-    private Acceleration gravity;
+    //private Acceleration gravity;
+
+    private ImuRunner imuRunner;
 
     private ElapsedTime imuTimer = new ElapsedTime();
+
+    private boolean useImuThread = false;
 
     private static final String TAG = "SJH_Imu";
 
@@ -34,6 +39,12 @@ public class ShelbyImuBot extends ShelbyBot
         {
             imu = (BNO055IMU) com.getHardwareMap().get("imu");
             imu.initialize(parameters);
+
+            if(useImuThread)
+            {
+                imuRunner = ImuRunner.getInstance(imu);
+                imuRunner.run();
+            }
             capMap.put("sensor", true);
         }
         catch(Exception e)
@@ -76,6 +87,7 @@ public class ShelbyImuBot extends ShelbyBot
 
     private void getGyroAngles()
     {
-        angles = imu.getAngularOrientation();
+        if(useImuThread) angles = imuRunner.getOrientation();
+        else             angles = imu.getAngularOrientation();
     }
 }

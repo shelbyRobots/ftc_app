@@ -29,27 +29,51 @@ public class Drivetrain
         logData(true, "INIT PWR SET");
     }
 
+    private double lastSetLpower = 0.0;
+    private double lastSetRpower = 0.0;
     public void move(double lPwr, double rPwr)
     {
-//        curLpower = Math.round(100*lPwr)/100;
-//        curRpower = Math.round(100*rPwr)/100;
+        lPwr = Math.round(lPwr*100)/100.0;
+        rPwr = Math.round(rPwr*100)/100.0;
+
+        boolean setL = true;
+        boolean setR = true;
+        if(lPwr == lastSetLpower) {setL = false;}
+        if(rPwr == lastSetRpower) {setR = false;}
 
         curLpower = lPwr;
         curRpower = rPwr;
 
-        RobotLog.dd(TAG, "MOVE: " +
-                    " lpwr " + lPwr + " rpwr " + rPwr );
+        if(setL || setR) RobotLog.dd(TAG, "MOVE: " +
+                                          " lpwr " + lPwr + " rpwr " + rPwr );
 
         if(lFirst)
         {
-            setPower(robot.leftMotors, curLpower);
-            setPower(robot.rightMotors, curRpower);
+            if(setL)
+            {
+                setPower(robot.leftMotors, curLpower);
+                lastSetLpower = lPwr;
+            }
+            if(setR)
+            {
+                setPower(robot.rightMotors, curRpower);
+                lastSetRpower = rPwr;
+            }
         }
         else
         {
-            setPower(robot.rightMotors, curRpower);
-            setPower(robot.leftMotors, curLpower);
+            if(setR)
+            {
+                setPower(robot.rightMotors, curRpower);
+                lastSetRpower = rPwr;
+            }
+            if(setL)
+            {
+                setPower(robot.leftMotors, curLpower);
+                lastSetLpower = lPwr;
+            }
         }
+        if(setL || setR) RobotLog.dd(TAG, "Powers set");
     }
 
     public void move(double pwr)
@@ -439,7 +463,7 @@ public class Drivetrain
         while(op.opModeIsActive() &&
               !op.isStopRequested() &&
               isBusy(thresh) &&
-              !areMotorsStuck() &&
+              !areTurnMotorsStuck() &&
               tTimer.seconds() < turnTimeLimit)
         {
             setCurValues();
@@ -525,7 +549,7 @@ public class Drivetrain
         while(op.opModeIsActive()       &&
               !op.isStopRequested()     &&
               !ctrTurnGyro(tgtHdg, pwr) &&
-              !areMotorsStuck()         &&
+              !areTurnMotorsStuck()         &&
               tTimer.seconds() < turnTimeLimit)
         {
             setCurValues();
@@ -587,7 +611,7 @@ public class Drivetrain
 
         while(op.opModeIsActive() &&
               isBusy(TURN_BUSYTHRESH) &&
-              !areMotorsStuck())
+              !areTurnMotorsStuck())
         {
             setCurValues();
             logData();
@@ -682,6 +706,9 @@ public class Drivetrain
         CPI = robot.CPI;
         DEF_CPI = CPI;
 
+        noMoveThreshLow = (int)CPI;
+        noMoveThreshHi  = 4 * noMoveThreshLow;
+
         RobotLog.ii(TAG, "CPI: %5.2f", CPI);
 
         curDriveDir = robot.getDriveDir();
@@ -737,6 +764,16 @@ public class Drivetrain
         double steer = getSteer(err, Kp_GyrCorrection);
         if (dir == Direction.REVERSE) steer *= -1;
 
+        if     (pwr + steer >  1.0) steer =  1.0 - pwr;
+        else if(pwr + steer < -1.0) steer = -1.0 - pwr;
+        if     (pwr - steer >  1.0) steer = -1.0 + pwr;
+        else if(pwr - steer < -1.0) steer =  1.0 + pwr;
+
+        if     (pwr + steer <  minSpeed && pwr + steer > 0.0) steer =  minSpeed - pwr;
+        else if(pwr + steer > -minSpeed && pwr + steer < 0.0) steer = -minSpeed - pwr;
+        if     (pwr - steer <  minSpeed && pwr + steer > 0.0) steer = -minSpeed + pwr;
+        else if(pwr - steer > -minSpeed && pwr + steer < 0.0) steer =  minSpeed + pwr;
+
         rdp = pwr + steer;
         ldp = pwr - steer;
 
@@ -745,16 +782,6 @@ public class Drivetrain
         {
             rdp = rdp / max;
             ldp = ldp / max;
-        }
-
-        if(Math.abs(ldp) < minSpeed)
-        {
-            ldp = Math.signum(ldp) * minSpeed;
-        }
-
-        if(Math.abs(rdp) < minSpeed)
-        {
-            rdp = Math.signum(rdp) * minSpeed;
         }
 
         if(stopIndividualMotorWhenNotBusy)
@@ -811,8 +838,8 @@ public class Drivetrain
         initHdg = robot.getGyroFhdg();
         while (initHdg <= -180) initHdg += 360;
         while (initHdg >   180) initHdg -= 360;
-        setPos(curLpositions, robot.leftMotors);
-        setPos(curRpositions, robot.rightMotors);
+        setPositions(curLpositions, begLpositions, 0);
+        setPositions(curRpositions, begRpositions, 0);
         curHdg  = initHdg;
     }
 
@@ -906,7 +933,7 @@ public class Drivetrain
         logData(true, "ENDOVER");
     }
 
-    private boolean areMotorsStuck()
+    private boolean areTurnMotorsStuck()
     {
         if(usePosStop)
         {
@@ -928,12 +955,14 @@ public class Drivetrain
             //stop after noMoveTimeout
             if(noMoveTimer.seconds() > noMoveTimeout)
             {
-                if ((lp >= 0.0 && dLpos < noMoveThreshLow) &&
-                    (rp >= 0.0 && dRpos < noMoveThreshLow))
+                if ((lp >= minSpeed && dLpos < noMoveThreshLow) &&
+                    (rp >= minSpeed && dRpos < noMoveThreshLow))
                 {
                     RobotLog.ii(TAG,
-                            "MOTORS HAVE POWER BUT AREN'T MOVING - STOPPING %4.2f %4.2f",
-                            lp, rp);
+                            "TURN MOTORS HAVE POWER BUT AREN'T MOVING " +
+                                    " - STOPPING LPWR:%4.2f RPWR:%4.2f " +
+                                    " dLpos:%d dRpos:%d thresh:%d TO:%.2f",
+                            lp, rp, dLpos, dRpos, noMoveThreshLow, noMoveTimeout);
                     return true;
                 }
                 setPositions(lstLpositions, curLpositions, 0);
@@ -966,11 +995,14 @@ public class Drivetrain
             //stop after noMoveTimeout
             if(noMoveTimer.seconds() > noDriveMoveTimeout)
             {
-                if ((lp >= 0.0 && dLpos < noMoveThreshLow) &&
-                    (rp >= 0.0 && dRpos < noMoveThreshLow))
+                if ((lp >= minSpeed && dLpos < noMoveThreshLow) &&
+                    (rp >= minSpeed && dRpos < noMoveThreshLow))
                 {
-                    RobotLog.ii(TAG, "DRIVE MOTORS HAVE POWER BUT AREN'T MOVING - STOPPING %4.2f %4.2f",
-                            lp, rp);
+                    RobotLog.ii(TAG,
+                            "DRIVE MOTORS HAVE POWER BUT AREN'T MOVING " +
+                            " - STOPPING LPWR:%4.2f RPWR:%4.2f " +
+                            " dLpos:%d dRpos:%d thresh:%d TO:%.2f",
+                            lp, rp, dLpos, dRpos, noMoveThreshLow, noDriveMoveTimeout);
                     return true;
                 }
                 if ((lp >= noMovePwrHi && dLpos < noMoveThreshHi) ||
@@ -1135,11 +1167,13 @@ public class Drivetrain
 
     private void setPos(List<Integer> positions, List<DcMotor> motors)
     {
+        RobotLog.dd(TAG,"Get current motor positions");
         for(int i = 0; i < motors.size(); i++)
         {
             DcMotor mot = motors.get(i);
             positions.set(i, mot.getCurrentPosition());
         }
+        RobotLog.dd(TAG,"Got current motor positions");
     }
 
     private  void setTargetPositions(List<DcMotor> motors,
@@ -1270,15 +1304,15 @@ public class Drivetrain
 
     private double noMoveTimeout = 1.0;
     private double noDriveMoveTimeout = 0.5;
-    private int noMoveThreshLow = 10;
-    private int noMoveThreshHi = 40;
-    private double noMovePwrHi = 0.15;
+    private int noMoveThreshLow = 10;  //is set to CPI in init
+    private int noMoveThreshHi = 40;   //is set to 4*noMoveThreshLow in init
+    private double noMovePwrHi = 0.20;
     private ElapsedTime accelTimer  = new ElapsedTime();
     private ElapsedTime noMoveTimer = new ElapsedTime();
 
     private double printTimeout = 0.05;
 
-    private double minSpeed = 0.08;
+    private double minSpeed = 0.1;
     private double minGyroTurnSpeed = 0.10;
 
     private CommonUtil com;

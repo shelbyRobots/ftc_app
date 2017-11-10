@@ -328,7 +328,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 else if (currentPitchState == PitchState.PITCH_DOWN)
                     robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
             }
-            else
+            else if (Math.abs(pitch) > 0.001)
             {
                 robot.gpitch.setPosition(outPitch);
             }

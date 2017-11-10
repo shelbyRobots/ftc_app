@@ -284,7 +284,7 @@ public class MecanumTeleop extends InitLinearOpMode
                         break;
                 }
             }
-            else
+            else if (Math.abs(pitch) > 0.001)
             {
                 robot.gpitch.setPosition(outPitch);
             }
