@@ -199,9 +199,6 @@ public class ShelbyBot
                 pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
                 RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
                         pid.p, pid.i, pid.d);
-                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                RobotLog.dd(TAG, "RUN_WITHOUT_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                        pid.p, pid.i, pid.d);
             }
 
             capMap.put("drivetrain", true);

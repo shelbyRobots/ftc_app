@@ -122,21 +122,31 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         dashboard.displayPrintf(0, "PLEASE WAIT - STARTING - CHECK DEFAULTS");
         logData = true;
 
-        dashboard.displayPrintf(1, "STATE: %s", "INITIALIZING - HIT B FOR MENU");
+        dashboard.displayPrintf(1, "HIT A TO ACCEPT VALUES");
+        dashboard.displayPrintf(2, "HIT B FOR MENU");
         RobotLog.ii(TAG, "SETUP");
 
         ElapsedTime mTimer = new ElapsedTime();
         boolean doMen = false;
-        while(doMen == false && mTimer.seconds() < 1.0)
+        while(mTimer.seconds() < 5.0)
         {
             gpad1.update();
             if(gpad1.just_pressed(ManagedGamepad.Button.B))
             {
+                doMen = false;
+                break;
+            }
+            if(gpad1.just_pressed(ManagedGamepad.Button.B))
+            {
                 doMen = true;
+                break;
             }
         }
 
         if(doMen) doMenus();
+
+        dashboard.displayPrintf(1, "INITIALIZING");
+        dashboard.displayPrintf(2, "");
 
         String teleopName = "TeleopDriver";
 
@@ -149,9 +159,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         {
             robot = new TilerunnerGtoBot();
         }
-
-        RobotLog.dd(TAG, "setName");
-        robot.setName(robotName);
 
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
@@ -176,14 +183,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.dd(TAG, "GRIPPER_OPEN_POS %.2f", TilerunnerGtoBot.GRIPPER_OPEN_POS);
         RobotLog.dd(TAG, "GRIPPER_PART %.2f", TilerunnerGtoBot.GRIPPER_PARTIAL_POS);
         RobotLog.dd(TAG, "GRIPPER_CLOSE_POS %.2f", TilerunnerGtoBot.GRIPPER_CLOSE_POS);
-
-        RobotLog.dd(TAG, "JLICKER_UP_POS %.2f", TilerunnerMecanumBot.JFLICKER_UP_POS);
-        RobotLog.dd(TAG, "JLICKER_DOWN_POS %.2f", TilerunnerMecanumBot.JFLICKER_DOWN_POS);
-        RobotLog.dd(TAG, "GPITCH_UP_POS %.2f", TilerunnerMecanumBot.GPITCH_UP_POS);
-        RobotLog.dd(TAG, "GPITCH_DOWN_POS %.2f", TilerunnerMecanumBot.GPITCH_DOWN_POS);
-        RobotLog.dd(TAG, "GRIPPER_OPEN_POS %.2f", TilerunnerMecanumBot.GRIPPER_OPEN_POS);
-        RobotLog.dd(TAG, "GRIPPER_PART %.2f", TilerunnerMecanumBot.GRIPPER_PARTIAL_POS);
-        RobotLog.dd(TAG, "GRIPPER_CLOSE_POS %.2f", TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
 
         det = new MajorColorDetector();
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
@@ -485,20 +484,24 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         {
             case RED:
                 if(alliance == Field.Alliance.RED)
+                {
                     ddir = Drivetrain.Direction.REVERSE;
                     pushSign = -1;
+                }
                 break;
 
             case BLUE:
                 if(alliance == Field.Alliance.BLUE)
+                {
                     ddir = Drivetrain.Direction.REVERSE;
                     pushSign = -1;
+                }
                 break;
         }
 
         //move to knock off jewel
-        RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s",
-                ddir, jewelPushDist * pushSign, jewelPushSpd, badJewel);
+        RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s alliance %s",
+                ddir, jewelPushDist * pushSign, jewelPushSpd, badJewel, alliance);
 
         Point2d pushStart = postPushSeg.getStrtPt();
         Point2d pushEnd   = new Point2d("PUSHENDPT",

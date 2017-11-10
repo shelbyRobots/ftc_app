@@ -847,6 +847,22 @@ public class Drivetrain
     {
         setPos(curLpositions, robot.leftMotors);
         setPos(curRpositions, robot.rightMotors);
+        StringBuilder sb = new StringBuilder(16);
+        for(int i = 0; i < curLpositions.size(); i++)
+        {
+            sb.append(curLpositions.get(i));
+            if(i < curLpositions.size() - 1) sb.append(" ");
+        }
+        RobotLog.dd(TAG, "curLpos: %s", sb.toString());
+
+        if(sb != null) sb.delete(0, sb.length());
+        for(int i = 0; i < curRpositions.size(); i++)
+        {
+            sb.append(curRpositions.get(i));
+            if(i < curRpositions.size() - 1) sb.append(" ");
+        }
+        RobotLog.dd(TAG, "curRpos: %s", sb.toString());
+
         curHdg  = robot.getGyroFhdg();
         if(robot.colorEnabled)
         {
@@ -1167,13 +1183,11 @@ public class Drivetrain
 
     private void setPos(List<Integer> positions, List<DcMotor> motors)
     {
-        RobotLog.dd(TAG,"Get current motor positions");
         for(int i = 0; i < motors.size(); i++)
         {
             DcMotor mot = motors.get(i);
             positions.set(i, mot.getCurrentPosition());
         }
-        RobotLog.dd(TAG,"Got current motor positions");
     }
 
     private  void setTargetPositions(List<DcMotor> motors,

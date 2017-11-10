@@ -91,10 +91,10 @@ public class Teleop_Driver extends InitLinearOpMode
             boolean toggle_float      = gpad1.just_pressed(ManagedGamepad.Button.B);
             boolean toggle_vel        = gpad1.just_pressed(ManagedGamepad.Button.R_BUMP);
 
-            boolean left_step         = gpad1.just_pressed(ManagedGamepad.Button.D_LEFT);
-            boolean right_step        = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
-            boolean fwd_step          = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
-            boolean back_step         = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
+            boolean left_step         = gpad1.pressed(ManagedGamepad.Button.D_LEFT);
+            boolean right_step        = gpad1.pressed(ManagedGamepad.Button.D_RIGHT);
+            boolean fwd_step          = gpad1.pressed(ManagedGamepad.Button.D_UP);
+            boolean back_step         = gpad1.pressed(ManagedGamepad.Button.D_DOWN);
 
             boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
@@ -161,32 +161,42 @@ public class Teleop_Driver extends InitLinearOpMode
             double step_ang  = 5.0;
 
             double fHdg = robot.getGyroFhdg();
+            double detail_speed = 0.14;
+
+            double out_left = left;
+            double out_right = right;
             if(fwd_step)
             {
                 RobotLog.dd(TAG, "In fwd_step");
-                dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.FORWARD);
+                out_left  = detail_speed;
+                out_right = detail_speed;
+                //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.FORWARD);
                 RobotLog.dd(TAG, "Done fwd_step");
             }
             else if(back_step)
             {
                 RobotLog.dd(TAG, "In back_step");
-                dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.REVERSE);
+                out_left  = -detail_speed;
+                out_right = -detail_speed;
+                //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.REVERSE);
                 RobotLog.dd(TAG, "Done back_step");
             }
             else if(left_step)
             {
                 RobotLog.dd(TAG, "In left_step");
-                //dtrn.ctrTurnLinear(step_ang, step_spd, 5);
-                dtrn.setInitValues();
-                dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
+                out_left  = -detail_speed;
+                out_right =  detail_speed;
+                //dtrn.setInitValues();
+                //dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
                 RobotLog.dd(TAG, "Done left_step");
             }
             else if(right_step)
             {
                 RobotLog.dd(TAG, "In right_step");
-                dtrn.setInitValues();
-                //dtrn.ctrTurnLinear(-step_ang, step_spd, 5);
-                dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
+                out_left  =  detail_speed;
+                out_right = -detail_speed;
+                //dtrn.setInitValues();
+                //dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
                 RobotLog.dd(TAG, "Done right_step");
             }
             else
@@ -212,14 +222,20 @@ public class Teleop_Driver extends InitLinearOpMode
                             rspd /= vmax;
                         }
                     }
-                    lex.setVelocity(maxDPS*lspd,  AngleUnit.DEGREES);
-                    rex.setVelocity(maxDPS*rspd, AngleUnit.DEGREES);
+                    out_left = maxDPS*lspd;
+                    out_right = maxDPS*rspd;
                 }
-                else
-                {
-                    robot.leftMotors.get(0).setPower(left);
-                    robot.rightMotors.get(0).setPower(right);
-                }
+            }
+
+            if(useSetVel)
+            {
+                lex.setVelocity(out_left,  AngleUnit.DEGREES);
+                rex.setVelocity(out_right, AngleUnit.DEGREES);
+            }
+            else
+            {
+                robot.leftMotors.get(0).setPower(out_left);
+                robot.rightMotors.get(0).setPower(out_right);
             }
 
             dashboard.displayPrintf(3, "SPEED %4.2f", speed);
