@@ -122,8 +122,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         dashboard.displayPrintf(0, "PLEASE WAIT - STARTING - CHECK DEFAULTS");
         logData = true;
 
-        dashboard.displayPrintf(1, "HIT A TO ACCEPT VALUES");
-        dashboard.displayPrintf(2, "HIT B FOR MENU");
+        dashboard.displayPrintf(6, "HIT A TO ACCEPT VALUES");
+        dashboard.displayPrintf(7, "HIT B FOR MENU");
         RobotLog.ii(TAG, "SETUP");
 
         ElapsedTime mTimer = new ElapsedTime();
@@ -145,8 +145,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         if(doMen) doMenus();
 
-        dashboard.displayPrintf(1, "INITIALIZING");
-        dashboard.displayPrintf(2, "");
+        dashboard.displayPrintf(0, "INITIALIZING");
 
         String teleopName = "TeleopDriver";
 
@@ -226,7 +225,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.setInitHdg(initHdg);
 
         RobotLog.ii(TAG, "Start %s.", currPoint);
-        dashboard.displayPrintf(3, "PATH: Start at %s", currPoint);
+        dashboard.displayPrintf(8, "PATH: Start at %s", currPoint);
 
         RobotLog.ii(TAG, "IHDG %4.2f", initHdg);
 
@@ -440,10 +439,15 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     sleep(300);
                     break;
 
-                case GRAB:
+                case PREGRAB:
                     robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_DOWN_POS);
                     sleep(500);
+                    robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_OPEN_POS);
+                    break;
+
+                case GRAB:
                     robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_CLOSE_POS);
+                    sleep(500);
                     robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
                     break;
             }

@@ -18,6 +18,8 @@ public class RrPoints extends Points
         //convenience declarations to make call params shorter
         ShelbyBot.DriveDir fwd = ShelbyBot.DriveDir.INTAKE;
         ShelbyBot.DriveDir rev = ShelbyBot.DriveDir.PUSHER;
+        ShelbyBot.DriveDir itk = ShelbyBot.DriveDir.INTAKE;
+        ShelbyBot.DriveDir psr = ShelbyBot.DriveDir.PUSHER;
         if(alliance == Field.Alliance.BLUE)
         {
             fwd = ShelbyBot.DriveDir.PUSHER;
@@ -28,6 +30,7 @@ public class RrPoints extends Points
         Segment.Action key     = Segment.Action.SET_KEY;
         Segment.Action drop    = Segment.Action.DROP;
         Segment.Action grab    = Segment.Action.GRAB;
+        Segment.Action pgrb    = Segment.Action.PREGRAB;
         Segment.TargetType encType = Segment.TargetType.ENCODER;
 
         if(startPos == Field.StartPos.START_1)
@@ -35,22 +38,22 @@ public class RrPoints extends Points
             points.add(RrField.RLBS);
             addPoint(points, fwd, 0.45, 1.00, encType, scan, RrField.RLBS);
             addPoint(points, fwd, 0.30, 1.00, encType, key,  RrField.RLFP);
-            addPoint(points, fwd, 0.45, 1.00, encType, drop, RrField.RLDC);
-            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RLFP);
-            addPoint(points, fwd, 0.60, 1.00, encType, grab, RrField.RLPP);
-            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RLTT);
+            addPoint(points, itk, 0.45, 1.00, encType, drop, RrField.RLDC);
+            addPoint(points, psr, 0.40, 1.00, encType, pgrb, RrField.RLFP);
+            addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RLPP);
+            addPoint(points, itk, 0.60, 1.00, encType, none, RrField.RLTT);
         }
         else if(startPos == Field.StartPos.START_2)
         {
             points.add(RrField.RRBS);
             addPoint(points, fwd, 0.45, 1.00, encType, scan, RrField.RRBS);
             addPoint(points, fwd, 0.30, 1.00, encType, key,  RrField.RRFP);
-            addPoint(points, fwd, 0.30, 1.00, encType, drop, RrField.RRDC);
-            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRFP);
-            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRXP);
-            addPoint(points, fwd, 0.60, 1.00, encType, grab, RrField.RRPP);
-            addPoint(points, rev, 0.40, 1.00, encType, none, RrField.RRXP);
-            addPoint(points, fwd, 0.60, 1.00, encType, none, RrField.RRTT);
+            addPoint(points, itk, 0.30, 1.00, encType, drop, RrField.RRDC);
+            addPoint(points, psr, 0.40, 1.00, encType, none, RrField.RRFP);
+            addPoint(points, itk, 0.40, 1.00, encType, pgrb, RrField.RRXP);
+            addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RRPP);
+            addPoint(points, itk, 0.40, 1.00, encType, none, RrField.RRXP);
+            addPoint(points, itk, 0.60, 1.00, encType, none, RrField.RRTT);
         }
 
         ShelbyBot.DriveDir parkDir = fwd;
@@ -68,7 +71,7 @@ public class RrPoints extends Points
     protected Point2d convertRtoB(Point2d rpt)
     {
         double bx =  rpt.getX();
-        double by = -rpt.getY();
+        double by = Math.abs(rpt.getY());
         rpt.setX(bx);
         rpt.setY(by);
         return rpt;

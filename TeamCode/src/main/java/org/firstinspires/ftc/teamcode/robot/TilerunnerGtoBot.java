@@ -96,7 +96,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             int ELEV_COUNTS_PER_MOTOR_REV = 4;
             double ELEV_GEAR_ONE = 72;
             double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
-            double ELEV_WHEEL_DIAM = 2.35; //1.5;
+            double ELEV_WHEEL_DIAM = 1.5; //2.35
             double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM);
             double LIFT_SCALE = 1.0;
 
@@ -108,11 +108,11 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             if(name.equals("GTO1"))
             {
                 elevMotor.setDirection(DcMotor.Direction.FORWARD);
-                GRIPPER_CLOSE_POS = 0.9;
+                GRIPPER_CLOSE_POS = 0.84;
                 GRIPPER_OPEN_POS = 0.5;
-                GRIPPER_PARTIAL_POS = 0.7;
-                GPITCH_DOWN_POS = 0.4;
-                GPITCH_UP_POS = 0.9;
+                GRIPPER_PARTIAL_POS = 0.62;
+                GPITCH_DOWN_POS = 0.62;
+                GPITCH_UP_POS = 0.1;
                 GPITCH_MIN = 0.2;
                 GPITCH_MAX = 0.9;
             }
@@ -123,8 +123,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 GRIPPER_OPEN_POS = 0.4;
                 GRIPPER_PARTIAL_POS = 0.76;
 
-                GPITCH_DOWN_POS = 0.84;
-                GPITCH_UP_POS = 0.1;
+                GPITCH_DOWN_POS = 0.58;
+                GPITCH_UP_POS = 0.16;
                 GPITCH_MIN = 0.1;
                 GPITCH_MAX = 0.8;
             }

@@ -42,6 +42,9 @@ public class Teleop_Driver extends InitLinearOpMode
             dtrn.setRampDown(false);
             robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
             RobotLog.dd(TAG, "Start Hdg %.2f", robot.autonEndHdg);
+
+            lex = (DcMotorEx)(robot.leftMotors.get(0));
+            rex = (DcMotorEx)(robot.rightMotors.get(0));
         }
 
         if(robot.gripper != null)
@@ -129,7 +132,7 @@ public class Teleop_Driver extends InitLinearOpMode
             double outPitch = Range.scale(pitch, -1.0, 1.0,
                     robot.GPITCH_MIN, robot.GPITCH_MAX);
 
-            double speed = left;
+            double speed = right;
             double arcadeTurnScale = 0.5;
 
             switch (driveType)
@@ -163,6 +166,8 @@ public class Teleop_Driver extends InitLinearOpMode
             double fHdg = robot.getGyroFhdg();
             double detail_speed = 0.14;
 
+            boolean useD = false;
+
             double out_left = left;
             double out_right = right;
             if(fwd_step)
@@ -170,6 +175,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In fwd_step");
                 out_left  = detail_speed;
                 out_right = detail_speed;
+                useD = true;
                 //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.FORWARD);
                 RobotLog.dd(TAG, "Done fwd_step");
             }
@@ -178,6 +184,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In back_step");
                 out_left  = -detail_speed;
                 out_right = -detail_speed;
+                useD = true;
                 //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.REVERSE);
                 RobotLog.dd(TAG, "Done back_step");
             }
@@ -186,6 +193,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In left_step");
                 out_left  = -detail_speed;
                 out_right =  detail_speed;
+                useD = true;
                 //dtrn.setInitValues();
                 //dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
                 RobotLog.dd(TAG, "Done left_step");
@@ -195,14 +203,14 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In right_step");
                 out_left  =  detail_speed;
                 out_right = -detail_speed;
+                useD = true;
                 //dtrn.setInitValues();
                 //dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
                 RobotLog.dd(TAG, "Done right_step");
             }
             else
             {
-                lex = (DcMotorEx)(robot.leftMotors.get(0));
-                rex = (DcMotorEx)(robot.rightMotors.get(0));
+
                 double maxIPS = 60.0;
                 double maxRPS = maxIPS/(4.0*Math.PI);
                 double maxDPS = maxRPS*360.0;
@@ -211,7 +219,12 @@ public class Teleop_Driver extends InitLinearOpMode
                 {
                     double lspd = raw_left;
                     double rspd = raw_right;
-                    if(driveType == TELEOP_DRIVE_TYPE.ARCADE_DRIVE)
+                    if(useD)
+                    {
+                        lspd = out_left;
+                        rspd = out_right;
+                    }
+                    else if(driveType == TELEOP_DRIVE_TYPE.ARCADE_DRIVE)
                     {
                         lspd = raw_right + raw_turn*arcadeTurnScale;
                         rspd = raw_right - raw_turn*arcadeTurnScale;
