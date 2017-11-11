@@ -205,7 +205,7 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map initDriveTrain\n" + e.toString());
         }
 
         for(DcMotor mot : motors.values())
@@ -230,7 +230,7 @@ public class ShelbyBot
         }
         catch (Exception e)
         {
-            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map initCollector\n" + e.toString());
         }
 
         if(elevMotor  != null)  elevMotor.setDirection(DcMotor.Direction.REVERSE);

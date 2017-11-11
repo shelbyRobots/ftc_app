@@ -56,7 +56,7 @@ public class RrField extends Field
     //Red Points > Left
     static final Point2d RLBS = new Point2d("RLBS", -48.0,  -48.0);
     static final Point2d RLJB = new Point2d("RLJB", -48.0,  -68.0);
-    static final Point2d RLFP = new Point2d("RLFP", -24.0, -48.0);
+    static final Point2d RLFP = new Point2d("RLFP", -23.0, -48.0);
     static final Point2d RLCL = new Point2d("RLCL", CBOX_LCTR + CBOX_GAP, -67.0);
     static final Point2d RLCC = new Point2d("RLCC", CBOX_LCTR,            -67.0);
     static final Point2d RLCR = new Point2d("RLCR", CBOX_LCTR - CBOX_GAP, -67.0);
@@ -71,7 +71,7 @@ public class RrField extends Field
     //Red Points > Right
     static final Point2d RRBS = new Point2d("RRBS",  24.0,  -48.0);
     static final Point2d RRJB = new Point2d("RRJB",  24.0,  -68.0);
-    static final Point2d RRFP = new Point2d("RRFP",  48.0,  -48.0);
+    static final Point2d RRFP = new Point2d("RRFP",  49.0,  -48.0);
     static final Point2d RRCL = new Point2d("RRCL",  67.0,  CBOX_RCTR + CBOX_GAP);
     static final Point2d RRCC = new Point2d("RRCC",  67.0,  CBOX_RCTR);
     static final Point2d RRCR = new Point2d("RRCR",  67.0,  CBOX_RCTR - CBOX_GAP);
@@ -80,9 +80,9 @@ public class RrField extends Field
     static final Point2d RRDR = calcDropPt("RRDR", RRFP, RRCR);
     static final Point2d RRRR = new Point2d("RRRR",  68.0,  -68.0);
 
-    static final Point2d RRTT = new Point2d("RRTT",  48.0,  -36.0);
+    static final Point2d RRTT = new Point2d("RRTT",  49.0,  -36.0);
     static final Point2d RRPP = new Point2d("RRPP",   0.0,  -12.0);
-    static final Point2d RRXP = new Point2d("RRXP",  48.0,  -24.0);
+    static final Point2d RRXP = new Point2d("RRXP",  49.0,  -24.0);
 
     static final Point2d RARZ = new Point2d("RARZ", -72.0,  -12.0);
 

@@ -1333,7 +1333,7 @@ public class Drivetrain
     private LinearOpMode op;
     private DataLogger   dl;
 
-    private boolean usePosStop = true;
+    private boolean usePosStop = false;
     private boolean doStopAndReset = false;
 
     private double lastGyroError = 0;

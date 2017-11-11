@@ -107,7 +107,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
             if(name.equals("GTO1"))
             {
-                elevMotor.setDirection(DcMotor.Direction.REVERSE);
+                elevMotor.setDirection(DcMotor.Direction.FORWARD);
                 GRIPPER_CLOSE_POS = 0.9;
                 GRIPPER_OPEN_POS = 0.5;
                 GRIPPER_PARTIAL_POS = 0.7;
@@ -138,7 +138,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
         catch (Exception e)
         {
-            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map in initCollectorLifter\n" + e.toString());
         }
     }
 
@@ -167,7 +167,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
         catch (Exception e)
         {
-            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map in initPushers\n" + e.toString());
         }
     }
 }

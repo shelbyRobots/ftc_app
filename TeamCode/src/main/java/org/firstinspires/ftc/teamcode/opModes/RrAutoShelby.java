@@ -266,7 +266,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         boolean SkipNextSegment = false;
         for (int i = 0; i < pathSegs.size(); ++i)
         {
-            if(!opModeIsActive() || isStopRequested()) break;
+            if (!opModeIsActive() || isStopRequested()) break;
 
             String segName = pathSegs.get(i).getName();
             RobotLog.ii(TAG, "Starting segment %s at %4.2f", segName,
@@ -277,23 +277,22 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             {
                 SkipNextSegment = false;
                 RobotLog.ii(TAG, "Skipping segment %s", pathSegs.get(i).getName());
-                if(i < pathSegs.size() - 1)
+                if (i < pathSegs.size() - 1)
                 {
                     RobotLog.ii(TAG, "Setting segment %s start pt to %s",
-                            pathSegs.get(i+1).getName(),
+                            pathSegs.get(i + 1).getName(),
                             pathSegs.get(i).getStrtPt());
-                    pathSegs.get(i+1).setStrtPt(pathSegs.get(i).getStrtPt());
+                    pathSegs.get(i + 1).setStrtPt(pathSegs.get(i).getStrtPt());
                 }
                 continue;
             }
 
             Segment curSeg;
 
-            if(curPos == null || !useImageLoc)
+            if (curPos == null || !useImageLoc)
             {
                 curSeg = pathSegs.get(i);
-            }
-            else
+            } else
             {
                 drvTrn.setCurrPt(curPos);
                 curSeg = new Segment("CURSEG", curPos, pathSegs.get(i).getTgtPt());
@@ -311,7 +310,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
             RobotLog.ii(TAG, "ENCODER TURN %s", curSeg.getName());
 
-            if(curSeg.getLength() >= 0.01)
+            if (curSeg.getLength() >= 0.01)
             {
                 doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
                 doGyroTurn(curSeg.getFieldHeading(), segName + " gyroTurn");
@@ -320,7 +319,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
 
             Double pturn = curSeg.getPostTurn();
-            if(usePostTurn && pturn != null)
+            if (usePostTurn && pturn != null)
             {
                 RobotLog.ii(TAG, "ENCODER POST TURN %s", curSeg.getName());
                 doEncoderTurn(pturn, segName + " postEncoderTurn");
@@ -329,7 +328,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 //                doGyroTurn(pturn, segName + " postGyroTurn");
             }
 
-            if(!opModeIsActive() || isStopRequested())
+            if (!opModeIsActive() || isStopRequested())
             {
                 drvTrn.stopMotion();
                 break;
@@ -342,7 +341,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
             Segment.Action act = curSeg.getAction();
 
-            if(act != Segment.Action.NOTHING)
+            if (act != Segment.Action.NOTHING)
             {
                 drvTrn.setInitValues();
                 drvTrn.logData(true, segName + " action " + act.toString());
@@ -354,38 +353,38 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 //                    robot.lpusher.setPosition(L_DN_PUSH_POS);
 //                    break;
                 case SCAN_IMAGE:
-                    doScanPush(pathSegs.get(i+1));
+                    doScanPush(pathSegs.get(i + 1));
                     break;
 
                 case SET_KEY:
                 {
                     Point2d dpt = RrField.getDropPt(Field.Alliance.RED, startPos, key);
                     RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
-                    pathSegs.get(i+1).setEndPt(dpt);
-                    pathSegs.get(i+2).setStrtPt(dpt);
+                    pathSegs.get(i + 1).setEndPt(dpt);
+                    pathSegs.get(i + 2).setStrtPt(dpt);
                     break;
                 }
 
                 case SET_KEY_OLD:
                     RobotLog.dd(TAG, "In SET_KEY");
                     RobotLog.dd(TAG, "On segment %s", curSeg.toString());
-                    if(i+1 < pathSegs.size())
+                    if (i + 1 < pathSegs.size())
                     {
-                        Segment alignSeg = pathSegs.get(i+1);
-                        Segment postDropSeg = pathSegs.get(i+2);
+                        Segment alignSeg = pathSegs.get(i + 1);
+                        Segment postDropSeg = pathSegs.get(i + 2);
 
                         RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
 
                         Point2d cboxPt = new Point2d("AlnPt",
-                                                     alignSeg.getTgtPt().getX(),
-                                                     alignSeg.getTgtPt().getY());
+                                                            alignSeg.getTgtPt().getX(),
+                                                            alignSeg.getTgtPt().getY());
                         Point2d dropPt = new Point2d("DropPt",
-                                                     cboxPt.getX(),
-                                                     cboxPt.getY());
+                                                            cboxPt.getX(),
+                                                            cboxPt.getY());
                         double offset = 7.63;
                         double loc = cboxPt.getX();
                         int rbDir = 1;
-                        if(alliance == Field.Alliance.BLUE) rbDir = -1;
+                        if (alliance == Field.Alliance.BLUE) rbDir = -1;
 
                         if (startPos == Field.StartPos.START_1)
                         {
@@ -429,7 +428,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         RobotLog.dd(TAG, "Post alignSeg %s", alignSeg.toString());
                         RobotLog.dd(TAG, "dropSeg  %s", dropSeg.toString());
 
-                        pathSegs.add(i+2, dropSeg);
+                        pathSegs.add(i + 2, dropSeg);
                     }
                     break;
 
@@ -448,6 +447,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
                     break;
             }
+
+            if (curSeg.getAction() == Segment.Action.DROP &&
+                robotName.equals("MEC"))
+            {
+                break;
+            }
         }
 
         RobotLog.dd(TAG, "Finished auton segments");
@@ -461,7 +466,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void doScanPush(Segment postPushSeg)
     {
-        double jewelPushDist = 2.0;
+        double jewelPushDist = 3.5;
         double jewelPushSpd  = 0.2;
         Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
 
