@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.field;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Segment;
@@ -9,10 +11,13 @@ import java.util.Vector;
 @SuppressWarnings("unused")
 public class RrPoints extends Points
 {
+    private static final String TAG = "SJH_RRP";
+
     @SuppressWarnings("ConstantConditions")
     @Override
     protected Vector<Point2d> initPoints()
     {
+        RobotLog.dd(TAG, "In RrPoints initPoints alliance=%s", alliance);
         Vector<Point2d> points = new Vector<>(MAX_SEGMENTS);
 
         //convenience declarations to make call params shorter
@@ -72,6 +77,9 @@ public class RrPoints extends Points
     {
         double bx =  rpt.getX();
         double by = Math.abs(rpt.getY());
+        String nm = "B" + rpt.getName().substring(1);
+        rpt.setName(nm);
+
         rpt.setX(bx);
         rpt.setY(by);
         return rpt;

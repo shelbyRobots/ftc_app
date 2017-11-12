@@ -21,13 +21,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
     public static double JFLICKER_UP_POS = 0.1;
     public static double JFLICKER_DOWN_POS = 0.6;
+    public static double JFLICKER_STOW_POS = 0.0;
 
     public static double GRIPPER_CLOSE_POS   = 0.83;
     public static double GRIPPER_PARTIAL_POS = 0.75;
     public static double GRIPPER_OPEN_POS    = 0.5;
 
-    public static double GPITCH_UP_POS   = 0.9;
-    public static double GPITCH_DOWN_POS = 0.4;
+    public static double GPITCH_UP_POS    = 0.16;
+    public static double GPITCH_DOWN_POS  = 0.58;
+    public static double GPITCH_CLEAR_POS = 0.3;
     public static double GPITCH_MIN      = 0.1;
     public static double GPITCH_MAX      = 0.9;
 
@@ -111,8 +113,10 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 GRIPPER_CLOSE_POS = 0.84;
                 GRIPPER_OPEN_POS = 0.5;
                 GRIPPER_PARTIAL_POS = 0.62;
+
                 GPITCH_DOWN_POS = 0.62;
                 GPITCH_UP_POS = 0.1;
+                GPITCH_CLEAR_POS = 0.4;
                 GPITCH_MIN = 0.2;
                 GPITCH_MAX = 0.9;
             }
@@ -125,6 +129,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
                 GPITCH_DOWN_POS = 0.58;
                 GPITCH_UP_POS = 0.16;
+                GPITCH_CLEAR_POS = 0.35;
                 GPITCH_MIN = 0.1;
                 GPITCH_MAX = 0.8;
             }
@@ -153,11 +158,13 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             {
                 JFLICKER_UP_POS   = 0.71;
                 JFLICKER_DOWN_POS = 0.0;
+                JFLICKER_STOW_POS = 1.0;
             }
             else if(name.equals("GTO2"))
             {
                 JFLICKER_UP_POS   = 0.58;
                 JFLICKER_DOWN_POS = 0.12;
+                JFLICKER_STOW_POS = 1.0;
             }
 
             capMap.put("pusher", true);
@@ -169,5 +176,38 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         {
             RobotLog.ee(TAG, "ERROR get hardware map in initPushers\n" + e.toString());
         }
+    }
+
+    public void stowFlicker ()
+    {
+        jflicker.setPosition(JFLICKER_STOW_POS);
+    }
+    public void closeGripper()
+    {
+        gripper.setPosition(GRIPPER_CLOSE_POS);
+    }
+    public void openGripper()
+    {
+        gripper.setPosition(GRIPPER_OPEN_POS);
+    }
+    public void partialGripper()
+    {
+        gripper.setPosition(GRIPPER_PARTIAL_POS);
+    }
+    public void retractGpitch()
+    {
+        gpitch.setPosition(GPITCH_UP_POS);
+    }
+    public void deployGpitch()
+    {
+        gpitch.setPosition(GPITCH_DOWN_POS);
+    }
+    public void clearGpitch()
+    {
+        gpitch.setPosition(GPITCH_CLEAR_POS);
+    }
+    public void deployFlicker()
+    {
+        jflicker.setPosition(JFLICKER_DOWN_POS);
     }
 }

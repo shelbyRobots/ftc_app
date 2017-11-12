@@ -66,7 +66,7 @@ public class RrField extends Field
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
     static final Point2d RLTT = new Point2d("RLTT", -12.0,  -48.0);
-    static final Point2d RLPP = new Point2d("RLPP", -12.0,  -12.0);
+    static final Point2d RLPP = new Point2d("RLPP", -12.0,  -30.0);
 
     //Red Points > Right
     static final Point2d RRBS = new Point2d("RRBS",  24.0,  -48.0);
@@ -94,25 +94,62 @@ public class RrField extends Field
             case START_1:
                 switch (key)
                 {
-                    case LEFT:   retPt = RLDL; break;
+                    case LEFT:
+                    {
+                        retPt = RLDL;
+                        if(alliance == Alliance.BLUE)
+                        {
+                            retPt = RLDR;
+                            retPt.setName("BLDL");
+                        }
+                    }
+                    break;
                     case CENTER: retPt = RLDC; break;
-                    case RIGHT:  retPt = RLDR; break;
+                    case RIGHT:
+                    {
+                        retPt = RLDR;
+                        if(alliance == Alliance.BLUE)
+                        {
+                            retPt = RLDL;
+                            retPt.setName("BLDR");
+                        }
+                    }
+                    break;
                     case UNKNOWN: retPt = RLDC; break;
                 }
                 break;
             case START_2:
                 switch (key)
                 {
-                    case LEFT:   retPt = RRDL; break;
+                    case LEFT:
+                    {
+                        retPt = RRDL;
+                        if(alliance == Alliance.BLUE)
+                        {
+                            retPt = RRDR;
+                            retPt.setName("BRDL");
+                        }
+                    }
+                    break;
                     case CENTER: retPt = RRDC; break;
-                    case RIGHT:  retPt = RRDR; break;
+                    case RIGHT:
+                    {
+                        retPt = RRDR;
+                        if(alliance == Alliance.BLUE)
+                        {
+                            retPt = RRDL;
+                            retPt.setName("BRDR");
+                        }
+                    }
+                    break;
                     case UNKNOWN: retPt = RRDC; break;
                 }
         }
 
         if(alliance == Alliance.BLUE)
         {
-            retPt.setY(-retPt.getY());
+            retPt.setY(Math.abs(retPt.getY()));
+            retPt.setName("B" + retPt.getName().substring(1));
         }
 
         return retPt;

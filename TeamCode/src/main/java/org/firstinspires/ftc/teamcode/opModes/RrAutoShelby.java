@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.field.Field;
@@ -64,6 +65,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     {
         dashboard.clearDisplay();
         drvTrn.start();
+        robot.clearGpitch();
         do_main_loop();
     }
 
@@ -131,7 +133,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         while(mTimer.seconds() < 5.0)
         {
             gpad1.update();
-            if(gpad1.just_pressed(ManagedGamepad.Button.B))
+            if(gpad1.just_pressed(ManagedGamepad.Button.A))
             {
                 doMen = false;
                 break;
@@ -159,21 +161,29 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             robot = new TilerunnerGtoBot();
         }
 
+        dashboard.displayPrintf(1, "HERE1");
+
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
         RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
         AutoTransitioner.transitionOnStop(this, teleopName);
 
+        dashboard.displayPrintf(1, "HERE2");
+
         robot.init(this, robotName);
+
+        dashboard.displayPrintf(1, "HERE3");
 
         System.out.println("Robot CPI " + robot.CPI);
 
         drvTrn.init(robot);
         drvTrn.setRampUp(false);
 
-        robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_UP_POS);
-        robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_CLOSE_POS);
-        robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
+        robot.stowFlicker();
+        robot.closeGripper();
+        robot.retractGpitch();
+
+        dashboard.displayPrintf(1, "HERE4");
 
         RobotLog.dd(TAG, "JLICKER_UP_POS %.2f", TilerunnerGtoBot.JFLICKER_UP_POS);
         RobotLog.dd(TAG, "JLICKER_DOWN_POS %.2f", TilerunnerGtoBot.JFLICKER_DOWN_POS);
@@ -357,7 +367,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case SET_KEY:
                 {
-                    Point2d dpt = RrField.getDropPt(Field.Alliance.RED, startPos, key);
+                    Point2d dpt = RrField.getDropPt(alliance, startPos, key);
                     RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
                     pathSegs.get(i + 1).setEndPt(dpt);
                     pathSegs.get(i + 2).setStrtPt(dpt);
@@ -432,29 +442,23 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     break;
 
                 case DROP:
-                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_DOWN_POS);
+                    robot.deployGpitch();
                     sleep(500);
-                    robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_PARTIAL_POS);
-                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
+                    robot.partialGripper();
                     sleep(300);
+                    robot.retractGpitch();
                     break;
 
                 case PREGRAB:
-                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_DOWN_POS);
-                    sleep(500);
-                    robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_OPEN_POS);
+                    robot.deployGpitch();
+                    sleep(200);
+                    robot.openGripper();
                     break;
 
                 case GRAB:
-                    robot.gripper.setPosition(TilerunnerGtoBot.GRIPPER_CLOSE_POS);
-                    sleep(500);
-                    robot.gpitch.setPosition(TilerunnerGtoBot.GPITCH_UP_POS);
-                    break;
-            }
-
-            if (curSeg.getAction() == Segment.Action.DROP &&
-                robotName.equals("MEC"))
-            {
+                    robot.closeGripper();
+                    sleep(400);
+                    robot.retractGpitch();
                 break;
             }
         }
@@ -474,15 +478,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         double jewelPushSpd  = 0.2;
         Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
 
+        CameraDevice.getInstance().setFlashTorchMode(true) ;
         key = getKey();
         MajorColorDetector.Color jewelColor;
         jewelColor = getJewelColor();
         RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
                 key, jewelColor);
+        CameraDevice.getInstance().setFlashTorchMode(false);
         if(jewelColor == MajorColorDetector.Color.NONE)
             return;
 
-        robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_DOWN_POS);
+        robot.clearGpitch();
+        sleep(500);
+        robot.deployFlicker();
         sleep(500);
 
         RobotLog.dd(TAG, "Deploy pusher");
@@ -534,8 +542,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         doMove(pushSeg);
         drvTrn.setRampDown(curRampDown);
 
-        robot.jflicker.setPosition(TilerunnerGtoBot.JFLICKER_UP_POS);
-        sleep(500);
+        robot.clearGpitch();
+        robot.stowFlicker();
+        sleep(300);
 
         RobotLog.dd(TAG, "Retract pusher");
 

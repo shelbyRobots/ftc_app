@@ -145,6 +145,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
 
             GPITCH_UP_POS         = 0.8;
             GPITCH_DOWN_POS       = 0.4;
+            GPITCH_CLEAR_POS      = 0.6;
             GPITCH_MIN            = 0.0;
             GPITCH_MAX            = 0.8;
         }
@@ -161,8 +162,9 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         {
             jflicker = hwMap.servo.get("jflicker");
 
-            JFLICKER_UP_POS = 0.75;
+            JFLICKER_UP_POS   = 0.75;
             JFLICKER_DOWN_POS = 0.39;
+            JFLICKER_STOW_POS = 0.75;
 
             capMap.put("pusher", true);
 
@@ -173,5 +175,26 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         {
             RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
+    }
+
+    @Override
+    public void closeGripper()
+    {
+        gripper.setPosition(GRIPPER_CLOSE_POS);
+        rgripper.setPosition(RGRIPPER_CLOSE_POS);
+    }
+
+    @Override
+    public void openGripper()
+    {
+        gripper.setPosition(GRIPPER_OPEN_POS);
+        rgripper.setPosition(RGRIPPER_OPEN_POS);
+    }
+
+    @Override
+    public void partialGripper()
+    {
+        gripper.setPosition(GRIPPER_PARTIAL_POS);
+        rgripper.setPosition(RGRIPPER_PARTIAL_POS);
     }
 }

@@ -23,14 +23,18 @@ public abstract class Points
         this.startPos     = startPos;
         this.alliance     = alliance;
 
+        RobotLog.dd(TAG, "In base Points ctor.  Alliance=%s", alliance);
+
         Vector<Point2d> pts = initPoints();
         Vector<Point2d> points;
         if(alliance == Field.Alliance.RED)
         {
+            RobotLog.dd(TAG, "InitRedpoints");
             points = initRedPoints(pts);
         }
         else
         {
+            RobotLog.dd(TAG, "InitBluepoints");
             points = initBluePoints(pts);
         }
 
@@ -150,6 +154,8 @@ public abstract class Points
 
     Field.StartPos     startPos   = Field.StartPos.START_1;
     Field.Alliance     alliance   = Field.Alliance.RED;
+
+    private static final String TAG = "SJH_PNT";
 
 }
 
