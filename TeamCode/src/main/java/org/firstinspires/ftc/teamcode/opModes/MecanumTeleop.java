@@ -53,13 +53,15 @@ public class MecanumTeleop extends InitLinearOpMode
                 TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
         if(robot.gripper != null)
         {
-            robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
-            robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_CLOSE_POS);
+            //robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
+            //robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_CLOSE_POS);
+            robot.closeGripper();
         }
 
         if(robot.gpitch != null)
         {
-            robot.gpitch.setPosition(TilerunnerMecanumBot.GPITCH_UP_POS);
+            //robot.gpitch.setPosition(TilerunnerMecanumBot.GPITCH_UP_POS);
+            robot.retractGpitch();
             currentPitchState = PitchState.PITCH_UP;
         }
 
@@ -83,6 +85,9 @@ public class MecanumTeleop extends InitLinearOpMode
         }
 
         RobotLog.dd(TAG, "Mecanum_Driver starting");
+
+        boolean pActive = false;
+        boolean eActive = false;
 
         while (opModeIsActive())
         {
@@ -113,7 +118,10 @@ public class MecanumTeleop extends InitLinearOpMode
             double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
 
             double outPitch = Range.scale(pitch, -1.0, 1.0,
-                    TilerunnerMecanumBot.GPITCH_MIN, TilerunnerMecanumBot.GPITCH_MAX);
+                    robot.GPITCH_MIN, robot.GPITCH_MAX);
+
+            if(robot.GPITCH_DOWN_POS > robot.GPITCH_UP_POS)
+                outPitch = 1.0 - outPitch;
 
             boolean step_driveType = gpad1.just_pressed(ManagedGamepad.Button.A);
 
@@ -221,25 +229,12 @@ public class MecanumTeleop extends InitLinearOpMode
                         lf, rf, lr, rr);
             }
 
-            if(Math.abs(elev) < 0.001)
+            if(Math.abs(elev) > 0.001)
             {
-                if (lowerElev && curElevIdx > 0)
-                {
-                    curElevIdx--;
-                    robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elev = 0.5;
-                    robot.elevMotor.setPower(elev);
-                } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
-                {
-                    curElevIdx++;
-                    robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elev = 0.5;
-                    robot.elevMotor.setPower(elev);
-                }
+                eActive = false;
             }
-            else
+
+            if(!eActive)
             {
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 int minElev = robot.liftPositions.get(0) + 40;
@@ -248,43 +243,73 @@ public class MecanumTeleop extends InitLinearOpMode
                     elev = 0.0;
                 if(robot.elevMotor.getCurrentPosition() > maxElev && elev > 0.0)
                     elev = 0.0;
-                robot.elevMotor.setPower(elev * 0.3);
+                robot.elevMotor.setPower(elev);
+            }
+
+            if (lowerElev && curElevIdx > 0)
+            {
+                curElevIdx--;
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.55;
+                robot.elevMotor.setPower(elev);
+                eActive = true;
+            } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
+            {
+                curElevIdx++;
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.85;
+                robot.elevMotor.setPower(elev);
+                eActive = true;
             }
 
             // Gripper (a: Somewhat Open, b: all the way open, neither: closed)
             if (gripper_open)
             {
-                robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_OPEN_POS);
-                robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_OPEN_POS);
+                //robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_OPEN_POS);
+                //robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_OPEN_POS);
+                robot.openGripper();
             }
             else if (gripper_open_par)
             {
-                robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_PARTIAL_POS);
-                robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_PARTIAL_POS);
+                //robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_PARTIAL_POS);
+                //robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_PARTIAL_POS);
+                robot.partialGripper();
             }
             else
             {
-                robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
-                robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_CLOSE_POS);
+                //robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
+                //robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_CLOSE_POS);
+                robot.closeGripper();
             }
 
             // Pitch (Gripper angle servo) (x: toggles between closed and open position)
-            if (toggle_gpitch && Math.abs(pitch) < 0.001)
+
+            if (toggle_gpitch)
             {
                 currentPitchState = (currentPitchState == PitchState.PITCH_UP) ?
                                             PitchState.PITCH_DOWN : PitchState.PITCH_UP;
 
-                switch (currentPitchState)
+                if (currentPitchState == PitchState.PITCH_UP)
                 {
-                    case PITCH_UP:
-                        robot.gpitch.setPosition(TilerunnerMecanumBot.GPITCH_UP_POS);
-                        break;
-                    case PITCH_DOWN:
-                        robot.gpitch.setPosition(TilerunnerMecanumBot.GPITCH_DOWN_POS);
-                        break;
+                    //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+                    robot.retractGpitch();
                 }
+                else if (currentPitchState == PitchState.PITCH_DOWN)
+                {
+                    //robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
+                    robot.deployGpitch();
+                }
+                pActive = true;
             }
-            else if (Math.abs(pitch) > 0.001)
+
+            if (Math.abs(pitch) > 0.001)
+            {
+                pActive = false;
+            }
+
+            if(!pActive)
             {
                 robot.gpitch.setPosition(outPitch);
             }
@@ -298,10 +323,12 @@ public class MecanumTeleop extends InitLinearOpMode
                 switch (currentFlickerState)
                 {
                     case DOWN:
-                        robot.jflicker.setPosition(TilerunnerMecanumBot.JFLICKER_DOWN_POS);
+                        //robot.jflicker.setPosition(TilerunnerMecanumBot.JFLICKER_DOWN_POS);
+                        robot.deployFlicker();
                         break;
                     case UP:
-                        robot.jflicker.setPosition(TilerunnerMecanumBot.JFLICKER_UP_POS);
+                        //robot.jflicker.setPosition(TilerunnerMecanumBot.JFLICKER_UP_POS);
+                        robot.stowFlicker();
                         break;
                 }
             }

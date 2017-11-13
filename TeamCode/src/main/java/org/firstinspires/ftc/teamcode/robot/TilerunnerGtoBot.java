@@ -77,13 +77,14 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     @Override
     protected void initDriveMotors()
     {
-        RobotLog.dd(TAG, "Initializing GTO drive motors");
+        RobotLog.dd(TAG, "GTO initDriveMotors");
         super.initDriveMotors();
     }
 
     @Override
     protected void initCollectorLifter()
     {
+        RobotLog.dd(TAG, "GTO initCollectorLifter");
         try  //Collector
         {
             gpitch = hwMap.servo.get("gpitch");
@@ -150,6 +151,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     @Override
     protected void initPushers()
     {
+        RobotLog.dd(TAG, "GTO initPushers");
         try
         {
             jflicker = hwMap.servo.get("jflicker");

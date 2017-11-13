@@ -46,7 +46,7 @@ public class RrPoints extends Points
             addPoint(points, itk, 0.45, 1.00, encType, drop, RrField.RLDC);
             addPoint(points, psr, 0.40, 1.00, encType, pgrb, RrField.RLFP);
             addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RLPP);
-            addPoint(points, itk, 0.60, 1.00, encType, none, RrField.RLTT);
+            addPoint(points, psr, 0.60, 1.00, encType, none, RrField.RLTT);
         }
         else if(startPos == Field.StartPos.START_2)
         {
@@ -57,8 +57,8 @@ public class RrPoints extends Points
             addPoint(points, psr, 0.40, 1.00, encType, none, RrField.RRFP);
             addPoint(points, itk, 0.40, 1.00, encType, pgrb, RrField.RRXP);
             addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RRPP);
-            addPoint(points, itk, 0.40, 1.00, encType, none, RrField.RRXP);
-            addPoint(points, itk, 0.60, 1.00, encType, none, RrField.RRTT);
+            addPoint(points, psr, 0.40, 1.00, encType, none, RrField.RRXP);
+            addPoint(points, psr, 0.60, 1.00, encType, none, RrField.RRTT);
         }
 
         ShelbyBot.DriveDir parkDir = fwd;

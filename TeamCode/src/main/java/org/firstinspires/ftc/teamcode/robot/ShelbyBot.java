@@ -148,6 +148,7 @@ public class ShelbyBot
     /* Initialize standard Hardware interfaces */
     public void init(LinearOpMode op)
     {
+        RobotLog.dd(TAG, "ShelbyBot init");
         computeCPI();
 
         initOp(op);
@@ -167,13 +168,14 @@ public class ShelbyBot
 
     protected void initOp(LinearOpMode op)
     {
+        RobotLog.dd(TAG, "ShelbyBot initOp");
         this.op = op;
         this.hwMap = op.hardwareMap;
     }
 
     protected void initDriveMotors()
     {
-        RobotLog.dd(TAG, "Initializing shelbyBot drive motors");
+        RobotLog.dd(TAG, "ShelbyBot initDriveMotors");
         // FORWARD for CCW drive shaft rotation if using AndyMark motors
         // REVERSE for  CW drive shaft rotation if using AndyMark motors
         try  //Drivetrain
@@ -222,6 +224,7 @@ public class ShelbyBot
 
     protected void initCollectorLifter()
     {
+        RobotLog.dd(TAG, "ShelbyBot collector/lifter");
         try  //Collector
         {
             elevMotor = hwMap.dcMotor.get("elevmotor");
@@ -243,6 +246,7 @@ public class ShelbyBot
 
     protected void initShooters()
     {
+        RobotLog.dd(TAG, "ShelbyBot init shooters");
         try  //Shooters
         {
             shotmotor1 = hwMap.dcMotor.get("leftshooter");
@@ -267,6 +271,7 @@ public class ShelbyBot
 
     protected void initPushers()
     {
+        RobotLog.dd(TAG, "ShelbyBot pushers");
         try  //Pushers
         {
             lpusher = hwMap.servo.get("lpusher");
@@ -281,6 +286,7 @@ public class ShelbyBot
 
     protected void initSensors()
     {
+        RobotLog.dd(TAG, "ShelbyBot sensors");
         try  //I2C and DAIO
         {
             dim = hwMap.deviceInterfaceModule.get("dim");

@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
 @SuppressWarnings("unused")
-@TeleOp(name="TelopDriver", group="Tele")
+@TeleOp(name="TeleopDriver", group="Tele")
 //@Disabled
 public class Teleop_Driver extends InitLinearOpMode
 {
@@ -49,12 +49,14 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(robot.gripper != null)
         {
-            robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+            //robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+            robot.closeGripper();
         }
 
         if(robot.gpitch != null)
         {
-            robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+            //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+            robot.retractGpitch();
             currentPitchState = PitchState.PITCH_UP;
         }
 
@@ -81,6 +83,9 @@ public class Teleop_Driver extends InitLinearOpMode
         RobotLog.dd(TAG, "Telop_Driver starting");
 
         boolean toggle = false;
+        boolean pActive = false;
+        boolean eActive = false;
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive())
         {
@@ -124,38 +129,18 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(0, "TMODE " + driveType);
             dashboard.displayPrintf(1, "L_IN %4.2f", raw_left);
             dashboard.displayPrintf(2, "R_IN %4.2f", raw_right);
-            double left  = ishaper.shape(raw_left,  0.1);
-            double right = ishaper.shape(raw_right, 0.1);
-            double turn  = ishaper.shape(raw_turn, 0.1);
+            double shp_left  = ishaper.shape(raw_left,  0.1);
+            double shp_right = ishaper.shape(raw_right, 0.1);
+            double shp_turn  = ishaper.shape(raw_turn, 0.1);
             elev  = ishaper.shape(elev);
 
             double outPitch = Range.scale(pitch, -1.0, 1.0,
                     robot.GPITCH_MIN, robot.GPITCH_MAX);
 
-            double speed = right;
+            if(robot.GPITCH_DOWN_POS > robot.GPITCH_UP_POS)
+                outPitch = 1.0 - outPitch;
+
             double arcadeTurnScale = 0.5;
-
-            switch (driveType)
-            {
-                case TANK_DRIVE:
-                    left  = left;
-                    right = right;
-                    break;
-
-                case ARCADE_DRIVE:
-                    turn = (1 - Math.abs(speed)) * turn;
-                    if(turn < 0.95) turn *= arcadeTurnScale;
-                    left  = speed + turn;
-                    right = speed - turn;
-                    break;
-            }
-
-            double max = Math.max(Math.abs(left), Math.abs(right));
-            if(max > 1.0)
-            {
-                left  /= max;
-                right /= max;
-            }
 
             if(toggle_vel) useSetVel = !useSetVel;
 
@@ -166,15 +151,21 @@ public class Teleop_Driver extends InitLinearOpMode
             double fHdg = robot.getGyroFhdg();
             double detail_speed = 0.14;
 
+            double maxIPS = 60.0;
+            double maxRPS = maxIPS/(4.0*Math.PI);
+            double maxDPS = maxRPS*360.0;
+
             boolean useD = false;
 
-            double out_left = left;
-            double out_right = right;
+            double left  = 0.0;
+            double right = 0.0;
+            double turn  = 0.0;
+
             if(fwd_step)
             {
                 RobotLog.dd(TAG, "In fwd_step");
-                out_left  = detail_speed;
-                out_right = detail_speed;
+                left  = detail_speed;
+                right = detail_speed;
                 useD = true;
                 //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.FORWARD);
                 RobotLog.dd(TAG, "Done fwd_step");
@@ -182,8 +173,8 @@ public class Teleop_Driver extends InitLinearOpMode
             else if(back_step)
             {
                 RobotLog.dd(TAG, "In back_step");
-                out_left  = -detail_speed;
-                out_right = -detail_speed;
+                left  = -detail_speed;
+                right = -detail_speed;
                 useD = true;
                 //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.REVERSE);
                 RobotLog.dd(TAG, "Done back_step");
@@ -191,8 +182,8 @@ public class Teleop_Driver extends InitLinearOpMode
             else if(left_step)
             {
                 RobotLog.dd(TAG, "In left_step");
-                out_left  = -detail_speed;
-                out_right =  detail_speed;
+                left  = -detail_speed;
+                right =  detail_speed;
                 useD = true;
                 //dtrn.setInitValues();
                 //dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
@@ -201,8 +192,8 @@ public class Teleop_Driver extends InitLinearOpMode
             else if(right_step)
             {
                 RobotLog.dd(TAG, "In right_step");
-                out_left  =  detail_speed;
-                out_right = -detail_speed;
+                left  =  detail_speed;
+                right = -detail_speed;
                 useD = true;
                 //dtrn.setInitValues();
                 //dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
@@ -210,48 +201,68 @@ public class Teleop_Driver extends InitLinearOpMode
             }
             else
             {
-
-                double maxIPS = 60.0;
-                double maxRPS = maxIPS/(4.0*Math.PI);
-                double maxDPS = maxRPS*360.0;
-
                 if(useSetVel)
                 {
-                    double lspd = raw_left;
-                    double rspd = raw_right;
-                    if(useD)
+                    switch (driveType)
                     {
-                        lspd = out_left;
-                        rspd = out_right;
+                        case TANK_DRIVE:
+                            left  = raw_left;
+                            right = raw_right;
+                            break;
+
+                        case ARCADE_DRIVE:
+                            left  = raw_right;
+                            right = left;
+                            left  += raw_turn*arcadeTurnScale;
+                            right -= raw_turn*arcadeTurnScale;
                     }
-                    else if(driveType == TELEOP_DRIVE_TYPE.ARCADE_DRIVE)
+                }
+                else
+                {
+                    switch (driveType)
                     {
-                        lspd = raw_right + raw_turn*arcadeTurnScale;
-                        rspd = raw_right - raw_turn*arcadeTurnScale;
-                        double vmax = Math.max(Math.abs(lspd), Math.abs(rspd));
-                        if(vmax > 1.0)
-                        {
-                            lspd /= vmax;
-                            rspd /= vmax;
-                        }
+                        case TANK_DRIVE:
+                            left  = shp_left;
+                            right = shp_right;
+                            break;
+
+                        case ARCADE_DRIVE:
+                            left = shp_right;
+                            right = left;
+                            turn = (1 - Math.abs(left)) * turn;
+                            if(turn < 0.95) turn *= arcadeTurnScale;
+                            left  += turn;
+                            right -= turn;
+                            break;
                     }
-                    out_left = maxDPS*lspd;
-                    out_right = maxDPS*rspd;
+                }
+
+                double vmax = Math.max(Math.abs(left), Math.abs(right));
+                if(vmax > 1.0)
+                {
+                    left  /= vmax;
+                    right /= vmax;
                 }
             }
 
+            double out_left = left;
+            double out_right = right;
+
             if(useSetVel)
             {
+                out_left  = maxDPS*left;
+                out_right = maxDPS*right;
                 lex.setVelocity(out_left,  AngleUnit.DEGREES);
                 rex.setVelocity(out_right, AngleUnit.DEGREES);
             }
             else
             {
+                out_left  = left;
+                out_right = right;
                 robot.leftMotors.get(0).setPower(out_left);
                 robot.rightMotors.get(0).setPower(out_right);
             }
 
-            dashboard.displayPrintf(3, "SPEED %4.2f", speed);
             dashboard.displayPrintf(4, "TURN  %4.2f", turn);
             dashboard.displayPrintf(5, "L_OUT %4.2f", left);
             dashboard.displayPrintf(6, "R_OUT %4.2f", right);
@@ -265,25 +276,12 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
             dashboard.displayPrintf(15,"SVEL " + useSetVel);
 
-            if(Math.abs(elev) < 0.001)
+            if(Math.abs(elev) > 0.001)
             {
-                if (lowerElev && curElevIdx > 0)
-                {
-                    curElevIdx--;
-                    robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elev = 0.75;
-                    robot.elevMotor.setPower(elev);
-                } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
-                {
-                    curElevIdx++;
-                    robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elev = 0.85;
-                    robot.elevMotor.setPower(elev);
-                }
+                eActive = false;
             }
-            else
+
+            if(!eActive)
             {
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 int minElev = robot.liftPositions.get(0) + 40;
@@ -293,6 +291,24 @@ public class Teleop_Driver extends InitLinearOpMode
                 if(robot.elevMotor.getCurrentPosition() > maxElev && elev > 0.0)
                     elev = 0.0;
                 robot.elevMotor.setPower(elev);
+            }
+
+            if (lowerElev && curElevIdx > 0)
+            {
+                curElevIdx--;
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.55;
+                robot.elevMotor.setPower(elev);
+                eActive = true;
+            } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
+            {
+                curElevIdx++;
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.85;
+                robot.elevMotor.setPower(elev);
+                eActive = true;
             }
 
             if(toggle_float)
@@ -340,24 +356,47 @@ public class Teleop_Driver extends InitLinearOpMode
 
             // Gripper (a: Somewhat Open, b: all the way open, neither: closed)
             if (gripper_open)
-                robot.gripper.setPosition(robot.GRIPPER_OPEN_POS);
+            {
+                //robot.gripper.setPosition(robot.GRIPPER_OPEN_POS);
+                robot.openGripper();
+            }
             else if (gripper_open_par)
-                robot.gripper.setPosition(robot.GRIPPER_PARTIAL_POS);
+            {
+                //robot.gripper.setPosition(robot.GRIPPER_PARTIAL_POS);
+                robot.partialGripper();
+            }
             else
-                robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+            {
+                //robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+                robot.closeGripper();
+            }
 
             // Pitch (Gripper angle servo) (x: toggles between closed and open position)
-            if (toggle_gpitch && Math.abs(pitch) < 0.001)
+
+            if (toggle_gpitch)
             {
                 currentPitchState = (currentPitchState == PitchState.PITCH_UP) ?
                                             PitchState.PITCH_DOWN : PitchState.PITCH_UP;
 
                 if (currentPitchState == PitchState.PITCH_UP)
-                    robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+                {
+                    //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+                    robot.retractGpitch();
+                }
                 else if (currentPitchState == PitchState.PITCH_DOWN)
-                    robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
+                {
+                    //robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
+                    robot.deployGpitch();
+                }
+                pActive = true;
             }
-            else if (Math.abs(pitch) > 0.001)
+
+            if (Math.abs(pitch) > 0.001)
+            {
+                pActive = false;
+            }
+
+            if(!pActive)
             {
                 robot.gpitch.setPosition(outPitch);
             }
@@ -369,9 +408,15 @@ public class Teleop_Driver extends InitLinearOpMode
                                               FlickerState.UP : FlickerState.DOWN;
 
                 if (currentFlickerState == FlickerState.DOWN)
-                    robot.jflicker.setPosition(robot.JFLICKER_DOWN_POS);
+                {
+                    //robot.jflicker.setPosition(robot.JFLICKER_DOWN_POS);
+                    robot.deployFlicker();
+                }
                 else if (currentFlickerState == FlickerState.UP)
-                    robot.jflicker.setPosition(robot.JFLICKER_UP_POS);
+                {
+                    //robot.jflicker.setPosition(robot.JFLICKER_UP_POS);
+                    robot.stowFlicker();
+                }
             }
 
             // Pause for metronome tick.
