@@ -139,7 +139,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             GRIPPER_OPEN_POS     = 0.84;
             GRIPPER_PARTIAL_POS  = 0.72;
 
-            RGRIPPER_CLOSE_POS   = 0.92;
+            RGRIPPER_CLOSE_POS   = 0.99;
             RGRIPPER_OPEN_POS    = 0.80;
             RGRIPPER_PARTIAL_POS = 0.88;
 
