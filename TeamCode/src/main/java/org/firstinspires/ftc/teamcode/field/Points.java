@@ -11,6 +11,9 @@ import java.util.Vector;
 @SuppressWarnings("unused")
 public abstract class Points
 {
+
+    private static final String TAG = "SJH_PNT";
+
     @SuppressWarnings("ConstantConditions")
     protected Vector<Point2d> initPoints()
     {
@@ -100,7 +103,7 @@ public abstract class Points
             seg.setTgtType(ttypes.get(s));
             seg.setDrvTuner(tuners.get(s));
 
-            RobotLog.ii("SJH", "setting up segment %s %s %s %4.1f tune: %4.2f",
+            RobotLog.ii(TAG, "setting up segment %s %s %s %4.1f tune: %4.2f",
                     seg.getName(), seg.getStrtPt(), seg.getTgtPt(),
                     seg.getFieldHeading(), seg.getDrvTuner());
 
@@ -154,9 +157,6 @@ public abstract class Points
 
     Field.StartPos     startPos   = Field.StartPos.START_1;
     Field.Alliance     alliance   = Field.Alliance.RED;
-
-    private static final String TAG = "SJH_PNT";
-
 }
 
 

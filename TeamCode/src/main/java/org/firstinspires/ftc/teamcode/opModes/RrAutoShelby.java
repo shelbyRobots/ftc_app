@@ -273,6 +273,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.resetGyro();
 
         boolean SkipNextSegment = false;
+        boolean breakOut = false;
         for (int i = 0; i < pathSegs.size(); ++i)
         {
             if (!opModeIsActive() || isStopRequested()) break;
@@ -319,7 +320,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
             RobotLog.ii(TAG, "ENCODER TURN %s", curSeg.getName());
 
-            if (curSeg.getLength() >= 0.01)
+            if (curSeg.getLength() >= 0.1)
             {
                 doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
                 doGyroTurn(curSeg.getFieldHeading(), segName + " gyroTurn");
@@ -356,6 +357,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 drvTrn.logData(true, segName + " action " + act.toString());
             }
 
+            boolean useFP = true;
             switch (act)
             {
 //                case RST_PUSHER:
@@ -365,102 +367,68 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     doScanPush(pathSegs.get(i + 1));
                     break;
 
-                case SET_KEY:
+                case SET_ALIGN:
                 {
-                    Point2d dpt = RrField.getDropPt(alliance, startPos, key);
-                    RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
-                    pathSegs.get(i + 1).setEndPt(dpt);
-                    pathSegs.get(i + 2).setStrtPt(dpt);
+                    Point2d apt = RrField.getAlignPt(alliance, startPos, key, useFP);
+                    RobotLog.dd(TAG, "Setting align point %s %s", key, apt);
+                    pathSegs.get(i + 1).setEndPt(apt); //set_key
+                    pathSegs.get(i + 2).setStrtPt(apt); //drop
+                    pathSegs.get(i + 3).setEndPt(apt); //pregrab
+                    pathSegs.get(i + 4).setStrtPt(apt);  //grab
                     break;
                 }
 
-                case SET_KEY_OLD:
-                    RobotLog.dd(TAG, "In SET_KEY");
-                    RobotLog.dd(TAG, "On segment %s", curSeg.toString());
-                    if (i + 1 < pathSegs.size())
-                    {
-                        Segment alignSeg = pathSegs.get(i + 1);
-                        Segment postDropSeg = pathSegs.get(i + 2);
-
-                        RobotLog.dd(TAG, "Orig alignSeg %s", alignSeg.toString());
-
-                        Point2d cboxPt = new Point2d("AlnPt",
-                                                            alignSeg.getTgtPt().getX(),
-                                                            alignSeg.getTgtPt().getY());
-                        Point2d dropPt = new Point2d("DropPt",
-                                                            cboxPt.getX(),
-                                                            cboxPt.getY());
-                        double offset = 7.63;
-                        double loc = cboxPt.getX();
-                        int rbDir = 1;
-                        if (alliance == Field.Alliance.BLUE) rbDir = -1;
-
-                        if (startPos == Field.StartPos.START_1)
-                        {
-                            switch (key)
-                            {
-                                case LEFT:
-                                    loc += rbDir * offset;
-                                    break;
-                                case RIGHT:
-                                    loc -= rbDir * offset;
-                                    break;
-                            }
-                            cboxPt.setX(loc);
-                            dropPt.setX(loc);
-                            dropPt.setY(-54.0);
-                        }
-
-                        if (startPos == Field.StartPos.START_2)
-                        {
-                            switch (key)
-                            {
-                                case LEFT:
-                                    loc -= rbDir * offset;
-                                    break;
-                                case RIGHT:
-                                    loc += rbDir * offset;
-                                    break;
-                            }
-                            cboxPt.setY(loc);
-                            dropPt.setY(loc);
-                            dropPt.setX(54.0);
-                        }
-
-                        alignSeg.setEndPt(cboxPt);
-                        postDropSeg.setStrtPt(dropPt);
-                        Segment dropSeg = new Segment("DropSeg", cboxPt, dropPt);
-                        dropSeg.setDir(curSeg.getDir());
-                        dropSeg.setSpeed(0.2);
-                        dropSeg.setAction(Segment.Action.DROP);
-
-                        RobotLog.dd(TAG, "Post alignSeg %s", alignSeg.toString());
-                        RobotLog.dd(TAG, "dropSeg  %s", dropSeg.toString());
-
-                        pathSegs.add(i + 2, dropSeg);
-                    }
+                case SET_KEY:
+                {
+                    Point2d dpt = RrField.getDropPt(alliance, startPos, key, useFP);
+                    RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
+                    pathSegs.get(i + 1).setEndPt(dpt); //drop
+                    pathSegs.get(i + 2).setStrtPt(dpt); //XP
+                    robot.deployGpitch();
                     break;
+                }
 
                 case DROP:
-                    robot.deployGpitch();
-                    sleep(500);
+                {
                     robot.partialGripper();
-                    sleep(300);
+                    sleep(500);
                     robot.retractGpitch();
                     break;
+                }
 
                 case PREGRAB:
+                {
                     robot.deployGpitch();
                     sleep(200);
                     robot.openGripper();
                     break;
+                }
 
                 case GRAB:
+                {
                     robot.closeGripper();
                     sleep(400);
                     robot.retractGpitch();
-                break;
+                    break;
+                }
+
+                case RETRACT:
+                {
+                    robot.closeGripper();
+                    robot.retractGpitch();
+                    break;
+                }
+
+                case ESCAPE:
+                {
+                    robot.closeGripper();
+                    robot.retractGpitch();
+                    breakOut = true;
+                    break;
+                }
             }
+
+            if(breakOut) break;
         }
 
         RobotLog.dd(TAG, "Finished auton segments");
@@ -474,63 +442,73 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void doScanPush(Segment postPushSeg)
     {
-        double jewelPushDist = 3.5;
-        double jewelPushSpd  = 0.2;
-        Drivetrain.Direction ddir = Drivetrain.Direction.FORWARD;
+        double jewelPushDist = 3.2;
+        double jewelPushSpd  = 0.17;
 
-        CameraDevice.getInstance().setFlashTorchMode(true) ;
+        if(useLight)
+            CameraDevice.getInstance().setFlashTorchMode(true) ;
+        key = RelicRecoveryVuMark.UNKNOWN;
         key = getKey();
-        MajorColorDetector.Color jewelColor;
+        MajorColorDetector.Color jewelColor = MajorColorDetector.Color.NONE;
         jewelColor = getJewelColor();
         RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
                 key, jewelColor);
-        CameraDevice.getInstance().setFlashTorchMode(false);
+
+        if(useLight)
+            CameraDevice.getInstance().setFlashTorchMode(false);
         if(jewelColor == MajorColorDetector.Color.NONE)
             return;
 
         robot.clearGpitch();
-        sleep(500);
+        sleep(400);
         robot.deployFlicker();
-        sleep(500);
+        sleep(700);
 
         RobotLog.dd(TAG, "Deploy pusher");
         MajorColorDetector.Color badJewel = MajorColorDetector.Color.BLUE;
         if(alliance == Field.Alliance.BLUE) badJewel = MajorColorDetector.Color.RED;
         int pushSign = 1;
+
+        ShelbyBot.DriveDir segDir = ShelbyBot.DriveDir.INTAKE;
+
         switch (jewelColor)
         {
             case RED:
                 if(alliance == Field.Alliance.RED)
                 {
-                    ddir = Drivetrain.Direction.REVERSE;
+                    segDir = ShelbyBot.DriveDir.PUSHER;
                     pushSign = -1;
+                }
+                else
+                {
+                    segDir = ShelbyBot.DriveDir.INTAKE;
+                    pushSign = 1;
                 }
                 break;
 
             case BLUE:
                 if(alliance == Field.Alliance.BLUE)
                 {
-                    ddir = Drivetrain.Direction.REVERSE;
+                    segDir = ShelbyBot.DriveDir.INTAKE;
                     pushSign = -1;
+                }
+                else
+                {
+                    segDir = ShelbyBot.DriveDir.PUSHER;
+                    pushSign = 1;
                 }
                 break;
         }
 
         //move to knock off jewel
         RobotLog.dd(TAG, "Moving %s %4.2f at %4.2f to knock off jewel %s alliance %s",
-                ddir, jewelPushDist * pushSign, jewelPushSpd, badJewel, alliance);
+                segDir, jewelPushDist * pushSign, jewelPushSpd, badJewel, alliance);
 
         Point2d pushStart = postPushSeg.getStrtPt();
         Point2d pushEnd   = new Point2d("PUSHENDPT",
                 pushStart.getX() + jewelPushDist * pushSign,
                 pushStart.getY());
 
-        ShelbyBot.DriveDir segDir = ShelbyBot.DriveDir.INTAKE;
-        if(ddir == Drivetrain.Direction.REVERSE)
-        {
-            if(postPushSeg.getDir() == ShelbyBot.DriveDir.INTAKE)
-                segDir = ShelbyBot.DriveDir.PUSHER;
-        }
         robot.setDriveDir(segDir);
 
         boolean curRampDown = drvTrn.getRampDown();
@@ -544,7 +522,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         robot.clearGpitch();
         robot.stowFlicker();
-        sleep(300);
+        //sleep(300);
 
         RobotLog.dd(TAG, "Retract pusher");
 
@@ -902,8 +880,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         FtcValueMenu delayMenu     = new FtcValueMenu("DELAY:", robotNameMenu, this,
                 0.0, 20.0, 1.0, 0.0, "%5.2f");
 
-        startPosMenu.addChoice("Start_A", Field.StartPos.START_1, allianceMenu);
-        startPosMenu.addChoice("Start_B", Field.StartPos.START_2, allianceMenu);
+        startPosMenu.addChoice("Start_1", Field.StartPos.START_1, allianceMenu);
+        startPosMenu.addChoice("Start_2", Field.StartPos.START_2, allianceMenu);
 
         allianceMenu.addChoice("RED",  Field.Alliance.RED,  robotNameMenu);
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, robotNameMenu);
@@ -993,6 +971,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private int postSleep = 150;
 
     private int colSegNum = 0;
+
+    private boolean useLight = true;
 
     private String robotName = "";
     private static final String TAG = "SJH_RRA";

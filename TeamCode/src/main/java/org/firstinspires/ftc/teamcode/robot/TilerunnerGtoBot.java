@@ -23,7 +23,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public static double JFLICKER_DOWN_POS = 0.6;
     public static double JFLICKER_STOW_POS = 0.0;
 
-    public static double GRIPPER_CLOSE_POS   = 0.83;
+    public static double GRIPPER_CLOSE_POS   = 0.90;
     public static double GRIPPER_PARTIAL_POS = 0.75;
     public static double GRIPPER_OPEN_POS    = 0.5;
 
@@ -45,7 +45,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         WHEEL_DIAMETER_INCHES = 4.0;
         TUNE = 1.00;
 
-        BOT_WIDTH  = 14.9f; //Wheel width
+        BOT_WIDTH  = 15.0f; //Wheel width
         BOT_LENGTH = 18.0f;
 
         REAR_OFFSET = 9.0f;
@@ -125,7 +125,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             {
                 elevMotor.setDirection(DcMotor.Direction.FORWARD);
                 GRIPPER_CLOSE_POS = 0.98;
-                GRIPPER_OPEN_POS = 0.4;
+                GRIPPER_OPEN_POS = 0.2;
                 GRIPPER_PARTIAL_POS = 0.76;
 
                 GPITCH_DOWN_POS = 0.58;

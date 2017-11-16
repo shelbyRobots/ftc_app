@@ -48,6 +48,23 @@ public class MecanumTeleop extends InitLinearOpMode
             RobotLog.dd(TAG, "Start Hdg %.2f", ShelbyBot.autonEndHdg);
         }
 
+        // Send telemetry message to signify robot waiting;
+        dashboard.displayPrintf(0, "Hello Driver - I'm %s", robot.getName());
+
+        while (!isStarted())
+        {
+            gpad1.update();
+            gpad2.update();
+            gpad1.log(1);
+            gpad2.log(2);
+            idle();
+        }
+
+        boolean pActive = false;
+        boolean eActive = false;
+
+
+        RobotLog.dd(TAG, "Mecanum_Driver starting");
 
         RobotLog.dd(TAG, "Setting gripper to init pos %.2f",
                 TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
@@ -63,6 +80,7 @@ public class MecanumTeleop extends InitLinearOpMode
             //robot.gpitch.setPosition(TilerunnerMecanumBot.GPITCH_UP_POS);
             robot.retractGpitch();
             currentPitchState = PitchState.PITCH_UP;
+            pActive = true;
         }
 
         if(robot.elevMotor != null)
@@ -71,23 +89,6 @@ public class MecanumTeleop extends InitLinearOpMode
             robot.elevMotor.setPower(0.0);
             robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-
-        // Send telemetry message to signify robot waiting;
-        dashboard.displayPrintf(0, "Hello Driver - I'm %s", robot.getName());
-
-        while (!isStarted())
-        {
-            gpad1.update();
-            gpad2.update();
-            gpad1.log(1);
-            gpad2.log(2);
-            idle();
-        }
-
-        RobotLog.dd(TAG, "Mecanum_Driver starting");
-
-        boolean pActive = false;
-        boolean eActive = false;
 
         while (opModeIsActive())
         {
@@ -114,8 +115,8 @@ public class MecanumTeleop extends InitLinearOpMode
             boolean toggle_gpitch     = gpad2.just_pressed(ManagedGamepad.Button.X);
             boolean toggle_jflicker   = gpad2.just_pressed(ManagedGamepad.Button.Y);
 
-            double elev         = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
-            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+            double elev         = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
 
             double outPitch = Range.scale(pitch, -1.0, 1.0,
                     robot.GPITCH_MIN, robot.GPITCH_MAX);

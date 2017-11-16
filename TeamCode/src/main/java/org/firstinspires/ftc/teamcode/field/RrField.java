@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.field;
 
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Units;
@@ -33,7 +35,9 @@ public class RrField extends Field
     //          RR=RelicRecovery
     //          RZ=RelicZone
 
-    private static final double BOT_2_GLYPH = 14.0;
+    private static final String TAG = " SJH_RFD";
+
+    private static final double BOT_2_GLYPH = 12.0; //GTO2
     private static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
     {
         Point2d dropPt = new Point2d(dName, 0.0, 0.0);
@@ -46,86 +50,130 @@ public class RrField extends Field
 
         dropPt.setX(sX + (eX-sX)*pct);
         dropPt.setY(sY + (eY-sY)*pct);
+
+        RobotLog.dd(TAG, "OrigLen %.2f BOT_2_GLYPH %.2f DropPt %s",
+                dSegLen, BOT_2_GLYPH, dropPt);
         return  dropPt;
     }
 
-    private static final int RED   = 0;
-    private static final int BLUE  = 1;
+    private static final int BLUE  = 0;
+    private static final int RED   = 1;
     private static final int STRT1 = 0;
     private static final int STRT2 = 1;
     private static final int LEFT  = 0;
     private static final int CNTR  = 1;
     private static final int RGHT  = 2;
+
+    private static final double CXY = 65.0;
+    private static final double BSY = 47.5;
+
+    private static final double CBOX_GAP  = 7.5;
+    private static final double CBOX_LCTR = -12.0;
+    private static final double CBOX_RCTR = -36.0;
+
     //3-dimensional array of crypto box points [alliance][start][key]
     //allows inidividual adjustment
     private static final Point2d CPTS[][][] =
     {
         {
             {
-                new Point2d("RLCL",  -4.375, -67.0), //RED-LEFT-LEFT
-                new Point2d("RLCC", -12.000, -67.0), //RED-LEFT-CENTER
-                new Point2d("RLCR", -19.625, -67.0)  //RED-LEFT-RIGHT
+                new Point2d("BLCL", CBOX_LCTR - CBOX_GAP,  CXY), //BLUE-LEFT-LEFT
+                new Point2d("BLCC", CBOX_LCTR,             CXY), //BLUE-LEFT-CENTER
+                new Point2d("BLCR", CBOX_LCTR + CBOX_GAP,  CXY)  //BLUE-LEFT-RIGHT
             },
             {
-                new Point2d("RRCL",  67.0, -28.375), //RED-RIGHT-LEFT
-                new Point2d("RRCC",  67.0, -36.000), //RED-RIGHT-CENTER
-                new Point2d("RRCR",  67.0, -43.625)  //RED-RIGHT-RIGHT
+                new Point2d("BRCL", CXY,  -CBOX_RCTR + CBOX_GAP), //BLUE-RIGHT-LEFT
+                new Point2d("BRCC", CXY,  -CBOX_RCTR),            //BLUE-RIGHT-CENTER
+                new Point2d("BRCR", CXY,  -CBOX_RCTR - CBOX_GAP)  //BLUE-RIGHT-RIGHT
             },
         },
         {
             {
-                new Point2d("BLCL", -19.625,  67.0), //BLUE-LEFT-LEFT
-                new Point2d("BLCC", -12.000,  67.0), //BLUE-LEFT-CENTER
-                new Point2d("BLCR",  -4.375,  67.0)  //BLUE-LEFT-RIGHT
+                new Point2d("RLCL", CBOX_LCTR + CBOX_GAP, -CXY), //RED-LEFT-LEFT
+                new Point2d("RLCC", CBOX_LCTR           , -CXY), //RED-LEFT-CENTER
+                new Point2d("RLCR", CBOX_LCTR - CBOX_GAP, -CXY)  //RED-LEFT-RIGHT
             },
             {
-                new Point2d("BRCL",  67.0,  43.625), //BLUE-RIGHT-LEFT
-                new Point2d("BRCC",  67.0,  36.000), //BLUE-RIGHT-CENTER
-                new Point2d("BRCR",  67.0,  28.375)  //BLUE-RIGHT-RIGHT
+                new Point2d("RRCL", CXY, CBOX_RCTR + CBOX_GAP +1), //RED-RIGHT-LEFT
+                new Point2d("RRCC", CXY, CBOX_RCTR + 3),            //RED-RIGHT-CENTER
+                new Point2d("RRCR", CXY, (CBOX_RCTR - CBOX_GAP) + 2)  //RED-RIGHT-RIGHT
             },
         }
     };
 
-    static final Point2d RLCL_ = new Point2d("RLCL", 4.375, -67.0);
-    private static final double CBOX_GAP  = 7.625;
-    private static final double CBOX_LCTR = -12.0;
-    private static final double CBOX_RCTR = -36.0;
+    //3-dimensional array of align points [alliance][start][key]
+    //allows inidividual adjustment
+    private static final Point2d APTS[][][] =
+    {
+        {
+            {
+                new Point2d("BLAL", CBOX_LCTR - CBOX_GAP,  BSY), //BLUE-LEFT-LEFT
+                new Point2d("BLAC", CBOX_LCTR,             BSY), //BLUE-LEFT-CENTER
+                new Point2d("BLAR", CBOX_LCTR + CBOX_GAP,  BSY)  //BLUE-LEFT-RIGHT
+            },
+            {
+                new Point2d("BRAL",  49.0,  -CBOX_RCTR + CBOX_GAP), //BLUE-RIGHT-LEFT
+                new Point2d("BRAC",  49.0,  -CBOX_RCTR),            //BLUE-RIGHT-CENTER
+                new Point2d("BRAR",  49.0,  -CBOX_RCTR - CBOX_GAP)  //BLUE-RIGHT-RIGHT
+            },
+        },
+        {
+            {
+                new Point2d("RLAL", CBOX_LCTR + CBOX_GAP, -BSY), //RED-LEFT-LEFT
+                new Point2d("RLAC", CBOX_LCTR           , -BSY), //RED-LEFT-CENTER
+                new Point2d("RLAR", CBOX_LCTR - CBOX_GAP, -BSY)  //RED-LEFT-RIGHT
+            },
+            {
+                new Point2d("RRAL",  49.0, CBOX_RCTR + CBOX_GAP), //RED-RIGHT-LEFT
+                new Point2d("RRAC",  49.0, CBOX_RCTR),            //RED-RIGHT-CENTER
+                new Point2d("RRAR",  49.0, CBOX_RCTR - CBOX_GAP)  //RED-RIGHT-RIGHT
+            },
+        }
+    };
+
+    //2-dimensional array of floor points [alliance][start]
+    //allows inidividual adjustment
+    private static final Point2d FPTS[][] =
+    {
+        {
+            new Point2d("BLFP", -23.0,  BSY),
+            new Point2d("BRFP",  49.0,  BSY),
+        },
+        {
+            new Point2d("RLFP", -23.0, -BSY),
+            new Point2d("RRFP",  49.0, -BSY),
+        }
+    };
+
     //Red Points > Left
-    static final Point2d RLBS = new Point2d("RLBS", -48.0,  -48.0);
-    static final Point2d RLJB = new Point2d("RLJB", -48.0,  -68.0);
-    static final Point2d RLFP = new Point2d("RLFP", -23.0, -48.0);
+    static final Point2d RLBS = new Point2d("RLBS", -BSY,  -BSY);
+    static final Point2d RLJB = new Point2d("RLJB", -BSY,  -68.0);
+    static final Point2d RLFP = new Point2d("RLFP", -23.0, -BSY);
     static final Point2d RLDC = calcDropPt("RLDC", RLFP, CPTS[RED][STRT1][CNTR]);
-//    static final Point2d RLCL = new Point2d("RLCL", CBOX_LCTR + CBOX_GAP, -67.0);
-//    static final Point2d RLCC = new Point2d("RLCC", CBOX_LCTR,            -67.0);
-//    static final Point2d RLCR = new Point2d("RLCR", CBOX_LCTR - CBOX_GAP, -67.0);
-//    static final Point2d RLDL = calcDropPt("RLDL", RLFP, RLCL);
-//    static final Point2d RLDC = calcDropPt("RLDC", RLFP, RLCC);
-//    static final Point2d RLDR = calcDropPt("RLDR", RLFP, RLCR);
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
-    static final Point2d RLTT = new Point2d("RLTT", -12.0,  -48.0);
+    static final Point2d RLTT = new Point2d("RLTT", -12.0,  -BSY);
     static final Point2d RLPP = new Point2d("RLPP", -12.0,  -30.0);
+    static final Point2d RLXP = new Point2d("RLXP", -12.0,  -37.0);
 
     //Red Points > Right
-    static final Point2d RRBS = new Point2d("RRBS",  24.0,  -48.0);
+    static final Point2d RRBS = new Point2d("RRBS",  24.0,  -BSY);
     static final Point2d RRJB = new Point2d("RRJB",  24.0,  -68.0);
-    static final Point2d RRFP = new Point2d("RRFP",  49.0,  -48.0);
+    static final Point2d RRFP = new Point2d("RRFP",  49.0,  -BSY);
     static final Point2d RRDC = calcDropPt("RRDC", RRFP, CPTS[RED][STRT2][CNTR]);
-//    static final Point2d RRCL = new Point2d("RRCL",  67.0,  CBOX_RCTR + CBOX_GAP);
-//    static final Point2d RRCC = new Point2d("RRCC",  67.0,  CBOX_RCTR);
-//    static final Point2d RRCR = new Point2d("RRCR",  67.0,  CBOX_RCTR - CBOX_GAP);
-//    static final Point2d RRDL = calcDropPt("RRDL", RRFP, RRCL);
-//    static final Point2d RRDC = calcDropPt("RRDC", RRFP, RRCC);
-//    static final Point2d RRDR = calcDropPt("RRDR", RRFP, RRCR);
     static final Point2d RRRR = new Point2d("RRRR",  68.0,  -68.0);
 
     static final Point2d RRTT = new Point2d("RRTT",  49.0,  -36.0);
-    static final Point2d RRPP = new Point2d("RRPP",   0.0,  -12.0);
+    static final Point2d RRPP = new Point2d("RRPP",  14.0,  -14.0);
     static final Point2d RRXP = new Point2d("RRXP",  49.0,  -24.0);
 
     static final Point2d RARZ = new Point2d("RARZ", -72.0,  -12.0);
 
-    public static Point2d getDropPt(Alliance alliance, StartPos startPos, RelicRecoveryVuMark key)
+
+    public static Point2d getAlignPt(Alliance alliance,
+                                     StartPos startPos,
+                                     RelicRecoveryVuMark key,
+                                     boolean useFP)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
         int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
@@ -139,110 +187,39 @@ public class RrField extends Field
             case RIGHT:   ckey = RGHT; break;
         }
 
-        String pName = "";
-        if(alliance == Alliance.BLUE)    pName += "B";
-        else                             pName += "R";
+        Point2d apt = APTS[alnc][strt][ckey];
+        if(useFP) apt = FPTS[alnc][strt];
 
-        if(startPos == StartPos.START_2) pName += "R";
-        else                             pName += "L";
-
-        pName += "D";
-
-        if(key == RelicRecoveryVuMark.LEFT)       pName += "L";
-        else if(key == RelicRecoveryVuMark.RIGHT) pName += "R";
-        else                                      pName += "C";
-
-        Point2d fpt;
-        if(alliance == Alliance.RED)
-        {
-            if(startPos == StartPos.START_1) fpt = RLFP;
-            else                             fpt = RRFP;
-        }
-        else
-        {
-            if(startPos == StartPos.START_1)
-            {
-                RLFP.setY(Math.abs(RLFP.getY()));
-                fpt = RLFP;
-            }
-            else
-            {
-                RRFP.setY(Math.abs(RRFP.getY()));
-                fpt = RRFP;
-            }
-        }
-
-        return calcDropPt(pName, fpt, CPTS[alnc][strt][ckey]);
+        return apt;
     }
 
-//    public static Point2d getDropPt(Alliance alliance, StartPos startPos, RelicRecoveryVuMark key)
-//    {
-//        Point2d retPt = null;
-//        switch (startPos)
-//        {
-//            case START_1:
-//                switch (key)
-//                {
-//                    case LEFT:
-//                    {
-//                        retPt = RLDL;
-//                        if(alliance == Alliance.BLUE)
-//                        {
-//                            retPt = RLDR;
-//                            retPt.setName("BLDL");
-//                        }
-//                    }
-//                    break;
-//                    case CENTER: retPt = RLDC; break;
-//                    case RIGHT:
-//                    {
-//                        retPt = RLDR;
-//                        if(alliance == Alliance.BLUE)
-//                        {
-//                            retPt = RLDL;
-//                            retPt.setName("BLDR");
-//                        }
-//                    }
-//                    break;
-//                    case UNKNOWN: retPt = RLDC; break;
-//                }
-//                break;
-//            case START_2:
-//                switch (key)
-//                {
-//                    case LEFT:
-//                    {
-//                        retPt = RRDL;
-//                        if(alliance == Alliance.BLUE)
-//                        {
-//                            retPt = RRDR;
-//                            retPt.setName("BRDL");
-//                        }
-//                    }
-//                    break;
-//                    case CENTER: retPt = RRDC; break;
-//                    case RIGHT:
-//                    {
-//                        retPt = RRDR;
-//                        if(alliance == Alliance.BLUE)
-//                        {
-//                            retPt = RRDL;
-//                            retPt.setName("BRDR");
-//                        }
-//                    }
-//                    break;
-//                    case UNKNOWN: retPt = RRDC; break;
-//                }
-//        }
-//
-//        if(alliance == Alliance.BLUE)
-//        {
-//            retPt.setY(Math.abs(retPt.getY()));
-//            retPt.setName("B" + retPt.getName().substring(1));
-//        }
-//
-//        return retPt;
-//    }
+    public static Point2d getDropPt(Alliance alliance,
+                                    StartPos startPos,
+                                    RelicRecoveryVuMark key,
+                                    boolean useFP)
+    {
+        int alnc = (alliance == Alliance.RED) ? RED : BLUE;
+        int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
+        int ckey = CNTR;
+
+        switch (key)
+        {
+            case LEFT:    ckey = LEFT; break;
+            case CENTER:  ckey = CNTR; break;
+            case UNKNOWN: ckey = CNTR; break;
+            case RIGHT:   ckey = RGHT; break;
+        }
+
+        Point2d spt = getAlignPt(alliance, startPos, key, useFP);
+        Point2d ept = CPTS[alnc][strt][ckey];
+
+        String pName = ept.getName().substring(0,2) + "D" + ept.getName().substring(3);
+
+        RobotLog.dd(TAG, "getDropPt %s start %s end %s", pName, spt, ept);
+        return calcDropPt(pName, spt, ept);
+    }
+
+
 
     //The jewels will lie roughly along the line of the tracker
     //picture bottom.  The center of the left jewel

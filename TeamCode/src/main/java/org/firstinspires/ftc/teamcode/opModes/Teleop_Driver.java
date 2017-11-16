@@ -47,28 +47,8 @@ public class Teleop_Driver extends InitLinearOpMode
             rex = (DcMotorEx)(robot.rightMotors.get(0));
         }
 
-        if(robot.gripper != null)
-        {
-            //robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
-            robot.closeGripper();
-        }
-
-        if(robot.gpitch != null)
-        {
-            //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
-            robot.retractGpitch();
-            currentPitchState = PitchState.PITCH_UP;
-        }
-
-        if(robot.elevMotor != null)
-        {
-            robot.elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.elevMotor.setPower(0.0);
-            robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
         // Send telemetry message to signify robot waiting;
-        dashboard.displayText(0, "Hello Driver");
+        dashboard.displayPrintf(0, "Hello Driver - I am %s", robot.getName());
 
         // Wait for the game to start (driver presses PLAY)
         while(!isStarted())
@@ -85,6 +65,27 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean toggle = false;
         boolean pActive = false;
         boolean eActive = false;
+
+        if(robot.gripper != null)
+        {
+            //robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
+            robot.closeGripper();
+        }
+
+        if(robot.gpitch != null)
+        {
+            //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+            robot.retractGpitch();
+            pActive = true;
+            currentPitchState = PitchState.PITCH_UP;
+        }
+
+        if(robot.elevMotor != null)
+        {
+            robot.elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.elevMotor.setPower(0.0);
+            robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive())
@@ -116,8 +117,8 @@ public class Teleop_Driver extends InitLinearOpMode
             double raw_right    = -gpad1.value(ManagedGamepad.AnalogInput.R_STICK_Y);
             double raw_turn     =  gpad1.value(ManagedGamepad.AnalogInput.R_STICK_X);
 
-            double elev         = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
-            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+            double elev         = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
 
             DcMotor.ZeroPowerBehavior zeroPowBeh = DcMotor.ZeroPowerBehavior.UNKNOWN;
 

@@ -413,6 +413,7 @@ public class ShelbyBot
         }
 
         RobotLog.ii(TAG, "Starting gyro calibration");
+        RobotLog.ii(TAG, "Calibration drive dir = %s", calibrationDriveDir);
         gyro.calibrate();
 
         double gyroInitTimout = 5.0;
