@@ -30,7 +30,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public static double GPITCH_UP_POS    = 0.16;
     public static double GPITCH_DOWN_POS  = 0.58;
     public static double GPITCH_CLEAR_POS = 0.3;
-    public static double GPITCH_MIN      = 0.1;
+    public static double GPITCH_MIN      = 0.16;
     public static double GPITCH_MAX      = 0.9;
 
     private static final String TAG = "SJH_GTO";
@@ -210,6 +210,6 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     }
     public void deployFlicker()
     {
-        jflicker.setPosition(JFLICKER_DOWN_POS);
+        if(jflicker != null) jflicker.setPosition(JFLICKER_DOWN_POS);
     }
 }

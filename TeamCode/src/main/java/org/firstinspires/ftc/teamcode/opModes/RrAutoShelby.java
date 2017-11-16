@@ -187,8 +187,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         RobotLog.dd(TAG, "JLICKER_UP_POS %.2f", TilerunnerGtoBot.JFLICKER_UP_POS);
         RobotLog.dd(TAG, "JLICKER_DOWN_POS %.2f", TilerunnerGtoBot.JFLICKER_DOWN_POS);
+        RobotLog.dd(TAG, "JLICKER_STOW_POS %.2f", TilerunnerGtoBot.JFLICKER_STOW_POS);
         RobotLog.dd(TAG, "GPITCH_UP_POS %.2f", TilerunnerGtoBot.GPITCH_UP_POS);
         RobotLog.dd(TAG, "GPITCH_DOWN_POS %.2f", TilerunnerGtoBot.GPITCH_DOWN_POS);
+        RobotLog.dd(TAG, "GPITCH_CLEAR_POS %.2f", TilerunnerGtoBot.GPITCH_CLEAR_POS);
         RobotLog.dd(TAG, "GRIPPER_OPEN_POS %.2f", TilerunnerGtoBot.GRIPPER_OPEN_POS);
         RobotLog.dd(TAG, "GRIPPER_PART %.2f", TilerunnerGtoBot.GRIPPER_PARTIAL_POS);
         RobotLog.dd(TAG, "GRIPPER_CLOSE_POS %.2f", TilerunnerGtoBot.GRIPPER_CLOSE_POS);

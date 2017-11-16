@@ -46,6 +46,9 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         CAMERA_Y_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
         CAMERA_Z_IN_BOT = 0.0f * (float)Units.MM_PER_INCH;
 
+        LEFT_DIR  = DcMotorSimple.Direction.FORWARD;
+        RIGHT_DIR = DcMotorSimple.Direction.REVERSE;
+
         gyroInverted = false;
     }
 
@@ -83,7 +86,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
                 mot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 mot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 mot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                mot.setDirection(DcMotorSimple.Direction.FORWARD);
+                mot.setDirection(LEFT_DIR);
 
                 if (mot instanceof DcMotorEx)
                 {
@@ -103,8 +106,8 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             mnum++;
         }
 
-        rfMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rrMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rfMotor.setDirection(RIGHT_DIR);
+        rrMotor.setDirection(RIGHT_DIR);
     }
 
     @Override
