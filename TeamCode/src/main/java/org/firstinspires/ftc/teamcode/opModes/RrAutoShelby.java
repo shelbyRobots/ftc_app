@@ -185,9 +185,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         dashboard.displayPrintf(1, "HERE4");
 
-        RobotLog.dd(TAG, "JLICKER_UP_POS %.2f", TilerunnerGtoBot.JFLICKER_UP_POS);
-        RobotLog.dd(TAG, "JLICKER_DOWN_POS %.2f", TilerunnerGtoBot.JFLICKER_DOWN_POS);
-        RobotLog.dd(TAG, "JLICKER_STOW_POS %.2f", TilerunnerGtoBot.JFLICKER_STOW_POS);
+        RobotLog.dd(TAG, "JFLICKER_UP_POS %.2f", TilerunnerGtoBot.JFLICKER_UP_POS);
+        RobotLog.dd(TAG, "JFLICKER_DOWN_POS %.2f", TilerunnerGtoBot.JFLICKER_DOWN_POS);
+        RobotLog.dd(TAG, "JFLICKER_STOW_POS %.2f", TilerunnerGtoBot.JFLICKER_STOW_POS);
         RobotLog.dd(TAG, "GPITCH_UP_POS %.2f", TilerunnerGtoBot.GPITCH_UP_POS);
         RobotLog.dd(TAG, "GPITCH_DOWN_POS %.2f", TilerunnerGtoBot.GPITCH_DOWN_POS);
         RobotLog.dd(TAG, "GPITCH_CLEAR_POS %.2f", TilerunnerGtoBot.GPITCH_CLEAR_POS);
@@ -215,6 +215,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         ShelbyBot.DriveDir startDdir = pathSegs.get(0).getDir();
         robot.setDriveDir(startDdir);
+
+        RobotLog.dd(TAG, "START DRIVEDIR =%s", startDdir);
 
         dashboard.displayPrintf(0, "GYRO CALIBRATING DO NOT TOUCH OR START");
 
@@ -423,9 +425,24 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case ESCAPE:
                 {
+                    if(robot.getName().equals("MEC"))
+                    {
+                        robot.closeGripper();
+                        robot.retractGpitch();
+                        breakOut = true;
+                    }
+                    break;
+                }
+
+                case THROW:
+                {
+                    robot.deployGpitch();
+                    sleep(100);
+                    robot.openGripper();
+                    sleep(200);
                     robot.closeGripper();
                     robot.retractGpitch();
-                    breakOut = true;
+
                     break;
                 }
             }
@@ -484,19 +501,19 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 else
                 {
                     segDir = ShelbyBot.DriveDir.INTAKE;
-                    pushSign = 1;
+                    pushSign = -1;
                 }
                 break;
 
             case BLUE:
                 if(alliance == Field.Alliance.BLUE)
                 {
-                    segDir = ShelbyBot.DriveDir.INTAKE;
-                    pushSign = -1;
+                    segDir = ShelbyBot.DriveDir.PUSHER;
+                    pushSign = 1;
                 }
                 else
                 {
-                    segDir = ShelbyBot.DriveDir.PUSHER;
+                    segDir = ShelbyBot.DriveDir.INTAKE;
                     pushSign = 1;
                 }
                 break;

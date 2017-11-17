@@ -40,6 +40,7 @@ public class RrPoints extends Points
         Segment.Action pgrb    = Segment.Action.PREGRAB;
         Segment.Action rtct    = Segment.Action.RETRACT;
         Segment.Action escp    = Segment.Action.ESCAPE;
+        Segment.Action thrw    = Segment.Action.THROW;
         Segment.TargetType encType = Segment.TargetType.ENCODER;
 
         double fakeDist = 0.05;
@@ -54,20 +55,20 @@ public class RrPoints extends Points
         if(startPos == Field.StartPos.START_1)
         {
             points.add(RrField.RLBS);
-            addPoint(points, fwd, 0.45, 1.00, encType, scan, RLBs);
+            addPoint(points, itk, 0.45, 1.00, encType, scan, RLBs);
             addPoint(points, fwd, 0.30, 1.00, encType, align, RrField.RLFP);
             addPoint(points, itk, 0.30, 1.00, encType, key,  RrField.RLFP);
             addPoint(points, itk, 0.45, 1.00, encType, drop, RrField.RLDC);
             addPoint(points, psr, 0.40, 1.00, encType, escp, RrField.RLFP);
             addPoint(points, itk, 0.40, 1.00, encType, pgrb, RrField.RLXP);
             addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RLPP);
-            addPoint(points, psr, 0.40, 1.00, encType, none, RrField.RLXP);
-            addPoint(points, itk, 0.60, 1.00, encType, rtct, RrField.RLTT);
+            addPoint(points, psr, 0.40, 1.00, encType, rtct, RrField.RLXP);
+            addPoint(points, itk, 0.60, 1.00, encType, thrw, RrField.RLTT);
         }
         else if(startPos == Field.StartPos.START_2)
         {
             points.add(RrField.RRBS);
-            addPoint(points, fwd, 0.45, 1.00, encType, scan, RRBs);
+            addPoint(points, itk, 0.45, 1.00, encType, scan, RRBs);
             addPoint(points, fwd, 0.30, 1.00, encType, align, RrField.RRFP);
             addPoint(points, itk, 0.30, 1.00, encType, key,  RrField.RRFP);
             addPoint(points, itk, 0.30, 1.00, encType, drop, RrField.RRDC);

@@ -63,6 +63,7 @@ class ShelbyImuBot extends ShelbyBot
                 imu.getCalibrationStatus(),
                 imu.getSystemStatus());
 
+        RobotLog.ii(TAG, "Calibration drive dir = %s", calibrationDriveDir);
         gyroReady = true;
         return true;
     }
