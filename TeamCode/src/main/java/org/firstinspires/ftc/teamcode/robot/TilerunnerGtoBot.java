@@ -129,8 +129,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 GRIPPER_PARTIAL_POS = 0.65;
 
                 GPITCH_DOWN_POS = 0.58;
-                GPITCH_UP_POS = 0.16;
-                GPITCH_CLEAR_POS = 0.35;
+                GPITCH_UP_POS = 0.08;
+                GPITCH_CLEAR_POS = 0.16;
                 GPITCH_MIN = 0.1;
                 GPITCH_MAX = 0.8;
             }

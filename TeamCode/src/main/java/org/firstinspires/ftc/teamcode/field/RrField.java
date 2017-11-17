@@ -94,7 +94,7 @@ public class RrField extends Field
                 new Point2d("RLCR", CBOX_LCTR - CBOX_GAP, -CXY)  //RED-LEFT-RIGHT
             },
             {
-                new Point2d("RRCL", CXY, CBOX_RCTR + CBOX_GAP + 2.5), //RED-RIGHT-LEFT
+                new Point2d("RRCL", CXY, CBOX_RCTR + CBOX_GAP + 1.5), //RED-RIGHT-LEFT
                 new Point2d("RRCC", CXY, CBOX_RCTR + 3),            //RED-RIGHT-CENTER
                 new Point2d("RRCR", CXY, (CBOX_RCTR - CBOX_GAP) + 2)  //RED-RIGHT-RIGHT
             },

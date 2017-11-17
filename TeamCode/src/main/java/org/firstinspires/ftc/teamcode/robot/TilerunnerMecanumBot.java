@@ -140,11 +140,11 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
 
             GRIPPER_CLOSE_POS    = 0.68;
             GRIPPER_OPEN_POS     = 0.84;
-            GRIPPER_PARTIAL_POS  = 0.72;
+            GRIPPER_PARTIAL_POS  = 0.78;
 
             RGRIPPER_CLOSE_POS   = 0.99;
             RGRIPPER_OPEN_POS    = 0.80;
-            RGRIPPER_PARTIAL_POS = 0.88;
+            RGRIPPER_PARTIAL_POS = 0.83;
 
             GPITCH_UP_POS         = 0.86;
             GPITCH_DOWN_POS       = 0.36;
@@ -166,7 +166,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             jflicker = hwMap.servo.get("jflicker");
 
             JFLICKER_UP_POS   = 0.77;
-            JFLICKER_DOWN_POS = 0.36;
+            JFLICKER_DOWN_POS = 0.30;
             JFLICKER_STOW_POS = 0.75 ;
 
             capMap.put("pusher", true);
