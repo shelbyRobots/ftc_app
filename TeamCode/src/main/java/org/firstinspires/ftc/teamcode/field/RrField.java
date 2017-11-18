@@ -14,7 +14,7 @@ import java.util.List;
  * Created by Ryan on 9/27/2017.
  */
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class RrField extends Field
 {
     //Point naming key:
@@ -37,7 +37,7 @@ public class RrField extends Field
 
     private static final String TAG = " SJH_RFD";
 
-    private static final double BOT_2_GLYPH = 12.0; //GTO2
+    private static double BOT_2_GLYPH = 12.0; //GTO2
     private static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
     {
         Point2d dropPt = new Point2d(dName, 0.0, 0.0);
@@ -64,12 +64,136 @@ public class RrField extends Field
     private static final int CNTR  = 1;
     private static final int RGHT  = 2;
 
-    private static final double CXY = 65.0;
-    private static final double BSY = 47.5;
+    public static final double CXY = 65.0;
+    public static final double BSY = 47.5;
+    private static final double BS1X = -BSY;
+    public static final double BS2X = 24.0;
+
+    public static final double BS_CLEAR = 25.0;
 
     private static final double CBOX_GAP  = 7.5;
     private static final double CBOX_LCTR = -12.0;
     private static final double CBOX_RCTR = -36.0;
+
+    private static double BLCLXT = 0.0;
+    private static double BLCCXT = 0.0;
+    private static double BLCRXT = 0.0;
+    private static double BRCLXT = 0.0;
+    private static double BRCCXT = 0.0;
+    private static double BRCRXT = 0.0;
+    private static double RLCLXT = 0.0;
+    private static double RLCCXT = 0.0;
+    private static double RLCRXT = 0.0;
+    private static double RRCLXT = 0.0;
+    private static double RRCCXT = 0.0;
+    private static double RRCRXT = 0.0;
+
+    private static double BLCLYT = 0.0;
+    private static double BLCCYT = 0.0;
+    private static double BLCRYT = 0.0;
+    private static double BRCLYT = 0.0;
+    private static double BRCCYT = 0.0;
+    private static double BRCRYT = -2.0;
+    private static double RLCLYT = 0.0;
+    private static double RLCCYT = 0.0;
+    private static double RLCRYT = 0.0;
+    private static double RRCLYT = 1.5;
+    private static double RRCCYT = 1.0;
+    private static double RRCRYT = 2.5;
+
+    static void initField(String robotName)
+    {
+        if (robotName.equals("GTO1"))
+        {
+            BOT_2_GLYPH = 12.0;
+
+            BLCLXT = 0.0;
+            BLCCXT = 0.0;
+            BLCRXT = 0.0;
+            BRCLXT = 0.0;
+            BRCCXT = 0.0;
+            BRCRXT = 0.0;
+            RLCLXT = 0.0;
+            RLCCXT = 0.0;
+            RLCRXT = 0.0;
+            RRCLXT = 0.0;
+            RRCCXT = 0.0;
+            RRCRXT = 0.0;
+
+            BLCLYT = 0.0;
+            BLCCYT = 0.0;
+            BLCRYT = 0.0;
+            BRCLYT = 0.0;
+            BRCCYT = 0.0;
+            BRCRYT = -2.0;
+            RLCLYT = 0.0;
+            RLCCYT = 0.0;
+            RLCRYT = 0.0;
+            RRCLYT = 1.5;
+            RRCCYT = 1.5;
+            RRCRYT = 2.5;
+        }
+        else if (robotName.equals("GTO2"))
+        {
+            BOT_2_GLYPH = 12.0;
+
+            BLCLXT = 0.0;
+            BLCCXT = 0.0;
+            BLCRXT = 0.0;
+            BRCLXT = 0.0;
+            BRCCXT = 0.0;
+            BRCRXT = 0.0;
+            RLCLXT = 0.0;
+            RLCCXT = 0.0;
+            RLCRXT = 0.0;
+            RRCLXT = 0.0;
+            RRCCXT = 0.0;
+            RRCRXT = 0.0;
+
+            BLCLYT = 0.0;
+            BLCCYT = 0.0;
+            BLCRYT = 0.0;
+            BRCLYT = 0.0;
+            BRCCYT = 0.0;
+            BRCRYT = -2.0;
+            RLCLYT = 0.0;
+            RLCCYT = 0.0;
+            RLCRYT = 0.0;
+            RRCLYT = 1.5;
+            RRCCYT = 1.0;
+            RRCRYT = 2.5;
+        }
+        else if (robotName.equals("MEC"))
+        {
+            BOT_2_GLYPH = 12.0;
+
+            BLCLXT = 0.0;
+            BLCCXT = 0.0;
+            BLCRXT = 0.0;
+            BRCLXT = 0.0;
+            BRCCXT = 0.0;
+            BRCRXT = 0.0;
+            RLCLXT = 0.0;
+            RLCCXT = 0.0;
+            RLCRXT = 0.0;
+            RRCLXT = 0.0;
+            RRCCXT = 0.0;
+            RRCRXT = 0.0;
+
+            BLCLYT = 0.0;
+            BLCCYT = 0.0;
+            BLCRYT = 0.0;
+            BRCLYT = 0.0;
+            BRCCYT = 0.0;
+            BRCRYT = -2.0;
+            RLCLYT = 0.0;
+            RLCCYT = 0.0;
+            RLCRYT = 0.0;
+            RRCLYT = 1.5;
+            RRCCYT = 1.0;
+            RRCRYT = 2.5;
+        }
+    }
 
     //3-dimensional array of crypto box points [alliance][start][key]
     //allows inidividual adjustment
@@ -77,26 +201,26 @@ public class RrField extends Field
     {
         {
             {
-                new Point2d("BLCL", CBOX_LCTR - CBOX_GAP,  CXY), //BLUE-LEFT-LEFT
-                new Point2d("BLCC", CBOX_LCTR,             CXY), //BLUE-LEFT-CENTER
-                new Point2d("BLCR", CBOX_LCTR + CBOX_GAP,  CXY)  //BLUE-LEFT-RIGHT
+                new Point2d("BLCL", BLCLXT + CBOX_LCTR - CBOX_GAP,  BLCLYT + CXY), //BLUE-LEFT-LEFT
+                new Point2d("BLCC", BLCCXT + CBOX_LCTR,             BLCCYT + CXY), //BLUE-LEFT-CENTER
+                new Point2d("BLCR", BLCRXT + CBOX_LCTR + CBOX_GAP,  BLCRYT + CXY)  //BLUE-LEFT-RIGHT
             },
             {
-                new Point2d("BRCL", CXY,  -CBOX_RCTR + CBOX_GAP), //BLUE-RIGHT-LEFT
-                new Point2d("BRCC", CXY,  -CBOX_RCTR),            //BLUE-RIGHT-CENTER
-                new Point2d("BRCR", CXY,  (-CBOX_RCTR - CBOX_GAP) -2)  //BLUE-RIGHT-RIGHT
+                new Point2d("BRCL", BRCLXT + CXY,  BRCLYT + -CBOX_RCTR + CBOX_GAP), //BLUE-RIGHT-LEFT
+                new Point2d("BRCC", BRCCXT + CXY,  BRCCYT + -CBOX_RCTR),            //BLUE-RIGHT-CENTER
+                new Point2d("BRCR", BRCRXT + CXY,  BRCRYT + (-CBOX_RCTR - CBOX_GAP))  //BLUE-RIGHT-RIGHT
             },
         },
         {
             {
-                new Point2d("RLCL", CBOX_LCTR + CBOX_GAP, -CXY), //RED-LEFT-LEFT
-                new Point2d("RLCC", CBOX_LCTR           , -CXY), //RED-LEFT-CENTER
-                new Point2d("RLCR", CBOX_LCTR - CBOX_GAP, -CXY)  //RED-LEFT-RIGHT
+                new Point2d("RLCL", RLCLXT + CBOX_LCTR + CBOX_GAP, RLCLYT + -CXY), //RED-LEFT-LEFT
+                new Point2d("RLCC", RLCCXT + CBOX_LCTR           , RLCCYT + -CXY), //RED-LEFT-CENTER
+                new Point2d("RLCR", RLCRXT + CBOX_LCTR - CBOX_GAP, RLCRYT + -CXY)  //RED-LEFT-RIGHT
             },
             {
-                new Point2d("RRCL", CXY, CBOX_RCTR + CBOX_GAP + 1.5), //RED-RIGHT-LEFT
-                new Point2d("RRCC", CXY, CBOX_RCTR + 3),            //RED-RIGHT-CENTER
-                new Point2d("RRCR", CXY, (CBOX_RCTR - CBOX_GAP) + 2)  //RED-RIGHT-RIGHT
+                new Point2d("RRCL", RRCLXT + CXY, RRCLYT + CBOX_RCTR + CBOX_GAP), //RED-RIGHT-LEFT
+                new Point2d("RRCC", RRCCXT + CXY, RRCCYT + CBOX_RCTR),            //RED-RIGHT-CENTER
+                new Point2d("RRCR", RRCRXT + CXY, RRCRYT + (CBOX_RCTR - CBOX_GAP))  //RED-RIGHT-RIGHT
             },
         }
     };
@@ -112,9 +236,9 @@ public class RrField extends Field
                 new Point2d("BLAR", CBOX_LCTR + CBOX_GAP,  BSY)  //BLUE-LEFT-RIGHT
             },
             {
-                new Point2d("BRAL",  49.0,  -CBOX_RCTR + CBOX_GAP), //BLUE-RIGHT-LEFT
-                new Point2d("BRAC",  49.0,  -CBOX_RCTR),            //BLUE-RIGHT-CENTER
-                new Point2d("BRAR",  49.0,  -CBOX_RCTR - CBOX_GAP)  //BLUE-RIGHT-RIGHT
+                new Point2d("BRAL",  BS2X + BS_CLEAR,  -CBOX_RCTR + CBOX_GAP), //BLUE-RIGHT-LEFT
+                new Point2d("BRAC",  BS2X + BS_CLEAR,  -CBOX_RCTR),            //BLUE-RIGHT-CENTER
+                new Point2d("BRAR",  BS2X + BS_CLEAR,  -CBOX_RCTR - CBOX_GAP)  //BLUE-RIGHT-RIGHT
             },
         },
         {
@@ -124,9 +248,9 @@ public class RrField extends Field
                 new Point2d("RLAR", CBOX_LCTR - CBOX_GAP, -BSY)  //RED-LEFT-RIGHT
             },
             {
-                new Point2d("RRAL",  49.0, CBOX_RCTR + CBOX_GAP), //RED-RIGHT-LEFT
-                new Point2d("RRAC",  49.0, CBOX_RCTR),            //RED-RIGHT-CENTER
-                new Point2d("RRAR",  49.0, CBOX_RCTR - CBOX_GAP)  //RED-RIGHT-RIGHT
+                new Point2d("RRAL",  BS2X + BS_CLEAR, CBOX_RCTR + CBOX_GAP), //RED-RIGHT-LEFT
+                new Point2d("RRAC",  BS2X + BS_CLEAR, CBOX_RCTR),            //RED-RIGHT-CENTER
+                new Point2d("RRAR",  BS2X + BS_CLEAR, CBOX_RCTR - CBOX_GAP)  //RED-RIGHT-RIGHT
             },
         }
     };
@@ -136,36 +260,36 @@ public class RrField extends Field
     private static final Point2d FPTS[][] =
     {
         {
-            new Point2d("BLFP", -23.0,  BSY),
-            new Point2d("BRFP",  49.0,  BSY),
+            new Point2d("BLFP",  BS1X + BS_CLEAR,  BSY),
+            new Point2d("BRFP",  BS2X + BS_CLEAR,  BSY),
         },
         {
-            new Point2d("RLFP", -23.0, -BSY),
-            new Point2d("RRFP",  49.0, -BSY),
+            new Point2d("RLFP",  BS1X + BS_CLEAR, -BSY),
+            new Point2d("RRFP",  BS2X + BS_CLEAR, -BSY),
         }
     };
 
     //Red Points > Left
-    static final Point2d RLBS = new Point2d("RLBS", -BSY,  -BSY);
+    static final Point2d RLBS = new Point2d("RLBS", BS1X,  -BSY);
     static final Point2d RLJB = new Point2d("RLJB", -BSY,  -68.0);
-    static final Point2d RLFP = new Point2d("RLFP", -23.0, -BSY);
+    static final Point2d RLFP = new Point2d("RLFP", BS1X + BS_CLEAR, -BSY);
     static final Point2d RLDC = calcDropPt("RLDC", RLFP, CPTS[RED][STRT1][CNTR]);
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
-    static final Point2d RLTT = new Point2d("RLTT", -12.0,  -BSY);
-    static final Point2d RLPP = new Point2d("RLPP", -12.0,  -30.0);
-    static final Point2d RLXP = new Point2d("RLXP", -12.0,  -37.0);
+    static final Point2d RLTT = new Point2d("RLTT", CBOX_LCTR,  -BSY);
+    static final Point2d RLPP = new Point2d("RLPP", CBOX_LCTR,  -30.0);
+    static final Point2d RLXP = new Point2d("RLXP", CBOX_LCTR,  -37.0);
 
     //Red Points > Right
-    static final Point2d RRBS = new Point2d("RRBS",  24.0,  -BSY);
-    static final Point2d RRJB = new Point2d("RRJB",  24.0,  -68.0);
-    static final Point2d RRFP = new Point2d("RRFP",  49.0,  -BSY);
+    static final Point2d RRBS = new Point2d("RRBS",  BS2X,  -BSY);
+    static final Point2d RRJB = new Point2d("RRJB",  BS2X,  -68.0);
+    static final Point2d RRFP = new Point2d("RRFP",  BS2X + BS_CLEAR,  -BSY);
     static final Point2d RRDC = calcDropPt("RRDC", RRFP, CPTS[RED][STRT2][CNTR]);
     static final Point2d RRRR = new Point2d("RRRR",  68.0,  -68.0);
 
-    static final Point2d RRTT = new Point2d("RRTT",  49.0,  -36.0);
+    static final Point2d RRTT = new Point2d("RRTT",  BS2X + BS_CLEAR,  -36.0);
     static final Point2d RRPP = new Point2d("RRPP",  14.0,  -14.0);
-    static final Point2d RRXP = new Point2d("RRXP",  49.0,  -24.0);
+    static final Point2d RRXP = new Point2d("RRXP",  BS2X + BS_CLEAR,  -24.0);
 
     static final Point2d RARZ = new Point2d("RARZ", -72.0,  -12.0);
 

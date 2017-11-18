@@ -125,8 +125,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             {
                 elevMotor.setDirection(DcMotor.Direction.FORWARD);
                 GRIPPER_CLOSE_POS = 0.98;
-                GRIPPER_OPEN_POS = 0.2;
-                GRIPPER_PARTIAL_POS = 0.65;
+                GRIPPER_OPEN_POS = 0.08;
+                GRIPPER_PARTIAL_POS = 0.35;
 
                 GPITCH_DOWN_POS = 0.58;
                 GPITCH_UP_POS = 0.08;

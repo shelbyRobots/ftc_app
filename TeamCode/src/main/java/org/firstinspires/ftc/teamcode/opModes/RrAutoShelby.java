@@ -208,7 +208,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.ii(TAG, "DELAY    %4.2f", delay);
         RobotLog.ii(TAG, "BOT      %s", robotName);
 
-        Points pts = new RrPoints(startPos, alliance);
+        Points pts = new RrPoints(startPos, alliance, robotName);
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
 
         initHdg = pathSegs.get(0).getFieldHeading();
