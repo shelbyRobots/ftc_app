@@ -90,6 +90,8 @@ public class MecanumTeleop extends InitLinearOpMode
             robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
+        robot.raiseFlicker();
+
         while (opModeIsActive())
         {
             gpad1.update();

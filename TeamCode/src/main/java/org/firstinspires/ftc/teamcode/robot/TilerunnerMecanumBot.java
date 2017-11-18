@@ -16,11 +16,11 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     public DcMotor rfMotor = null;
     public DcMotor rrMotor = null;
 
-    public Servo rgripper    = null;
+    private Servo rgripper    = null;
 
-    public static double RGRIPPER_CLOSE_POS   = 0.83;
-    public static double RGRIPPER_PARTIAL_POS = 0.75;
-    public static double RGRIPPER_OPEN_POS    = 0.5;
+    private static double RGRIPPER_CLOSE_POS   = 0.83;
+    private static double RGRIPPER_PARTIAL_POS = 0.75;
+    private static double RGRIPPER_OPEN_POS    = 0.5;
 
     private static final String TAG = "SJH_MEC";
 
@@ -165,7 +165,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         {
             jflicker = hwMap.servo.get("jflicker");
 
-            JFLICKER_UP_POS   = 0.77;
+            JFLICKER_UP_POS   = 0.65;
             JFLICKER_DOWN_POS = 0.30;
             JFLICKER_STOW_POS = 0.75 ;
 

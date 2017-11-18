@@ -184,6 +184,14 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     {
         jflicker.setPosition(JFLICKER_STOW_POS);
     }
+    public void deployFlicker()
+    {
+        if(jflicker != null) jflicker.setPosition(JFLICKER_DOWN_POS);
+    }
+    public void raiseFlicker()
+    {
+        if(jflicker != null) jflicker.setPosition(JFLICKER_UP_POS);
+    }
     public void closeGripper()
     {
         gripper.setPosition(GRIPPER_CLOSE_POS);
@@ -207,9 +215,5 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public void clearGpitch()
     {
         gpitch.setPosition(GPITCH_CLEAR_POS);
-    }
-    public void deployFlicker()
-    {
-        if(jflicker != null) jflicker.setPosition(JFLICKER_DOWN_POS);
     }
 }
