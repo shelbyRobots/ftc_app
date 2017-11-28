@@ -107,6 +107,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
             boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+            boolean holdElev          = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
 
             boolean gripper_open_par  = gpad2.pressed(ManagedGamepad.Button.A);
             boolean gripper_open      = gpad2.pressed(ManagedGamepad.Button.B);
@@ -308,6 +309,15 @@ public class Teleop_Driver extends InitLinearOpMode
                 robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elev = 0.85;
+                robot.elevMotor.setPower(elev);
+                eActive = true;
+            }
+            else if (holdElev)
+            {
+                int curPos = robot.elevMotor.getCurrentPosition();
+                robot.elevMotor.setTargetPosition(curPos);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.65;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
             }
