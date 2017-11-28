@@ -37,7 +37,8 @@ public class RrField extends Field
 
     private static final String TAG = " SJH_RFD";
 
-    private static double BOT_2_GLYPH = 12.0; //GTO2
+    private static double BOT_2_GLYPH = 12.0;
+
     private static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
     {
         Point2d dropPt = new Point2d(dName, 0.0, 0.0);
@@ -93,19 +94,21 @@ public class RrField extends Field
     private static double BLCRYT = 0.0;
     private static double BRCLYT = 0.0;
     private static double BRCCYT = 0.0;
-    private static double BRCRYT = -2.0;
+    private static double BRCRYT = 0.0;
     private static double RLCLYT = 0.0;
     private static double RLCCYT = 0.0;
     private static double RLCRYT = 0.0;
-    private static double RRCLYT = 1.5;
-    private static double RRCCYT = 1.0;
-    private static double RRCRYT = 2.5;
+    private static double RRCLYT = 0.0;
+    private static double RRCCYT = 0.0;
+    private static double RRCRYT = 0.0;
 
-    static void initField(String robotName)
+    static void initField(String robotName, double gOffset)
     {
+        BOT_2_GLYPH = gOffset;
+
         if (robotName.equals("GTO1"))
         {
-            BOT_2_GLYPH = 12.0;
+            //BOT_2_GLYPH = 12.0;
 
             BLCLXT = 0.0;
             BLCCXT = 0.0;
@@ -124,8 +127,8 @@ public class RrField extends Field
             BLCCYT = 0.0;
             BLCRYT = 0.0;
             BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = -2.0;
+            BRCCYT = -1.0;
+            BRCRYT = -3.0;
             RLCLYT = 0.0;
             RLCCYT = 0.0;
             RLCRYT = 0.0;
@@ -135,7 +138,7 @@ public class RrField extends Field
         }
         else if (robotName.equals("GTO2"))
         {
-            BOT_2_GLYPH = 12.0;
+            //BOT_2_GLYPH = 12.0;
 
             BLCLXT = 0.0;
             BLCCXT = 0.0;
@@ -165,7 +168,7 @@ public class RrField extends Field
         }
         else if (robotName.equals("MEC"))
         {
-            BOT_2_GLYPH = 12.0;
+            //BOT_2_GLYPH = 12.0;
 
             BLCLXT = 0.0;
             BLCCXT = 0.0;
@@ -320,6 +323,7 @@ public class RrField extends Field
     public static Point2d getDropPt(Alliance alliance,
                                     StartPos startPos,
                                     RelicRecoveryVuMark key,
+                                    double cfgOff,
                                     boolean useFP)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
@@ -340,7 +344,13 @@ public class RrField extends Field
         String pName = ept.getName().substring(0,2) + "D" + ept.getName().substring(3);
 
         RobotLog.dd(TAG, "getDropPt %s start %s end %s", pName, spt, ept);
-        return calcDropPt(pName, spt, ept);
+
+        Point2d dpt = calcDropPt(pName, spt, ept);
+
+        if(startPos == StartPos.START_1) dpt.setX(dpt.getX() + cfgOff);
+        else if (startPos == StartPos.START_2) dpt.setY(dpt.getY() + cfgOff);
+
+        return dpt;
     }
 
 

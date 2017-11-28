@@ -87,10 +87,11 @@ public class RrPoints extends Points
 
     public RrPoints(Field.StartPos startPos,
                     Field.Alliance alliance,
-                    String robotName)
+                    String robotName,
+                    double glyphOff)
     {
         super(startPos, alliance);
-        RrField.initField(robotName);
+        RrField.initField(robotName, glyphOff);
     }
 
     protected Point2d convertRtoB(Point2d rpt)

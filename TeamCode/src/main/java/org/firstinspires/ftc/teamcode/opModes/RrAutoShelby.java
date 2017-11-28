@@ -208,7 +208,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.ii(TAG, "DELAY    %4.2f", delay);
         RobotLog.ii(TAG, "BOT      %s", robotName);
 
-        Points pts = new RrPoints(startPos, alliance, robotName);
+        double glyphOff = pmgr.getGlyphOffset(robotName);
+        Points pts = new RrPoints(startPos, alliance, robotName, glyphOff);
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
 
         initHdg = pathSegs.get(0).getFieldHeading();
@@ -384,7 +385,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case SET_KEY:
                 {
-                    Point2d dpt = RrField.getDropPt(alliance, startPos, key, useFP);
+                    double cfgOff = pmgr.getDropOffset(robotName, alliance.toString(),
+                            startPos.toString(), key.toString());
+                    Point2d dpt = RrField.getDropPt(alliance, startPos, key, cfgOff, useFP);
                     RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
                     pathSegs.get(i + 1).setEndPt(dpt); //drop
                     pathSegs.get(i + 2).setStrtPt(dpt); //XP

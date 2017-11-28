@@ -18,6 +18,12 @@ public class PreferenceMgr
    private String parkPosition   = "TRI_TIP";
    private String delay          = "0";
 
+   private String leftOffset     = "0.0";
+   private String cntrOffset     = "0.0";
+   private String rghtOffset     = "0.0";
+
+   private String gOffset        = "12.0";
+
    private static final String TAG = "SJH_PRF";
 
    public String getClubName() { return clubName; }
@@ -36,6 +42,42 @@ public class PreferenceMgr
 
    public int getDelay() { return Integer.parseInt(delay); }
    public void setDelay(int delay) { this.delay =  String.valueOf(delay); }
+
+   public void setLeftOffset(double offset)
+   {
+      leftOffset = String.valueOf(offset);
+   }
+
+   public void setCenterOffset(double offset)
+   {
+      cntrOffset = String.valueOf(offset);
+   }
+
+   public void setRightOffset(double offset)
+   {
+      rghtOffset = String.valueOf(offset);
+   }
+
+   public void setGlyphOffset(double offset)
+   {
+      gOffset = String.valueOf(offset);
+   }
+
+   public double getDropOffset(String botName, String alliance, String startPos, String key)
+   {
+      String strOff = sharedPreferences.getString(clubName + "." + botName  + "." +
+                                                  alliance + "." + startPos + "." + key, "0.0");
+
+      return Integer.parseInt(strOff);
+   }
+
+   public double getGlyphOffset(String botName)
+   {
+      String gOff = sharedPreferences.getString(clubName + "." + botName  +
+                                                        ".gOffset", gOffset);
+
+      return Integer.parseInt(gOff);
+   }
 
    public PreferenceMgr()
    {
@@ -70,6 +112,22 @@ public class PreferenceMgr
       editor.putString(clubName + "." + botName + ".StartPosition", startPosition);
       editor.putString(clubName + "." + botName + ".ParkPosition",  parkPosition);
       editor.putString(clubName + "." + botName + ".Delay",         delay);
+      editor.apply();
+   }
+
+   public void writeOffsets()
+   {
+      SharedPreferences.Editor editor = sharedPreferences.edit();
+
+      editor.putString(clubName + "." + botName  + ".gOffset", gOffset);
+
+      editor.putString(clubName + "." + botName  + "." +
+                               allianceColor + "." + startPosition + "." + "left", leftOffset);
+      editor.putString(clubName + "." + botName  + "." +
+                               allianceColor + "." + startPosition + "." + "center", cntrOffset);
+      editor.putString(clubName + "." + botName  + "." +
+                               allianceColor + "." + startPosition + "." + "right", rghtOffset);
+
       editor.apply();
    }
 
