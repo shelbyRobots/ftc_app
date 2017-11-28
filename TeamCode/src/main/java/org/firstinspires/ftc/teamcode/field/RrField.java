@@ -102,6 +102,13 @@ public class RrField extends Field
     private static double RRCCYT = 0.0;
     private static double RRCRYT = 0.0;
 
+    public enum Align_Type
+    {
+        SINGLE_PT,
+        PERPENDICULAR,
+        COMMON_ANGLE
+    }
+
     static void initField(String robotName, double gOffset)
     {
         BOT_2_GLYPH = gOffset;
@@ -127,14 +134,14 @@ public class RrField extends Field
             BLCCYT = 0.0;
             BLCRYT = 0.0;
             BRCLYT = 0.0;
-            BRCCYT = -1.0;
-            BRCRYT = -3.0;
+            BRCCYT = 0.0;
+            BRCRYT = 0.0;
             RLCLYT = 0.0;
             RLCCYT = 0.0;
             RLCRYT = 0.0;
-            RRCLYT = 1.5;
-            RRCCYT = 1.5;
-            RRCRYT = 2.5;
+            RRCLYT = 0.0;
+            RRCCYT = 0.0;
+            RRCRYT = 0.0;
         }
         else if (robotName.equals("GTO2"))
         {
@@ -158,13 +165,13 @@ public class RrField extends Field
             BLCRYT = 0.0;
             BRCLYT = 0.0;
             BRCCYT = 0.0;
-            BRCRYT = -2.0;
+            BRCRYT = 0.0;
             RLCLYT = 0.0;
             RLCCYT = 0.0;
             RLCRYT = 0.0;
-            RRCLYT = 1.5;
-            RRCCYT = 1.0;
-            RRCRYT = 2.5;
+            RRCLYT = 0.0;
+            RRCCYT = 0.0;
+            RRCRYT = 0.0;
         }
         else if (robotName.equals("MEC"))
         {
@@ -188,13 +195,13 @@ public class RrField extends Field
             BLCRYT = 0.0;
             BRCLYT = 0.0;
             BRCCYT = 0.0;
-            BRCRYT = -2.0;
+            BRCRYT = 0.0;
             RLCLYT = 0.0;
             RLCCYT = 0.0;
             RLCRYT = 0.0;
-            RRCLYT = 1.5;
-            RRCCYT = 1.0;
-            RRCRYT = 2.5;
+            RRCLYT = 0.0;
+            RRCCYT = 0.0;
+            RRCRYT = 0.0;
         }
     }
 
@@ -258,6 +265,37 @@ public class RrField extends Field
         }
     };
 
+    //3-dimensional array of align points [alliance][start][key]
+    //allows inidividual adjustment
+    private static final double CA_OFF = 10.5;
+    private static final Point2d CA_APTS[][][] =
+    {
+        {
+            {
+                new Point2d("BLAL", CBOX_LCTR - CBOX_GAP + CA_OFF,  BSY), //BLUE-LEFT-LEFT
+                new Point2d("BLAC", CBOX_LCTR            - CA_OFF,  BSY), //BLUE-LEFT-CENTER
+                new Point2d("BLAR", CBOX_LCTR + CBOX_GAP - CA_OFF,  BSY)  //BLUE-LEFT-RIGHT
+        },
+            {
+                new Point2d("BRAL",  BS2X + BS_CLEAR, -CBOX_RCTR + CBOX_GAP - CA_OFF), //BLUE-RIGHT-LEFT
+                new Point2d("BRAC",  BS2X + BS_CLEAR, -CBOX_RCTR            + CA_OFF), //BLUE-RIGHT-CENTER
+                new Point2d("BRAR",  BS2X + BS_CLEAR, -CBOX_RCTR - CBOX_GAP + CA_OFF)  //BLUE-RIGHT-RIGHT
+            },
+        },
+        {
+            {
+                new Point2d("RLAL", CBOX_LCTR + CBOX_GAP - CA_OFF, -BSY), //RED-LEFT-LEFT
+                new Point2d("RLAC", CBOX_LCTR            - CA_OFF, -BSY), //RED-LEFT-CENTER
+                new Point2d("RLAR", CBOX_LCTR - CBOX_GAP + CA_OFF, -BSY)  //RED-LEFT-RIGHT
+        },
+            {
+                new Point2d("RRAL",  BS2X + BS_CLEAR, CBOX_RCTR + CBOX_GAP - CA_OFF), //RED-RIGHT-LEFT
+                new Point2d("RRAC",  BS2X + BS_CLEAR, CBOX_RCTR            - CA_OFF), //RED-RIGHT-CENTER
+                new Point2d("RRAR",  BS2X + BS_CLEAR, CBOX_RCTR - CBOX_GAP + CA_OFF)  //RED-RIGHT-RIGHT
+            },
+        }
+    };
+
     //2-dimensional array of floor points [alliance][start]
     //allows inidividual adjustment
     private static final Point2d FPTS[][] =
@@ -300,7 +338,7 @@ public class RrField extends Field
     public static Point2d getAlignPt(Alliance alliance,
                                      StartPos startPos,
                                      RelicRecoveryVuMark key,
-                                     boolean useFP)
+                                     Align_Type align_type)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
         int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
@@ -314,8 +352,21 @@ public class RrField extends Field
             case RIGHT:   ckey = RGHT; break;
         }
 
-        Point2d apt = APTS[alnc][strt][ckey];
-        if(useFP) apt = FPTS[alnc][strt];
+        Point2d apt;
+
+        switch (align_type)
+        {
+            case SINGLE_PT:
+                apt = FPTS[alnc][strt];
+                break;
+            case PERPENDICULAR:
+                apt = APTS[alnc][strt][ckey];
+                break;
+            case COMMON_ANGLE:
+            default:
+                apt = CA_APTS[alnc][strt][ckey];
+                break;
+        }
 
         return apt;
     }
@@ -324,7 +375,7 @@ public class RrField extends Field
                                     StartPos startPos,
                                     RelicRecoveryVuMark key,
                                     double cfgOff,
-                                    boolean useFP)
+                                    Align_Type align_type)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
         int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
@@ -338,7 +389,7 @@ public class RrField extends Field
             case RIGHT:   ckey = RGHT; break;
         }
 
-        Point2d spt = getAlignPt(alliance, startPos, key, useFP);
+        Point2d spt = getAlignPt(alliance, startPos, key, align_type);
         Point2d ept = CPTS[alnc][strt][ckey];
 
         String pName = ept.getName().substring(0,2) + "D" + ept.getName().substring(3);

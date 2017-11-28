@@ -362,7 +362,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 drvTrn.logData(true, segName + " action " + act.toString());
             }
 
-            boolean useFP = true;
+            RrField.Align_Type align_type = RrField.Align_Type.COMMON_ANGLE;
             switch (act)
             {
 //                case RST_PUSHER:
@@ -374,7 +374,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case SET_ALIGN:
                 {
-                    Point2d apt = RrField.getAlignPt(alliance, startPos, key, useFP);
+                    Point2d apt = RrField.getAlignPt(alliance, startPos, key, align_type);
                     RobotLog.dd(TAG, "Setting align point %s %s", key, apt);
                     pathSegs.get(i + 1).setEndPt(apt); //set_key
                     pathSegs.get(i + 2).setStrtPt(apt); //drop
@@ -387,7 +387,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 {
                     double cfgOff = pmgr.getDropOffset(robotName, alliance.toString(),
                             startPos.toString(), key.toString());
-                    Point2d dpt = RrField.getDropPt(alliance, startPos, key, cfgOff, useFP);
+                    Point2d dpt = RrField.getDropPt(alliance, startPos, key, cfgOff, align_type);
                     RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
                     pathSegs.get(i + 1).setEndPt(dpt); //drop
                     pathSegs.get(i + 2).setStrtPt(dpt); //XP

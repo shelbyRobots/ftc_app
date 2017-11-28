@@ -209,7 +209,7 @@ public class AutoSetupMenu extends InitLinearOpMode implements FtcMenu.MenuButto
         FtcValueMenu  cntrOffsetMenu = new FtcValueMenu("Cntr:", leftOffsetMenu, this,
                                                                -5.0, 5.0, 0.25, cntrDeflt, "%5.2f");
         FtcValueMenu  rghtOffsetMenu = new FtcValueMenu("Rght:", cntrOffsetMenu, this,
-                                                               -5.0, 5.0, 0.25, rghtDeflt, "%5.2f");
+                                                               9.0, 18.0, 0.25, rghtDeflt, "%5.2f");
 
         glphOffsetMenu.setChildMenu(leftOffsetMenu);
         leftOffsetMenu.setChildMenu(cntrOffsetMenu);
