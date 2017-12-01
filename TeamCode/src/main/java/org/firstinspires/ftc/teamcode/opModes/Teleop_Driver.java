@@ -278,6 +278,8 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
             dashboard.displayPrintf(15,"SVEL " + useSetVel);
 
+            int curElevPos = robot.elevMotor.getCurrentPosition();
+
             if(Math.abs(elev) > 0.001)
             {
                 eActive = false;
@@ -288,27 +290,65 @@ public class Teleop_Driver extends InitLinearOpMode
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 int minElev = robot.liftPositions.get(0) + 40;
                 int maxElev = robot.liftPositions.get(robot.liftPositions.size() - 1) - 40;
-                if(robot.elevMotor.getCurrentPosition() < minElev && elev < 0.0)
+                if(curElevPos < minElev && elev < 0.0)
                     elev = 0.0;
-                if(robot.elevMotor.getCurrentPosition() > maxElev && elev > 0.0)
+                if(curElevPos > maxElev && elev > 0.0)
                     elev = 0.0;
                 robot.elevMotor.setPower(elev);
             }
 
-            if (lowerElev && curElevIdx > 0)
+            int nextDown = 0;
+            int nextUp   = 1;
+            int elevTresh = 10;
+
+            if(curElevPos + elevTresh < robot.liftPositions.get(1))
             {
-                curElevIdx--;
-                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                nextDown = 0;
+                nextUp   = 1;
+            }
+
+            for(int eIdx = 0; eIdx < robot.liftPositions.size() - 2; eIdx++)
+            {
+                if(curElevPos + elevTresh > robot.liftPositions.get(eIdx))
+                {
+                    nextUp = eIdx + 1;
+                    nextDown = eIdx;
+                }
+            }
+
+            nextDown = Math.max(0, nextDown);
+            nextUp   = Math.min(robot.liftPositions.size() - 1, nextUp);
+
+//            if (lowerElev && curElevIdx > 0)
+//            {
+//                curElevIdx--;
+//                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+//                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                elev = 0.55;
+//                robot.elevMotor.setPower(elev);
+//                eActive = true;
+//            } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
+//            {
+//                curElevIdx++;
+//                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+//                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                elev = 0.85;
+//                robot.elevMotor.setPower(elev);
+//                eActive = true;
+//            }
+            if(lowerElev)
+            {
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(nextDown));
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elev = 0.55;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
-            } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
+            }
+            else if(raiseElev)
             {
-                curElevIdx++;
-                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
+                robot.elevMotor.setTargetPosition(robot.liftPositions.get(nextUp));
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.85;
+                elev = 0.55;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
             }
@@ -407,7 +447,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 pActive = false;
             }
 
-            if(!pActive)
+            if(!pActive && robot.gpitch != null)
             {
                 robot.gpitch.setPosition(outPitch);
             }

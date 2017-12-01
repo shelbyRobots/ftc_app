@@ -145,7 +145,7 @@ public class RrField extends Field
         }
         else if (robotName.equals("GTO2"))
         {
-            //BOT_2_GLYPH = 12.0;
+            BOT_2_GLYPH = 13.0;
 
             BLCLXT = 0.0;
             BLCCXT = 0.0;

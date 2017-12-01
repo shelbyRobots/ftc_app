@@ -17,15 +17,18 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
  * INCREMENT sets how much to increase/decrease the power each cycle
  * CYCLE_MS sets the update period.
  */
-@Autonomous(name = "Concept: Step Servo Position", group = "Test")
+@Autonomous(name = "Concept: Jump Servo Position", group = "Test")
 //@Disabled
-public class StepServoTest extends InitLinearOpMode
+public class JumpServoTest extends InitLinearOpMode
 {
 
     private static final double INCREMENT = 0.02;     // amount to step motor each CYCLE_MS cycle
     private static final int     CYCLE_MS = 50;       // period of each cycle
     private static final double   MAX_POS =  1.0;     // Maximum servo pos
     private static final double   MIN_POS =  0.0;     // Minimum servo pos
+    private static final double   MID_POS =  0.5;
+    private static final double   POS_1050   = (1050-600)/(2200-600);
+    private static final double   POS_1950   = (1950-600)/(2200-600);
     private double pos = 0.5;
 
     // Define class members
@@ -79,13 +82,17 @@ public class StepServoTest extends InitLinearOpMode
         while(opModeIsActive())
         {
             gpad1.update();
-            boolean step_up    = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
-            boolean step_down  = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
-            boolean zeroize    = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
+            boolean jump_max    = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
+            boolean jump_min    = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
+            boolean jump_mid    = gpad1.just_pressed(ManagedGamepad.Button.A);
+            boolean jump_1050   = gpad1.just_pressed(ManagedGamepad.Button.D_LEFT);
+            boolean jump_1950   = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
 
-            if(step_up && pos < MAX_POS - INCREMENT)         pos += INCREMENT;
-            else if(step_down && pos > MIN_POS + INCREMENT)  pos -= INCREMENT;
-            else if(zeroize)                                 pos = 0.0;
+            if     (jump_max)    pos = MAX_POS;
+            else if(jump_min)    pos = MIN_POS;
+            else if(jump_mid)    pos = MID_POS;
+            else if(jump_1050)   pos = POS_1050;
+            else if(jump_1950)   pos = POS_1950;
 
             // Display the current value
             dashboard.displayPrintf(MAX_SERVOS, "Servo pos %4.2f", pos);
@@ -99,9 +106,11 @@ public class StepServoTest extends InitLinearOpMode
             }
 
             dashboard.displayText(MAX_SERVOS + 1, "Press Stop to end test.");
-            dashboard.displayText(MAX_SERVOS + 2, "Incr pos : Dpad up");
-            dashboard.displayText(MAX_SERVOS + 3, "Decr pos : Dpad down");
-            dashboard.displayText(MAX_SERVOS + 4, "Zero pos (midpt) : Dpad right");
+            dashboard.displayText(MAX_SERVOS + 2, "Max pos : Dpad up");
+            dashboard.displayText(MAX_SERVOS + 3, "Min pos : Dpad down");
+            dashboard.displayText(MAX_SERVOS + 4, "Mid pos (midpt) : A");
+            dashboard.displayText(MAX_SERVOS + 5, "1050 pos : Dpad left");
+            dashboard.displayText(MAX_SERVOS + 6, "1950 pos : Dpad right");
 
             sleep(CYCLE_MS);
         }

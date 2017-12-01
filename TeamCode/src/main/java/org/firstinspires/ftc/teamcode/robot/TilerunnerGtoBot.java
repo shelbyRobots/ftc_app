@@ -15,7 +15,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 {
     public Servo    gpitch     = null;
     public Servo    gripper    = null;
-    public Servo    jflicker   = null;
+           Servo    jflicker   = null;
 
     public List<Integer> liftPositions = new ArrayList<>(4);
 
@@ -26,12 +26,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public static double GRIPPER_CLOSE_POS   = 0.90;
     public static double GRIPPER_PARTIAL_POS = 0.75;
     public static double GRIPPER_OPEN_POS    = 0.5;
+           static double GRIPPER_STOW_POS    = 0.3;
 
     public static double GPITCH_UP_POS    = 0.16;
     public static double GPITCH_DOWN_POS  = 0.58;
     public static double GPITCH_CLEAR_POS = 0.3;
-    public static double GPITCH_MIN      = 0.16;
-    public static double GPITCH_MAX      = 0.9;
+    public static double GPITCH_MIN       = 0.16;
+    public static double GPITCH_MAX       = 0.9;
+
+           static int    LIFT_AUTON_POS   = 0;
 
     private static final String TAG = "SJH_GTO";
 
@@ -103,6 +106,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM);
             double LIFT_SCALE = 1.0;
 
+            LIFT_AUTON_POS = ((int)( 0.25/LIFT_SCALE * ELEV_CPI));
+
             liftPositions.add((int)( 0.25/LIFT_SCALE * ELEV_CPI));
             liftPositions.add((int)( 6.75/LIFT_SCALE * ELEV_CPI));
             liftPositions.add((int)(12.75/LIFT_SCALE * ELEV_CPI));
@@ -114,6 +119,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 GRIPPER_CLOSE_POS = 0.84;
                 GRIPPER_OPEN_POS = 0.5;
                 GRIPPER_PARTIAL_POS = 0.62;
+                GRIPPER_STOW_POS    = 0.3;
 
                 GPITCH_DOWN_POS = 0.62;
                 GPITCH_UP_POS = 0.1;
@@ -130,9 +136,9 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
                 GPITCH_DOWN_POS = 0.58;
                 GPITCH_UP_POS = 0.08;
-                GPITCH_CLEAR_POS = 0.16;
+                GPITCH_CLEAR_POS = 0.25;
                 GPITCH_MIN = 0.1;
-                GPITCH_MAX = 0.8;
+                GPITCH_MAX = 0.65;
             }
             capMap.put("collector", true);
 
@@ -145,6 +151,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         catch (Exception e)
         {
             RobotLog.ee(TAG, "ERROR get hardware map in initCollectorLifter\n" + e.toString());
+        }
+
+        try
+        {
+            gpitch = hwMap.servo.get("gpitch");
+        }
+        catch (Exception e)
+        {
+            RobotLog.ww(TAG, "WARNING initCollectorLifter - no gpitch");
         }
     }
 
@@ -165,7 +180,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             else if(name.equals("GTO2"))
             {
                 JFLICKER_UP_POS   = 0.58;
-                JFLICKER_DOWN_POS = 0.12;
+                JFLICKER_DOWN_POS = 0.09;
                 JFLICKER_STOW_POS = 1.0;
             }
 
@@ -180,9 +195,38 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
     }
 
+    public void setElevAuton()
+    {
+        if(elevMotor != null)
+        {
+            elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            elevMotor.setTargetPosition(LIFT_AUTON_POS);
+            elevMotor.setPower(0.3);
+        }
+    }
+
+    public void setElevZero()
+    {
+        if(elevMotor != null)
+        {
+            elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            elevMotor.setTargetPosition(10);
+            elevMotor.setPower(0.2);
+        }
+    }
+
+    public void initElevZero()
+    {
+        if(elevMotor != null)
+        {
+            elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
     public void stowFlicker ()
     {
-        jflicker.setPosition(JFLICKER_STOW_POS);
+        if(jflicker != null) jflicker.setPosition(JFLICKER_STOW_POS);
     }
     public void deployFlicker()
     {
@@ -194,26 +238,27 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     }
     public void closeGripper()
     {
-        gripper.setPosition(GRIPPER_CLOSE_POS);
+        if(jflicker != null)gripper.setPosition(GRIPPER_CLOSE_POS);
     }
     public void openGripper()
     {
         gripper.setPosition(GRIPPER_OPEN_POS);
     }
+    public void stowGripper() { gripper.setPosition(GRIPPER_STOW_POS); }
     public void partialGripper()
     {
         gripper.setPosition(GRIPPER_PARTIAL_POS);
     }
     public void retractGpitch()
     {
-        gpitch.setPosition(GPITCH_UP_POS);
+        if(gpitch != null) gpitch.setPosition(GPITCH_UP_POS);
     }
     public void deployGpitch()
     {
-        gpitch.setPosition(GPITCH_DOWN_POS);
+        if(gpitch != null) gpitch.setPosition(GPITCH_DOWN_POS);
     }
     public void clearGpitch()
     {
-        gpitch.setPosition(GPITCH_CLEAR_POS);
+        if(gpitch != null) gpitch.setPosition(GPITCH_CLEAR_POS);
     }
 }

@@ -68,7 +68,7 @@ public class PreferenceMgr
       String strOff = sharedPreferences.getString(clubName + "." + botName  + "." +
                                                   alliance + "." + startPos + "." + key, "0.0");
 
-      return Integer.parseInt(strOff);
+      return Double.parseDouble(strOff);
    }
 
    public double getGlyphOffset(String botName)
@@ -76,7 +76,7 @@ public class PreferenceMgr
       String gOff = sharedPreferences.getString(clubName + "." + botName  +
                                                         ".gOffset", gOffset);
 
-      return Integer.parseInt(gOff);
+      return Double.parseDouble(gOff);
    }
 
    public PreferenceMgr()

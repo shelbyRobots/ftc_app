@@ -115,9 +115,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     {
         try
         {
-            gpitch = hwMap.servo.get("gpitch");
             gripper = hwMap.servo.get("gripper");
-            rgripper = hwMap.servo.get("rgripper");
             elevMotor = hwMap.dcMotor.get("elevmotor");
 
             elevMotor.setPower(0);
@@ -133,6 +131,8 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             double ELEV_CPI = ELEV_CPR / (Math.PI * 2 * ELEV_ARM_LENGTH);
             double LIFT_SCALE = 1.0;
 
+            LIFT_AUTON_POS = ((int)( 0.25/LIFT_SCALE * ELEV_CPI));
+
             liftPositions.add((int) (0.25 / LIFT_SCALE * ELEV_CPI));
             liftPositions.add((int) (6.75 / LIFT_SCALE * ELEV_CPI));
             liftPositions.add((int) (12.75 / LIFT_SCALE * ELEV_CPI));
@@ -141,6 +141,7 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             GRIPPER_CLOSE_POS    = 0.68;
             GRIPPER_OPEN_POS     = 0.84;
             GRIPPER_PARTIAL_POS  = 0.78;
+            GRIPPER_STOW_POS     = 0.90;
 
             RGRIPPER_CLOSE_POS   = 0.99;
             RGRIPPER_OPEN_POS    = 0.80;
@@ -154,7 +155,25 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         }
         catch (Exception e)
         {
-            RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR initCollector get hardware map\n" + e.toString());
+        }
+
+        try
+        {
+            rgripper = hwMap.servo.get("rgripper");
+        }
+        catch (Exception e)
+        {
+            RobotLog.ww(TAG, "WARNING initCollector get hardware - no rgripper\n");
+        }
+
+        try
+        {
+            gpitch = hwMap.servo.get("gpitch");
+        }
+        catch (Exception e)
+        {
+            RobotLog.ww(TAG, "WARNING initCollectorLifter - no gpitch");
         }
     }
 
@@ -184,20 +203,20 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     public void closeGripper()
     {
         gripper.setPosition(GRIPPER_CLOSE_POS);
-        rgripper.setPosition(RGRIPPER_CLOSE_POS);
+        if(rgripper != null) rgripper.setPosition(RGRIPPER_CLOSE_POS);
     }
 
     @Override
     public void openGripper()
     {
         gripper.setPosition(GRIPPER_OPEN_POS);
-        rgripper.setPosition(RGRIPPER_OPEN_POS);
+        if(rgripper != null) rgripper.setPosition(RGRIPPER_OPEN_POS);
     }
 
     @Override
     public void partialGripper()
     {
         gripper.setPosition(GRIPPER_PARTIAL_POS);
-        rgripper.setPosition(RGRIPPER_PARTIAL_POS);
+        if(rgripper != null) rgripper.setPosition(RGRIPPER_PARTIAL_POS);
     }
 }

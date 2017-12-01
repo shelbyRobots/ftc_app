@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -60,7 +59,7 @@ public class MecanumTeleop extends InitLinearOpMode
             idle();
         }
 
-        boolean pActive = false;
+//        boolean pActive = false;
         boolean eActive = false;
 
 
@@ -75,13 +74,12 @@ public class MecanumTeleop extends InitLinearOpMode
             robot.closeGripper();
         }
 
-        if(robot.gpitch != null)
-        {
-            //robot.gpitch.setPosition(TilerunnerMecanumBot.GPITCH_UP_POS);
-            robot.retractGpitch();
-            currentPitchState = PitchState.PITCH_UP;
-            pActive = true;
-        }
+//        if(robot.gpitch != null)
+//        {
+//            robot.retractGpitch();
+//            currentPitchState = PitchState.PITCH_UP;
+//            pActive = true;
+//        }
 
         if(robot.elevMotor != null)
         {
@@ -115,17 +113,17 @@ public class MecanumTeleop extends InitLinearOpMode
 
             boolean gripper_open_par  = gpad2.pressed(ManagedGamepad.Button.A);
             boolean gripper_open      = gpad2.pressed(ManagedGamepad.Button.B);
-            boolean toggle_gpitch     = gpad2.just_pressed(ManagedGamepad.Button.X);
+//            boolean toggle_gpitch     = gpad2.just_pressed(ManagedGamepad.Button.X);
             boolean toggle_jflicker   = gpad2.just_pressed(ManagedGamepad.Button.Y);
 
             double elev         = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
-            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
-
-            double outPitch = Range.scale(pitch, -1.0, 1.0,
-                    robot.GPITCH_MIN, robot.GPITCH_MAX);
-
-            if(robot.GPITCH_DOWN_POS > robot.GPITCH_UP_POS)
-                outPitch = 1.0 - outPitch;
+//            double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+//
+//            double outPitch = Range.scale(pitch, -1.0, 1.0,
+//                    robot.GPITCH_MIN, robot.GPITCH_MAX);
+//
+//            if(robot.GPITCH_DOWN_POS > robot.GPITCH_UP_POS)
+//                outPitch = 1.0 - outPitch;
 
             boolean step_driveType = gpad1.just_pressed(ManagedGamepad.Button.A);
 
@@ -299,33 +297,33 @@ public class MecanumTeleop extends InitLinearOpMode
 
             // Pitch (Gripper angle servo) (x: toggles between closed and open position)
 
-            if (toggle_gpitch)
-            {
-                currentPitchState = (currentPitchState == PitchState.PITCH_UP) ?
-                                            PitchState.PITCH_DOWN : PitchState.PITCH_UP;
-
-                if (currentPitchState == PitchState.PITCH_UP)
-                {
-                    //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
-                    robot.retractGpitch();
-                }
-                else if (currentPitchState == PitchState.PITCH_DOWN)
-                {
-                    //robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
-                    robot.deployGpitch();
-                }
-                pActive = true;
-            }
-
-            if (Math.abs(pitch) > 0.001)
-            {
-                pActive = false;
-            }
-
-            if(!pActive)
-            {
-                robot.gpitch.setPosition(outPitch);
-            }
+//            if (toggle_gpitch)
+//            {
+//                currentPitchState = (currentPitchState == PitchState.PITCH_UP) ?
+//                                            PitchState.PITCH_DOWN : PitchState.PITCH_UP;
+//
+//                if (currentPitchState == PitchState.PITCH_UP)
+//                {
+//                    //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
+//                    robot.retractGpitch();
+//                }
+//                else if (currentPitchState == PitchState.PITCH_DOWN)
+//                {
+//                    //robot.gpitch.setPosition(robot.GPITCH_DOWN_POS);
+//                    robot.deployGpitch();
+//                }
+//                pActive = true;
+//            }
+//
+//            if (Math.abs(pitch) > 0.001)
+//            {
+//                pActive = false;
+//            }
+//
+//            if(!pActive && robot.gpitch != null)
+//            {
+//                robot.gpitch.setPosition(outPitch);
+//            }
 
             // Jewel Flicker (y: toggles between up and down positions)
             if (toggle_jflicker)
@@ -351,8 +349,8 @@ public class MecanumTeleop extends InitLinearOpMode
     private Drivetrain dtrn = new Drivetrain();
     private int curElevIdx = 0;
 
-    private enum PitchState { PITCH_UP, PITCH_DOWN }
-    private PitchState currentPitchState = PitchState.PITCH_UP;
+//    private enum PitchState { PITCH_UP, PITCH_DOWN }
+//    private PitchState currentPitchState = PitchState.PITCH_UP;
 
     private enum FlickerState { UP, DOWN }
     private FlickerState currentFlickerState = FlickerState.UP;
