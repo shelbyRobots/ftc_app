@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -66,11 +65,7 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean pActive = false;
         boolean eActive = false;
 
-        if(robot.gripper != null)
-        {
-            //robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
-            robot.closeGripper();
-        }
+        robot.closeGripper();
 
         if(robot.gpitch != null)
         {
@@ -82,9 +77,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(robot.elevMotor != null)
         {
-            robot.elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.elevMotor.setPower(0.0);
-            robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.initElevZero();
         }
 
         // run until the end of the match (driver presses STOP)
@@ -108,6 +101,8 @@ public class Teleop_Driver extends InitLinearOpMode
             boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
             boolean holdElev          = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
+            boolean decrElev          = holdElev;
+            boolean incrElev          = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
 
             boolean gripper_open_par  = gpad2.pressed(ManagedGamepad.Button.A);
             boolean gripper_open      = gpad2.pressed(ManagedGamepad.Button.B);
@@ -136,11 +131,21 @@ public class Teleop_Driver extends InitLinearOpMode
             double shp_turn  = ishaper.shape(raw_turn, 0.1);
             elev  = ishaper.shape(elev);
 
-            double outPitch = Range.scale(pitch, -1.0, 1.0,
-                    robot.GPITCH_MIN, robot.GPITCH_MAX);
+            double locMin = robot.GPITCH_MIN;
+            double locMax = robot.GPITCH_MAX;
 
             if(robot.GPITCH_DOWN_POS > robot.GPITCH_UP_POS)
-                outPitch = 1.0 - outPitch;
+            {
+                locMin = robot.GPITCH_MAX;
+                locMax = robot.GPITCH_MIN;
+            }
+
+            double outPitch = robot.GPITCH_DOWN_POS;
+
+            double thresh = 0.001;
+
+            if(pitch > thresh)  outPitch = locMax;
+            else if(pitch < -thresh) outPitch = locMin;
 
             double arcadeTurnScale = 0.5;
 
@@ -278,14 +283,23 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
             dashboard.displayPrintf(15,"SVEL " + useSetVel);
 
-            int curElevPos = robot.elevMotor.getCurrentPosition();
+            int curElevPos = 0;
+            if(!robot.getName().equals("GTO1"))
+            {
+                curElevPos = robot.elevMotor.getCurrentPosition();
+            }
+            else
+            {
+                double sPos = robot.elevServo.getPosition();
+                curElevPos = (int)(sPos * robot.MICRO_RNG + robot.MICRO_MIN);
+            }
 
             if(Math.abs(elev) > 0.001)
             {
                 eActive = false;
             }
 
-            if(!eActive)
+            if(!eActive && !robot.getName().equals("GTO1"))
             {
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 int minElev = robot.liftPositions.get(0) + 40;
@@ -299,22 +313,28 @@ public class Teleop_Driver extends InitLinearOpMode
 
             int nextDown = 0;
             int nextUp   = 1;
-            int elevTresh = 10;
+            int ethresh  = (int)(1.5 * robot.ELEV_CPI);
 
-            if(curElevPos + elevTresh < robot.liftPositions.get(1))
+            for(int eIdx = 0; eIdx < robot.liftPositions.size() - 1; eIdx++)
             {
-                nextDown = 0;
-                nextUp   = 1;
-            }
-
-            for(int eIdx = 0; eIdx < robot.liftPositions.size() - 2; eIdx++)
-            {
-                if(curElevPos + elevTresh > robot.liftPositions.get(eIdx))
+                if(raiseElev && curElevPos + ethresh >= robot.liftPositions.get(eIdx))
                 {
                     nextUp = eIdx + 1;
-                    nextDown = eIdx;
                 }
             }
+
+            for(int eIdx = robot.liftPositions.size() - 1; eIdx > 0; eIdx--)
+            {
+                if(lowerElev && curElevPos - ethresh <= robot.liftPositions.get(eIdx))
+                {
+                    nextDown = eIdx - 1;
+                }
+            }
+
+            RobotLog.dd(TAG,"UP_DOWN cur %d dwn %d %d up %d %d",
+                    curElevPos,
+                    nextDown, robot.liftPositions.get(nextDown),
+                    nextUp, robot.liftPositions.get(nextUp));
 
             nextDown = Math.max(0, nextDown);
             nextUp   = Math.min(robot.liftPositions.size() - 1, nextUp);
@@ -338,21 +358,45 @@ public class Teleop_Driver extends InitLinearOpMode
 //            }
             if(lowerElev)
             {
-                robot.elevMotor.setTargetPosition(robot.liftPositions.get(nextDown));
-                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.55;
-                robot.elevMotor.setPower(elev);
-                eActive = true;
+                int dPos = robot.liftPositions.get(nextDown);
+                RobotLog.dd(TAG, "LowerElev. curPos=%d nextDown=%d dPos=%d",
+                        curElevPos, nextDown, dPos);
+                if(!robot.getName().equals("GTO1"))
+                {
+                    robot.elevMotor.setTargetPosition(dPos);
+                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elev = 0.55;
+                    robot.elevMotor.setPower(elev);
+                    eActive = true;
+                }
+                else
+                {
+                    double nrmPos = (dPos - robot.MICRO_MIN)/robot.MICRO_RNG;
+                    RobotLog.dd(TAG, "LowerElev. nrmPos=%.2f", nrmPos);
+                    robot.elevServo.setPosition(nrmPos);
+                }
             }
             else if(raiseElev)
             {
-                robot.elevMotor.setTargetPosition(robot.liftPositions.get(nextUp));
-                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.55;
-                robot.elevMotor.setPower(elev);
-                eActive = true;
+                int uPos = robot.liftPositions.get(nextUp);
+                RobotLog.dd(TAG, "RaiseElev. curPos=%d nextUp=%d uPos=%d",
+                        curElevPos, nextUp, uPos);
+                if(!robot.getName().equals("GTO1"))
+                {
+                    robot.elevMotor.setTargetPosition(uPos);
+                    robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elev = 0.55;
+                    robot.elevMotor.setPower(elev);
+                    eActive = true;
+                }
+                else
+                {
+                    double nrmPos = (uPos - robot.MICRO_MIN)/robot.MICRO_RNG;
+                    RobotLog.dd(TAG, "RaiseElev. nrmPos=%.2f", nrmPos);
+                    robot.elevServo.setPosition(nrmPos);
+                }
             }
-            else if (holdElev)
+            else if (holdElev && !robot.getName().equals("GTO1"))
             {
                 int curPos = robot.elevMotor.getCurrentPosition();
                 robot.elevMotor.setTargetPosition(curPos);
@@ -360,6 +404,22 @@ public class Teleop_Driver extends InitLinearOpMode
                 elev = 0.65;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
+            }
+            else if (decrElev && robot.getName().equals("GTO1"))
+            {
+                double dPos = curElevPos - 1.0 * robot.ELEV_CPI;
+                int limit = robot.liftPositions.get(0);
+                dPos = Math.max(limit, dPos);
+                dPos = (dPos - robot.MICRO_MIN)/robot.MICRO_RNG;
+                robot.elevServo.setPosition(dPos);
+            }
+            else if (incrElev && robot.getName().equals("GTO1"))
+            {
+                double uPos = curElevPos + 1.0 * robot.ELEV_CPI;
+                int limit = robot.liftPositions.get(robot.liftPositions.size() - 1);
+                uPos = Math.min(limit, uPos);
+                uPos = (uPos - robot.MICRO_MIN)/robot.MICRO_RNG;
+                robot.elevServo.setPosition(uPos);
             }
 
             if(toggle_float)
