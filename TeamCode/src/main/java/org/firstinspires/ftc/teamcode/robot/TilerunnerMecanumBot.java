@@ -16,12 +16,6 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
     public DcMotor rfMotor = null;
     public DcMotor rrMotor = null;
 
-    private Servo rgripper    = null;
-
-    private static double RGRIPPER_CLOSE_POS   = 0.83;
-    private static double RGRIPPER_PARTIAL_POS = 0.75;
-    private static double RGRIPPER_OPEN_POS    = 0.5;
-
     private static final String TAG = "SJH_MEC";
 
     public TilerunnerMecanumBot()
@@ -123,48 +117,39 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             elevMotor.setDirection(DcMotor.Direction.FORWARD);
 
-            double ELEV_COUNTS_PER_MOTOR_REV = 28;
-            double ELEV_GEAR_ONE = 60.0;
-            double ELEV_GEAR_TWO = 40.0 / 16.0;
-            double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE * ELEV_GEAR_TWO;
-            double ELEV_ARM_LENGTH = 14;
-            double ELEV_CPI = ELEV_CPR / (Math.PI * 2 * ELEV_ARM_LENGTH);
-            double LIFT_SCALE = 1.0;
-
-            LIFT_AUTON_POS = ((int)( 0.25/LIFT_SCALE * ELEV_CPI));
-
-            liftPositions.add((int) (0.25 / LIFT_SCALE * ELEV_CPI));
-            liftPositions.add((int) (6.75 / LIFT_SCALE * ELEV_CPI));
-            liftPositions.add((int) (12.75 / LIFT_SCALE * ELEV_CPI));
-            liftPositions.add((int) (18.25 / LIFT_SCALE * ELEV_CPI));
+            ELEV_COUNTS_PER_MOTOR_REV = 28;
+            ELEV_GEAR_ONE = 40.0;
+            double ELEV_GEAR_TWO = 54.0 / 16.0;
+            double ELEV_GEAR_THREE = 40.0 / 15.0;
+            ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE * ELEV_GEAR_TWO *
+               ELEV_GEAR_THREE;
+            double ELEV_ARM_LENGTH = 16;
+            ELEV_WHEEL_DIAM = 2 * ELEV_ARM_LENGTH;
+            LIFT_SCALE = 1.0;
+            ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM)/LIFT_SCALE;
 
             GRIPPER_CLOSE_POS    = 0.68;
             GRIPPER_OPEN_POS     = 0.84;
             GRIPPER_PARTIAL_POS  = 0.78;
             GRIPPER_STOW_POS     = 0.90;
 
-            RGRIPPER_CLOSE_POS   = 0.99;
-            RGRIPPER_OPEN_POS    = 0.80;
-            RGRIPPER_PARTIAL_POS = 0.83;
-
             GPITCH_UP_POS         = 0.86;
             GPITCH_DOWN_POS       = 0.36;
             GPITCH_CLEAR_POS      = 0.6;
             GPITCH_MIN            = 0.0;
             GPITCH_MAX            = 0.8;
+
+            LIFT_AUTON_POS = (MIN_ELEV_CNT + (int)( 5.0 * ELEV_CPI));
+            LIFT_ZERO_POS  = (MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI));
+
+            liftPositions.add(MIN_ELEV_CNT + (int)( 0.25 * ELEV_CPI));
+            liftPositions.add(MIN_ELEV_CNT + (int)( 6.75 * ELEV_CPI));
+            liftPositions.add(MIN_ELEV_CNT + (int)(12.75 * ELEV_CPI));
+            liftPositions.add(MIN_ELEV_CNT + (int)(20.0 * ELEV_CPI));
         }
         catch (Exception e)
         {
             RobotLog.ee(TAG, "ERROR initCollector get hardware map\n" + e.toString());
-        }
-
-        try
-        {
-            rgripper = hwMap.servo.get("rgripper");
-        }
-        catch (Exception e)
-        {
-            RobotLog.ww(TAG, "WARNING initCollector get hardware - no rgripper\n");
         }
 
         try
@@ -184,9 +169,9 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         {
             jflicker = hwMap.servo.get("jflicker");
 
-            JFLICKER_UP_POS   = 0.65;
-            JFLICKER_DOWN_POS = 0.30;
-            JFLICKER_STOW_POS = 0.75 ;
+            JFLICKER_UP_POS   = 0.72;
+            JFLICKER_DOWN_POS = 0.12;
+            JFLICKER_STOW_POS = 0.86 ;
 
             capMap.put("pusher", true);
 
@@ -197,26 +182,5 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
         {
             RobotLog.ee(TAG, "ERROR get hardware map\n" + e.toString());
         }
-    }
-
-    @Override
-    public void closeGripper()
-    {
-        gripper.setPosition(GRIPPER_CLOSE_POS);
-        if(rgripper != null) rgripper.setPosition(RGRIPPER_CLOSE_POS);
-    }
-
-    @Override
-    public void openGripper()
-    {
-        gripper.setPosition(GRIPPER_OPEN_POS);
-        if(rgripper != null) rgripper.setPosition(RGRIPPER_OPEN_POS);
-    }
-
-    @Override
-    public void partialGripper()
-    {
-        gripper.setPosition(GRIPPER_PARTIAL_POS);
-        if(rgripper != null) rgripper.setPosition(RGRIPPER_PARTIAL_POS);
     }
 }

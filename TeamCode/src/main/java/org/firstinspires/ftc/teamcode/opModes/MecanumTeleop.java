@@ -67,19 +67,8 @@ public class MecanumTeleop extends InitLinearOpMode
 
         RobotLog.dd(TAG, "Setting gripper to init pos %.2f",
                 TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
-        if(robot.gripper != null)
-        {
-            //robot.gripper.setPosition(TilerunnerMecanumBot.GRIPPER_CLOSE_POS);
-            //robot.rgripper.setPosition(TilerunnerMecanumBot.RGRIPPER_CLOSE_POS);
-            robot.closeGripper();
-        }
 
-//        if(robot.gpitch != null)
-//        {
-//            robot.retractGpitch();
-//            currentPitchState = PitchState.PITCH_UP;
-//            pActive = true;
-//        }
+        robot.closeGripper();
 
         if(robot.elevMotor != null)
         {
@@ -240,7 +229,7 @@ public class MecanumTeleop extends InitLinearOpMode
             {
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 int minElev = robot.liftPositions.get(0) + 40;
-                int maxElev = robot.liftPositions.get(robot.liftPositions.size() - 1) - 40;
+                int maxElev = robot.liftPositions.get(robot.liftPositions.size() - 1);
                 if(robot.elevMotor.getCurrentPosition() < minElev && elev < 0.0)
                     elev = 0.0;
                 if(robot.elevMotor.getCurrentPosition() > maxElev && elev > 0.0)
@@ -339,7 +328,7 @@ public class MecanumTeleop extends InitLinearOpMode
                         break;
                     case UP:
                         //robot.jflicker.setPosition(TilerunnerMecanumBot.JFLICKER_UP_POS);
-                        robot.stowFlicker();
+                        robot.raiseFlicker();
                         break;
                 }
             }
