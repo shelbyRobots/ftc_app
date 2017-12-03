@@ -73,9 +73,9 @@ public class RrPoints extends Points
             addPoint(points, itk, 0.30, 1.00, encType, key,  RrField.RRFP);
             addPoint(points, itk, 0.30, 1.00, encType, drop, RrField.RRDC);
             addPoint(points, psr, 0.40, 1.00, encType, escp, RrField.RRFP);
-            addPoint(points, itk, 0.40, 1.00, encType, pgrb, RrField.RRXP);
-            addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RRPP);
-            addPoint(points, psr, 0.40, 1.00, encType, none, RrField.RRXP);
+            addPoint(points, itk, 0.70, 1.00, encType, pgrb, RrField.RRXP);
+            addPoint(points, itk, 0.70, 1.00, encType, grab, RrField.RRPP);
+            addPoint(points, psr, 0.70, 1.00, encType, none, RrField.RRXP);
             addPoint(points, itk, 0.60, 1.00, encType, rtct, RrField.RRTT);
         }
 
