@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.test;
 import android.util.SparseArray;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
@@ -43,7 +45,7 @@ public class StepServoTest extends InitLinearOpMode
         for(int m = 0; m < MAX_SERVOS; m++)
         {
             String servoName = "testservo" + m;
-            Servo srv = null;
+            Servo srv;
             try
             {
                 srv = hardwareMap.servo.get(servoName);
@@ -82,10 +84,12 @@ public class StepServoTest extends InitLinearOpMode
             boolean step_up    = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
             boolean step_down  = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean zeroize    = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
+            boolean extend     = gpad1.just_pressed(ManagedGamepad.Button.Y);
 
-            if(step_up && pos < MAX_POS - INCREMENT)         pos += INCREMENT;
-            else if(step_down && pos > MIN_POS + INCREMENT)  pos -= INCREMENT;
-            else if(zeroize)                                 pos = 0.0;
+
+            if(step_up && pos <= MAX_POS - INCREMENT)         pos += INCREMENT;
+            else if(step_down && pos >= MIN_POS + INCREMENT)  pos -= INCREMENT;
+            else if(zeroize)                                  pos = 0.0;
 
             // Display the current value
             dashboard.displayPrintf(MAX_SERVOS, "Servo pos %4.2f", pos);
@@ -95,6 +99,20 @@ public class StepServoTest extends InitLinearOpMode
                 if(srv != null)
                 {
                     srv.setPosition(pos);
+
+                    if(extend)
+                    {
+                        if (srv.getController() instanceof ServoControllerEx)
+                        {
+                            ServoControllerEx srvCntrlrEx =
+                                    (ServoControllerEx) srv.getController();
+                            int port = srv.getPortNumber();
+
+                            PwmControl.PwmRange range =
+                                    new PwmControl.PwmRange(500, 2500);
+                            srvCntrlrEx.setServoPwmRange(port, range);
+                        }
+                    }
                 }
             }
 
@@ -102,6 +120,7 @@ public class StepServoTest extends InitLinearOpMode
             dashboard.displayText(MAX_SERVOS + 2, "Incr pos : Dpad up");
             dashboard.displayText(MAX_SERVOS + 3, "Decr pos : Dpad down");
             dashboard.displayText(MAX_SERVOS + 4, "Zero pos (midpt) : Dpad right");
+            dashboard.displayText(MAX_SERVOS + 5, "Extend Range: : Y");
 
             sleep(CYCLE_MS);
         }
