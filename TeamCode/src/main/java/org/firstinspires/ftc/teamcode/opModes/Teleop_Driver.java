@@ -264,8 +264,9 @@ public class Teleop_Driver extends InitLinearOpMode
             }
             else
             {
-                out_left  = left;
-                out_right = right;
+                double governor = 0.7;
+                out_left  = left * governor;
+                out_right = right * governor;
                 robot.leftMotors.get(0).setPower(out_left);
                 robot.rightMotors.get(0).setPower(out_right);
             }
