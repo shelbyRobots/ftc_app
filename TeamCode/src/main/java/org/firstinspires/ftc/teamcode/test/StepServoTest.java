@@ -83,14 +83,15 @@ public class StepServoTest extends InitLinearOpMode
             gpad1.update();
             boolean step_up    = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
             boolean step_down  = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
-            boolean zeroize    = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
+            boolean zeroize    = gpad1.just_pressed(ManagedGamepad.Button.D_LEFT);
+            boolean fullize    = gpad1.just_pressed(ManagedGamepad.Button.D_RIGHT);
             boolean extend     = gpad1.just_pressed(ManagedGamepad.Button.Y);
 
 
             if(step_up && pos <= MAX_POS - INCREMENT)         pos += INCREMENT;
             else if(step_down && pos >= MIN_POS + INCREMENT)  pos -= INCREMENT;
             else if(zeroize)                                  pos = 0.0;
-
+            else if(fullize)                                  pos = 1.0;
             // Display the current value
             dashboard.displayPrintf(MAX_SERVOS, "Servo pos %4.2f", pos);
             for(int m = 0; m < MAX_SERVOS; m++)
