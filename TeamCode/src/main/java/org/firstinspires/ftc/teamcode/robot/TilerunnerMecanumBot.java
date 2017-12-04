@@ -141,6 +141,8 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
 
             LIFT_AUTON_POS = (MIN_ELEV_CNT + (int)( 5.0 * ELEV_CPI));
             LIFT_ZERO_POS  = (MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI));
+            LIFT_DROP_POS  = (MIN_ELEV_CNT + (int)( 2.0 * ELEV_CPI));
+            LIFT_TIER2_POS = (MIN_ELEV_CNT + (int)( 7.0 * ELEV_CPI));
 
             liftPositions.add(MIN_ELEV_CNT + (int)( 0.25 * ELEV_CPI));
             liftPositions.add(MIN_ELEV_CNT + (int)( 6.75 * ELEV_CPI));

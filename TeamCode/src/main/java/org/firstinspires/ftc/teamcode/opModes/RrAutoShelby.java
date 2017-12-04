@@ -290,7 +290,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         if(robotName.equals("GTO1"))
         {
             robot.openGripper();
+            sleep(100);
             robot.setElevZero();
+            sleep(750);
             robot.closeGripper();
             sleep(100);
             robot.setElevAuton();
@@ -417,13 +419,18 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     pathSegs.get(i + 1).setEndPt(dpt); //drop
                     pathSegs.get(i + 2).setStrtPt(dpt); //XP
                     if(robotName.equals("GTO2")) robot.deployGpitch();
+                    if(!robotName.equals("GTO2"))
+                    {
+                        robot.setElevDrop();
+                        sleep(200);
+                    }
                     break;
                 }
 
                 case DROP:
                 {
                     robot.partialGripper();
-                    sleep(500);
+                    sleep(300);
                     if(robotName.equals("GTO2"))
                     {
                         robot.retractGpitch();
@@ -431,7 +438,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     if(!robotName.equals("GTO2"))
                     {
                         robot.setElevZero();
-                        sleep(500);
                     }
 
                     drvTrn.driveDistanceLinear(3.0, 0.3, Drivetrain.Direction.FORWARD);
@@ -444,27 +450,29 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     if(robotName.equals("GTO2"))
                     {
                         robot.deployGpitch();
-                        sleep(200);
                     }
                     else
                     {
                         robot.setElevZero();
                     }
                     robot.openGripper();
+
+                    if(startTimer.seconds() > 25) breakOut = true;
+
                     break;
                 }
 
                 case GRAB:
                 {
                     robot.closeGripper();
-                    sleep(400);
+                    sleep(300);
                     if(robotName.equals("GTO2"))
                     {
                         robot.retractGpitch();
                     }
                     else
                     {
-                        robot.setElevAuton();
+                        robot.setElevTier2();
                     }
                     break;
                 }
@@ -491,18 +499,22 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case THROW:
                 {
-                    //TODO:  Attempt to do proper glyph drop
                     if(robotName.equals("GTO2"))
                     {
                         robot.deployGpitch();
                         sleep(100);
-                    }
-                    robot.openGripper();
-                    sleep(200);
-                    robot.closeGripper();
-                    if(robotName.equals("GTO2"))
-                    {
+                        robot.openGripper();
+                        sleep(200);
                         robot.retractGpitch();
+                    }
+                    else
+                    {
+                        if(startTimer.seconds() < 27)
+                        {
+                            drvTrn.driveDistanceLinear(8.0, 0.4, Drivetrain.Direction.FORWARD);
+                            robot.openGripper();
+                            drvTrn.driveDistanceLinear(-8.0, 0.4, Drivetrain.Direction.FORWARD);
+                        }
                     }
 
                     break;

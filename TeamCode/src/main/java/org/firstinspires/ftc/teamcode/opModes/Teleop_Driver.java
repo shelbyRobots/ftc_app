@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -67,6 +68,11 @@ public class Teleop_Driver extends InitLinearOpMode
 
         robot.closeGripper();
 
+        if(robot.relClamp != null)
+        {
+            robot.relClamp.setPosition(0.0);
+        }
+
         if(robot.gpitch != null)
         {
             //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
@@ -116,6 +122,14 @@ public class Teleop_Driver extends InitLinearOpMode
             double elev         = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
             double pitch        = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
 
+            double rpitch       = gpad2.value(ManagedGamepad.AnalogInput.R_TRIGGER_VAL) -
+                                  gpad2.value(ManagedGamepad.AnalogInput.L_TRIGGER_VAL);
+
+            boolean toggle_rgrip = gpad2.just_pressed(ManagedGamepad.Button.L_BUMP);
+
+            boolean extend_rslide = gpad2.pressed(ManagedGamepad.Button.R_STICK_BUTTON);
+            boolean retract_rslide = gpad2.pressed(ManagedGamepad.Button.L_STICK_BUTTON);
+
             DcMotor.ZeroPowerBehavior zeroPowBeh = DcMotor.ZeroPowerBehavior.UNKNOWN;
 
             if(robot.leftMotor  != null) zeroPowBeh = robot.leftMotor.getZeroPowerBehavior();
@@ -146,6 +160,42 @@ public class Teleop_Driver extends InitLinearOpMode
 
             if(pitch > thresh)  outPitch = locMax;
             else if(pitch < -thresh) outPitch = locMin;
+
+
+            if(robot.relPitch != null)
+            {
+                rpitch = Math.max(-1.0, rpitch);
+                rpitch = Math.min( 1.0, rpitch);
+                robot.relPitch.setPower(rpitch);
+            }
+
+            if(robot.relClamp != null && toggle_rgrip)
+            {
+                if(robot.relClamp.getPosition() < 0.5)
+                {
+                    robot.relClamp.setPosition(1.0);
+                }
+                else
+                {
+                    robot.relClamp.setPosition(0.0);
+                }
+            }
+
+
+            if((extend_rslide || retract_rslide) && robot.relExtend != null)
+            {
+                double rslideSpd = 0.3;
+
+                if(extend_rslide)
+                {
+                    robot.relExtend.setDirection(DcMotorSimple.Direction.FORWARD);
+                }
+                else if(retract_rslide)
+                {
+                    robot.relExtend.setDirection(DcMotorSimple.Direction.REVERSE);
+                }
+                robot.relExtend.setPower(rslideSpd);
+            }
 
             double arcadeTurnScale = 0.5;
 
