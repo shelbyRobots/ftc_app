@@ -88,6 +88,8 @@ public class ShelbyBot
 
     private int initHdg = 0;
     public static double autonEndHdg = 0.0;
+    public double getAutonEndHdg() {return  autonEndHdg;}
+    public void setAutonEndHdg(double hdg) {autonEndHdg = hdg;}
 
     //The values below are for the 6 wheel 2016-2017 drop center bot
     //with center wheels powered by Neverest 40 motors.

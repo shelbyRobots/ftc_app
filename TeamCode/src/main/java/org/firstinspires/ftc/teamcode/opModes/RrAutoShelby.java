@@ -187,9 +187,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.initElevZero();
         if(robotName.equals("GTO1"))
         {
+            RobotLog.dd(TAG, "Moving elev to auton pos");
             robot.setElevAuton();
             sleep(500);
         }
+        RobotLog.dd(TAG, "StowGripper");
         robot.stowGripper();
         robot.retractGpitch();
 
@@ -292,9 +294,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             robot.openGripper();
             sleep(100);
             robot.setElevZero();
-            sleep(750);
+            sleep(1500);
             robot.closeGripper();
-            sleep(100);
+            sleep(400);
             robot.setElevAuton();
         }
         else if(robotName.equals("MEC"))
@@ -449,7 +451,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 {
                     if(robotName.equals("GTO2"))
                     {
-                        robot.deployGpitch();
+                        robot.downGpitch();
                     }
                     else
                     {
@@ -525,7 +527,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         }
 
         RobotLog.dd(TAG, "Finished auton segments");
-        ShelbyBot.autonEndHdg = robot.getGyroFhdg();
+        robot.setAutonEndHdg(robot.getGyroFhdg());
 
         while(opModeIsActive() && !isStopRequested())
         {
@@ -542,8 +544,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             CameraDevice.getInstance().setFlashTorchMode(true) ;
         key = RelicRecoveryVuMark.UNKNOWN;
         key = getKey();
-        MajorColorDetector.Color jewelColor = MajorColorDetector.Color.NONE;
-        jewelColor = getJewelColor();
+        MajorColorDetector.Color jewelColor =  getJewelColor();
         RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s jewelColor = %s",
                 key, jewelColor);
 
@@ -1071,6 +1072,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private int colSegNum = 0;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private boolean useLight = true;
 
     private String robotName = "";

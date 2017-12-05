@@ -41,7 +41,7 @@ public class Teleop_Driver extends InitLinearOpMode
             dtrn.setRampUp(false);
             dtrn.setRampDown(false);
             robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
-            RobotLog.dd(TAG, "Start Hdg %.2f", robot.autonEndHdg);
+            RobotLog.dd(TAG, "Start Hdg %.2f", robot.getAutonEndHdg());
 
             lex = (DcMotorEx)(robot.leftMotors.get(0));
             rex = (DcMotorEx)(robot.rightMotors.get(0));
@@ -86,6 +86,8 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.initElevZero();
         }
 
+        robot.setElevZero();
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive())
         {
@@ -107,6 +109,7 @@ public class Teleop_Driver extends InitLinearOpMode
             boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
             boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
             boolean holdElev          = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
+            @SuppressWarnings("UnnecessaryLocalVariable")
             boolean decrElev          = holdElev;
             boolean incrElev          = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
 
@@ -130,10 +133,6 @@ public class Teleop_Driver extends InitLinearOpMode
             boolean extend_rslide = gpad2.pressed(ManagedGamepad.Button.R_STICK_BUTTON);
             boolean retract_rslide = gpad2.pressed(ManagedGamepad.Button.L_STICK_BUTTON);
 
-            DcMotor.ZeroPowerBehavior zeroPowBeh = DcMotor.ZeroPowerBehavior.UNKNOWN;
-
-            if(robot.leftMotor  != null) zeroPowBeh = robot.leftMotor.getZeroPowerBehavior();
-
             // Run wheels in tank mode
             // (note: The joystick goes negative when pushed forwards, so negate it)
 
@@ -145,16 +144,19 @@ public class Teleop_Driver extends InitLinearOpMode
             double shp_turn  = ishaper.shape(raw_turn, 0.1);
             elev  = ishaper.shape(elev);
 
-            double locMin = robot.GPITCH_MIN;
-            double locMax = robot.GPITCH_MAX;
+            double locMin = robot.getGpitchMin();
+            double locMax = robot.getGpitchMax();
 
-            if(robot.GPITCH_DOWN_POS > robot.GPITCH_UP_POS)
+            double dp = robot.getGpitchDownPos();
+            double up = robot.getGpitchUpPos();
+
+            if(dp > up)
             {
-                locMin = robot.GPITCH_MAX;
-                locMax = robot.GPITCH_MIN;
+                locMin = robot.getGpitchMax();
+                locMax = robot.getGpitchMin();
             }
 
-            double outPitch = robot.GPITCH_DOWN_POS;
+            double outPitch = up;
 
             double thresh = 0.001;
 
@@ -212,8 +214,6 @@ public class Teleop_Driver extends InitLinearOpMode
             double maxRPS = maxIPS/(4.0*Math.PI);
             double maxDPS = maxRPS*360.0;
 
-            boolean useD = false;
-
             double left  = 0.0;
             double right = 0.0;
             double turn  = 0.0;
@@ -223,7 +223,6 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In fwd_step");
                 left  = detail_speed;
                 right = detail_speed;
-                useD = true;
                 //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.FORWARD);
                 RobotLog.dd(TAG, "Done fwd_step");
             }
@@ -232,7 +231,6 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In back_step");
                 left  = -detail_speed;
                 right = -detail_speed;
-                useD = true;
                 //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.REVERSE);
                 RobotLog.dd(TAG, "Done back_step");
             }
@@ -241,7 +239,6 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In left_step");
                 left  = -detail_speed;
                 right =  detail_speed;
-                useD = true;
                 //dtrn.setInitValues();
                 //dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
                 RobotLog.dd(TAG, "Done left_step");
@@ -251,7 +248,6 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "In right_step");
                 left  =  detail_speed;
                 right = -detail_speed;
-                useD = true;
                 //dtrn.setInitValues();
                 //dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
                 RobotLog.dd(TAG, "Done right_step");
@@ -302,7 +298,9 @@ public class Teleop_Driver extends InitLinearOpMode
                 }
             }
 
+            @SuppressWarnings("UnusedAssignment")
             double out_left = left;
+            @SuppressWarnings("UnusedAssignment")
             double out_right = right;
 
             if(useSetVel)
@@ -334,7 +332,7 @@ public class Teleop_Driver extends InitLinearOpMode
             dashboard.displayPrintf(14,"R_DIR " + robot.rightMotor.getDirection());
             dashboard.displayPrintf(15,"SVEL " + useSetVel);
 
-            int curElevPos = 0;
+            int curElevPos;
             if(!robot.getName().equals("GTO1"))
             {
                 curElevPos = robot.elevMotor.getCurrentPosition();
@@ -353,8 +351,8 @@ public class Teleop_Driver extends InitLinearOpMode
             if(!eActive && !robot.getName().equals("GTO1"))
             {
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                int minElev = robot.liftPositions.get(0) + 40;
-                int maxElev = robot.liftPositions.get(robot.liftPositions.size() - 1) - 40;
+                int minElev = robot.liftPositions.get(0) + (int)(robot.ELEV_CPI * 0.5);
+                int maxElev = robot.liftPositions.get(robot.liftPositions.size() - 1);
                 if(curElevPos < minElev && elev < 0.0)
                     elev = 0.0;
                 if(curElevPos > maxElev && elev > 0.0)
@@ -368,7 +366,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
             for(int eIdx = 0; eIdx < robot.liftPositions.size() - 1; eIdx++)
             {
-                if(raiseElev && curElevPos + ethresh >= robot.liftPositions.get(eIdx))
+                if(raiseElev && curElevPos + ethresh >=
+                                        robot.liftPositions.get(eIdx) + robot.MICRO_MIN)
                 {
                     nextUp = eIdx + 1;
                 }
@@ -376,37 +375,21 @@ public class Teleop_Driver extends InitLinearOpMode
 
             for(int eIdx = robot.liftPositions.size() - 1; eIdx > 0; eIdx--)
             {
-                if(lowerElev && curElevPos - ethresh <= robot.liftPositions.get(eIdx))
+                if(lowerElev && curElevPos - ethresh <=
+                                        robot.liftPositions.get(eIdx) + robot.MICRO_MIN)
                 {
                     nextDown = eIdx - 1;
                 }
             }
 
-            RobotLog.dd(TAG,"UP_DOWN cur %d dwn %d %d up %d %d",
-                    curElevPos,
-                    nextDown, robot.liftPositions.get(nextDown),
-                    nextUp, robot.liftPositions.get(nextUp));
+//            RobotLog.dd(TAG,"UP_DOWN cur %d dwn %d %d up %d %d",
+//                    curElevPos,
+//                    nextDown, robot.liftPositions.get(nextDown),
+//                    nextUp, robot.liftPositions.get(nextUp));
 
             nextDown = Math.max(0, nextDown);
             nextUp   = Math.min(robot.liftPositions.size() - 1, nextUp);
 
-//            if (lowerElev && curElevIdx > 0)
-//            {
-//                curElevIdx--;
-//                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-//                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                elev = 0.55;
-//                robot.elevMotor.setPower(elev);
-//                eActive = true;
-//            } else if (raiseElev && curElevIdx < robot.liftPositions.size() - 1)
-//            {
-//                curElevIdx++;
-//                robot.elevMotor.setTargetPosition(robot.liftPositions.get(curElevIdx));
-//                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                elev = 0.85;
-//                robot.elevMotor.setPower(elev);
-//                eActive = true;
-//            }
             if(lowerElev)
             {
                 int dPos = robot.liftPositions.get(nextDown);
@@ -422,8 +405,8 @@ public class Teleop_Driver extends InitLinearOpMode
                 }
                 else
                 {
-                    double nrmPos = (dPos - robot.MICRO_MIN)/robot.MICRO_RNG;
-                    RobotLog.dd(TAG, "LowerElev. nrmPos=%.2f", nrmPos);
+                    double nrmPos = (dPos * 1.0)/robot.MICRO_RNG;
+                    RobotLog.dd(TAG, "LowerElev. dPos=%d nrmPos=%.2f", dPos, nrmPos);
                     robot.elevServo.setPosition(nrmPos);
                 }
             }
@@ -442,8 +425,8 @@ public class Teleop_Driver extends InitLinearOpMode
                 }
                 else
                 {
-                    double nrmPos = (uPos - robot.MICRO_MIN)/robot.MICRO_RNG;
-                    RobotLog.dd(TAG, "RaiseElev. nrmPos=%.2f", nrmPos);
+                    double nrmPos = (uPos * 1.0)/robot.MICRO_RNG;
+                    RobotLog.dd(TAG, "RaiseElev. uPos=%d nrmPos=%.2f", uPos, nrmPos);
                     robot.elevServo.setPosition(nrmPos);
                 }
             }
@@ -458,19 +441,23 @@ public class Teleop_Driver extends InitLinearOpMode
             }
             else if (decrElev && robot.getName().equals("GTO1"))
             {
-                double dPos = curElevPos - 1.0 * robot.ELEV_CPI;
+                int dPos = curElevPos - (int)(1.0 * robot.ELEV_CPI) - robot.MICRO_MIN;
                 int limit = robot.liftPositions.get(0);
+                RobotLog.dd(TAG, "DecrElev. dPos=%d limit=%d", dPos, limit);
                 dPos = Math.max(limit, dPos);
-                dPos = (dPos - robot.MICRO_MIN)/robot.MICRO_RNG;
-                robot.elevServo.setPosition(dPos);
+                double nrmPos = dPos * 1.0/robot.MICRO_RNG;
+                RobotLog.dd(TAG, "DecrElev. dPos=%d nrmPos=%.2f", dPos, nrmPos);
+                robot.elevServo.setPosition(nrmPos);
             }
             else if (incrElev && robot.getName().equals("GTO1"))
             {
-                double uPos = curElevPos + 1.0 * robot.ELEV_CPI;
+                int uPos = curElevPos + (int)(1.0 * robot.ELEV_CPI)  - robot.MICRO_MIN;
                 int limit = robot.liftPositions.get(robot.liftPositions.size() - 1);
+                RobotLog.dd(TAG, "IncrElev. uPos=%d limit=%d", uPos, limit);
                 uPos = Math.min(limit, uPos);
-                uPos = (uPos - robot.MICRO_MIN)/robot.MICRO_RNG;
-                robot.elevServo.setPosition(uPos);
+                double nrmPos = uPos * 1.0/robot.MICRO_RNG;
+                RobotLog.dd(TAG, "IncrElev. uPos=%d nrmPos=%.2f", uPos, nrmPos);
+                robot.elevServo.setPosition(nrmPos);
             }
 
             if(toggle_float)
@@ -605,7 +592,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private TilerunnerGtoBot robot = new TilerunnerGtoBot();
     private Drivetrain dtrn = new Drivetrain();
 
-    enum PitchState {PITCH_UP, PITCH_DOWN };
+    private enum PitchState {PITCH_UP, PITCH_DOWN }
     private PitchState currentPitchState = PitchState.PITCH_UP;
 
     private enum FlickerState { UP, DOWN }

@@ -64,9 +64,9 @@ public class TilerunnerGtoBot extends ShelbyImuBot
            @SuppressWarnings("WeakerAccess")
            int MAX_ELEV_CNT = 0;
 
-    public  double MICRO_MIN = 600;
-    private double MICRO_MAX = 2400;
-    public  double MICRO_RNG = MICRO_MAX - MICRO_MIN;
+    public  int MICRO_MIN = 0;
+    private int MICRO_MAX = 0;
+    public  int MICRO_RNG = 1;
 
     private static final String TAG = "SJH_GTO";
 
@@ -106,6 +106,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         initCollectorLifter();
         initPushers();
         initSensors();
+        initArm();
         initCapabilities();
     }
 
@@ -143,15 +144,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
                 elevServo = hwMap.servo.get("elevservo");
 
-                GRIPPER_CLOSE_POS = 0.84;
-                GRIPPER_OPEN_POS = 0.5;
-                GRIPPER_PARTIAL_POS = 0.62;
-                GRIPPER_STOW_POS    = 0.3;
+                GRIPPER_CLOSE_POS    = 0.0;
+                GRIPPER_PARTIAL_POS  = 0.2;
+                GRIPPER_OPEN_POS     = 0.5;
+                GRIPPER_STOW_POS     = 1.0;
 
-                RGRIPPER_CLOSE_POS   = 0.99;
-                RGRIPPER_OPEN_POS    = 0.80;
-                RGRIPPER_PARTIAL_POS = 0.83;
-                RGRIPPER_STOW_POS    = 0.60;
+                RGRIPPER_CLOSE_POS   = 1.0;
+                RGRIPPER_PARTIAL_POS = 0.8;
+                RGRIPPER_OPEN_POS    = 0.5;
+                RGRIPPER_STOW_POS    = 0.0;
 
                 GPITCH_DOWN_POS = 0.62;
                 GPITCH_UP_POS = 0.1;
@@ -170,8 +171,10 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 ELEV_WHEEL_DIAM = 1.456; //2.35
                 LIFT_SCALE = 1.0;
                 ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM)/LIFT_SCALE;
-                MIN_ELEV_CNT = 1050;
-                MAX_ELEV_CNT = 2025;
+                MIN_ELEV_CNT = 950;
+                MAX_ELEV_CNT = 1925;
+                RobotLog.dd(TAG, "ELEV_CPI=%.2f MIN_ELEV_CNT=%d MAX_ELEV_CNT=%d",
+                        ELEV_CPI, MIN_ELEV_CNT, MAX_ELEV_CNT);
             }
             else if(name.equals("GTO2"))
             {
@@ -194,26 +197,27 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 GPITCH_MAX = 0.65;
 
 
-                MIN_ELEV_CNT = (int)(0 * ELEV_CPI);
+                MIN_ELEV_CNT = (int)( 0 * ELEV_CPI);
                 MAX_ELEV_CNT = (int)(19 * ELEV_CPI);
             }
             capMap.put("collector", true);
 
-            LIFT_AUTON_POS = (MIN_ELEV_CNT + (int)( 5.0 * ELEV_CPI));
-            LIFT_ZERO_POS  = (MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI));
-            LIFT_DROP_POS  = (MIN_ELEV_CNT + (int)( 2.0 * ELEV_CPI));
-            LIFT_TIER2_POS = (MIN_ELEV_CNT + (int)( 7.0 * ELEV_CPI));
+            LIFT_AUTON_POS = MIN_ELEV_CNT + (int)( 4.0 * ELEV_CPI) - MICRO_MIN;
+            LIFT_ZERO_POS  = MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI) - MICRO_MIN;
+            LIFT_DROP_POS  = MIN_ELEV_CNT + (int)( 2.0 * ELEV_CPI) - MICRO_MIN;
+            LIFT_TIER2_POS = MIN_ELEV_CNT + (int)( 7.0 * ELEV_CPI) - MICRO_MIN;
 
-            liftPositions.add(MIN_ELEV_CNT + (int)( 0.25 * ELEV_CPI));
-            liftPositions.add(MIN_ELEV_CNT + (int)( 6.00 * ELEV_CPI));
-            liftPositions.add(MIN_ELEV_CNT + (int)(12.00 * ELEV_CPI));
-            liftPositions.add(MIN_ELEV_CNT + (int)(18.00 * ELEV_CPI));
+            liftPositions.add(MIN_ELEV_CNT + (int)( 0.25 * ELEV_CPI) - MICRO_MIN);
+            liftPositions.add(MIN_ELEV_CNT + (int)( 6.00 * ELEV_CPI) - MICRO_MIN);
+            liftPositions.add(MIN_ELEV_CNT + (int)(12.00 * ELEV_CPI) - MICRO_MIN);
+            liftPositions.add(MIN_ELEV_CNT + (int)(18.00 * ELEV_CPI) - MICRO_MIN);
 
             RobotLog.dd(TAG, "Gripper close %.2f open %.2f part %.2f",
                     GRIPPER_CLOSE_POS, GRIPPER_OPEN_POS, GRIPPER_PARTIAL_POS);
             RobotLog.dd(TAG, "Gpitch up %.2f down %.2f min %.2f max %.2f",
                     GPITCH_UP_POS, GPITCH_DOWN_POS, GPITCH_MIN, GPITCH_MAX);
-            RobotLog.dd(TAG, "Elev %s", elevMotor.getDirection());
+            if(elevMotor != null)
+                RobotLog.dd(TAG, "Elev %s", elevMotor.getDirection());
         }
         catch (Exception e)
         {
@@ -262,6 +266,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     protected void initArm()
     {
         RobotLog.dd(TAG, "GTO initArm");
@@ -270,12 +275,12 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             relClamp  = hwMap.servo.get("relClamp");
             relExtend = hwMap.crservo.get("relExtend");
             relPitch  = hwMap.dcMotor.get("relPitch");
-
             int RELP_COUNTS_PER_MOTOR_REV = 28;
             int RELP_GEAR_ONE = 40;
             double RELP_GEAR_TWO = 40/120;
             double RELP_CPR = RELP_COUNTS_PER_MOTOR_REV * RELP_GEAR_ONE * RELP_GEAR_TWO;
             double RELP_ARM_LENGTH = 16.0;
+            @SuppressWarnings("unused")
             double RELP_CPI = RELP_CPR/(Math.PI * RELP_ARM_LENGTH * 2);
         }
         catch(Exception e)
@@ -286,6 +291,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
     public void setElevAuton()
     {
+        RobotLog.dd(TAG, "setElevAuton %d", LIFT_AUTON_POS);
         if(elevMotor != null)
         {
             elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -294,13 +300,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
         else if(elevServo != null)
         {
-            double sPos = (5.0 * ELEV_CPI + MIN_ELEV_CNT) / MICRO_RNG;
+            double sPos = LIFT_AUTON_POS * 1.0/ MICRO_RNG;
+            RobotLog.dd(TAG, "setElevAuton %.2f", sPos);
             elevServo.setPosition(sPos);
         }
     }
 
     public void setElevDrop()
     {
+        RobotLog.dd(TAG, "setElevDrop %d", LIFT_DROP_POS);
         if(elevMotor != null)
         {
             elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -309,13 +317,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
         else if(elevServo != null)
         {
-            double sPos = (2.0 * ELEV_CPI + MIN_ELEV_CNT) / MICRO_RNG;
+            double sPos = LIFT_DROP_POS * 1.0/ MICRO_RNG;
+            RobotLog.dd(TAG, "setElevDrop %.2f", sPos);
             elevServo.setPosition(sPos);
         }
     }
 
     public void setElevTier2()
     {
+        RobotLog.dd(TAG, "setElevTier2 %d", LIFT_TIER2_POS);
         if(elevMotor != null)
         {
             elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -324,13 +334,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
         else if(elevServo != null)
         {
-            double sPos = (0.5 * ELEV_CPI + MIN_ELEV_CNT) / MICRO_RNG;
+            double sPos = LIFT_TIER2_POS * 1.0 / MICRO_RNG;
+            RobotLog.dd(TAG, "setElevTier2 %.2f", sPos);
             elevServo.setPosition(sPos);
         }
     }
 
     public void setElevZero()
     {
+        RobotLog.dd(TAG, "setElevZero %d", LIFT_ZERO_POS);
         if(elevMotor != null)
         {
             elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -339,7 +351,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
         else if(elevServo != null)
         {
-            double sPos = (0.5 * ELEV_CPI + MIN_ELEV_CNT) / MICRO_RNG;
+            double sPos = LIFT_ZERO_POS * 1.0 / MICRO_RNG;
+            RobotLog.dd(TAG, "setElevZero %.2f", sPos);
             elevServo.setPosition(sPos);
         }
     }
@@ -373,16 +386,19 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     }
     public void openGripper()
     {
+        RobotLog.dd(TAG, "openGripper %.2f %.2f", GRIPPER_OPEN_POS, RGRIPPER_OPEN_POS);
         if(gripper != null)   gripper.setPosition(GRIPPER_OPEN_POS);
         if(rgripper != null) rgripper.setPosition(RGRIPPER_OPEN_POS);
     }
     public void stowGripper()
     {
+        RobotLog.dd(TAG, "stowGripper %.2f %.2f", GRIPPER_STOW_POS, RGRIPPER_STOW_POS);
         if(gripper != null)   gripper.setPosition(GRIPPER_STOW_POS);
         if(rgripper != null) rgripper.setPosition(RGRIPPER_STOW_POS);
     }
     public void partialGripper()
     {
+        RobotLog.dd(TAG, "partialGripper %.2f %.2f", GRIPPER_PARTIAL_POS, RGRIPPER_PARTIAL_POS);
         if(gripper != null)   gripper.setPosition(GRIPPER_PARTIAL_POS);
         if(rgripper != null) rgripper.setPosition(RGRIPPER_PARTIAL_POS);
     }
@@ -394,8 +410,17 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     {
         if(gpitch != null) gpitch.setPosition(GPITCH_DOWN_POS);
     }
+    public void downGpitch()
+    {
+        if(gpitch != null) gpitch.setPosition(GPITCH_MIN);
+    }
     public void clearGpitch()
     {
         if(gpitch != null) gpitch.setPosition(GPITCH_CLEAR_POS);
     }
+
+    public double getGpitchMin() {return GPITCH_MIN;}
+    public double getGpitchMax() {return GPITCH_MAX;}
+    public double getGpitchUpPos() {return GPITCH_UP_POS;}
+    public double getGpitchDownPos() {return GPITCH_DOWN_POS;}
 }

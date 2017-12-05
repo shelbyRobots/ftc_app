@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.Units;
@@ -139,15 +138,15 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             GPITCH_MIN            = 0.0;
             GPITCH_MAX            = 0.8;
 
-            LIFT_AUTON_POS = (MIN_ELEV_CNT + (int)( 5.0 * ELEV_CPI));
-            LIFT_ZERO_POS  = (MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI));
-            LIFT_DROP_POS  = (MIN_ELEV_CNT + (int)( 2.0 * ELEV_CPI));
-            LIFT_TIER2_POS = (MIN_ELEV_CNT + (int)( 7.0 * ELEV_CPI));
+            LIFT_AUTON_POS = (int)( 5.0 * ELEV_CPI);
+            LIFT_ZERO_POS  = (int)( 0.5 * ELEV_CPI);
+            LIFT_DROP_POS  = (int)( 2.0 * ELEV_CPI);
+            LIFT_TIER2_POS = (int)( 7.0 * ELEV_CPI);
 
-            liftPositions.add(MIN_ELEV_CNT + (int)( 0.25 * ELEV_CPI));
-            liftPositions.add(MIN_ELEV_CNT + (int)( 6.75 * ELEV_CPI));
-            liftPositions.add(MIN_ELEV_CNT + (int)(12.75 * ELEV_CPI));
-            liftPositions.add(MIN_ELEV_CNT + (int)(20.0 * ELEV_CPI));
+            liftPositions.add((int)( 0.25 * ELEV_CPI));
+            liftPositions.add((int)( 6.75 * ELEV_CPI));
+            liftPositions.add((int)(12.75 * ELEV_CPI));
+            liftPositions.add((int)(20.0 * ELEV_CPI));
         }
         catch (Exception e)
         {
