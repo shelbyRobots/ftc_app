@@ -219,6 +219,8 @@ public class MecanumTeleop extends InitLinearOpMode
                 eActive = false;
             }
 
+            boolean isBottom = robot.isElevTouchPressed();
+
             int curElevPos = robot.elevMotor.getCurrentPosition();
             if(!eActive)
             {
@@ -229,6 +231,7 @@ public class MecanumTeleop extends InitLinearOpMode
                     elev = 0.0;
                 if(curElevPos > maxElev && elev > 0.0)
                     elev = 0.0;
+                if(isBottom) elev = 0.0;
                 robot.elevMotor.setPower(elev);
             }
 
@@ -255,7 +258,7 @@ public class MecanumTeleop extends InitLinearOpMode
             nextDown = Math.max(0, nextDown);
             nextUp   = Math.min(robot.liftPositions.size() - 1, nextUp);
 
-            if(lowerElev)
+            if(lowerElev && !isBottom)
             {
                 int dPos = robot.liftPositions.get(nextDown);
                 RobotLog.dd(TAG, "LowerElev. curPos=%d nextDown=%d dPos=%d",
@@ -263,7 +266,7 @@ public class MecanumTeleop extends InitLinearOpMode
 
                 robot.elevMotor.setTargetPosition(dPos);
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.55;
+                elev = 0.35;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
             }
@@ -284,6 +287,17 @@ public class MecanumTeleop extends InitLinearOpMode
                 robot.elevMotor.setTargetPosition(curElevPos);
                 robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elev = 0.65;
+                robot.elevMotor.setPower(elev);
+                eActive = true;
+            }
+
+            if(isBottom)
+            {
+                robot.elevMotor.setPower(0.0);
+                robot.elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.elevMotor.setTargetPosition(0);
+                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elev = 0.25;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
             }

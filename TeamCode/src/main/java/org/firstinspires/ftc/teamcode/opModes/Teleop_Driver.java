@@ -70,7 +70,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(robot.relClamp != null)
         {
-            robot.relClamp.setPosition(0.0);
+            RobotLog.dd(TAG, "Setting RelClamp to 1.0 at start");
+            robot.relClamp.setPosition(1.0);
         }
 
         if(robot.gpitch != null)
@@ -156,7 +157,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 locMax = robot.getGpitchMin();
             }
 
-            double outPitch = up;
+            double outPitch = dp;
 
             double thresh = 0.001;
 
@@ -166,27 +167,27 @@ public class Teleop_Driver extends InitLinearOpMode
 
             if(robot.relPitch != null)
             {
-                rpitch = Math.max(-1.0, rpitch);
-                rpitch = Math.min( 1.0, rpitch);
+                double maxRpitchSpd = 0.3;
+                rpitch = Math.max(-maxRpitchSpd, rpitch);
+                rpitch = Math.min( maxRpitchSpd, rpitch);
                 robot.relPitch.setPower(rpitch);
             }
 
             if(robot.relClamp != null && toggle_rgrip)
             {
-                if(robot.relClamp.getPosition() < 0.5)
+                double clampPos = relClampOpenPos;
+                if(robot.relClamp.getPosition() == relClampOpenPos)
                 {
-                    robot.relClamp.setPosition(1.0);
+                    clampPos = relClampClosedPos;
                 }
-                else
-                {
-                    robot.relClamp.setPosition(0.0);
-                }
+                RobotLog.dd(TAG, "Setting RelClamp to %.2f", clampPos);
+                robot.relClamp.setPosition(clampPos);
             }
 
 
             if((extend_rslide || retract_rslide) && robot.relExtend != null)
             {
-                double rslideSpd = 0.3;
+                double rslideSpd = 0.8;
 
                 if(extend_rslide)
                 {
@@ -597,6 +598,11 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private enum FlickerState { UP, DOWN }
     private FlickerState currentFlickerState = FlickerState.UP;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private final double relClampOpenPos = 1.0;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final double relClampClosedPos = 0.0;
 
     private static final String TAG = "SJH_TD";
 }

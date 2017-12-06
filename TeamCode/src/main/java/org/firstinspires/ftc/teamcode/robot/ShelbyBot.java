@@ -42,7 +42,7 @@ import java.util.Map;
 @SuppressWarnings({"WeakerAccess", "FieldCanBeLocal", "unused"})
 public class ShelbyBot
 {
-    private LinearOpMode op = null;
+    protected LinearOpMode op = null;
     /* Public OpMode members. */
     public DcMotor  leftMotor   = null;
     public DcMotor  rightMotor  = null;

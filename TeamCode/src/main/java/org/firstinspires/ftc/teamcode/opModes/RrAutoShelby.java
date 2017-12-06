@@ -188,8 +188,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         if(robotName.equals("GTO1"))
         {
             RobotLog.dd(TAG, "Moving elev to auton pos");
+            robot.indexElev();
             robot.setElevAuton();
-            sleep(500);
+
+            sleep(1000);
         }
         RobotLog.dd(TAG, "StowGripper");
         robot.stowGripper();
@@ -470,6 +472,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     sleep(300);
                     if(robotName.equals("GTO2"))
                     {
+                        sleep(200);
                         robot.retractGpitch();
                     }
                     else

@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
@@ -27,6 +28,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public  CRServo  relExtend  = null;
     public  DcMotor  relPitch   = null;
 
+    private DigitalChannel elevIndexSensor = null;
+
     public List<Integer> liftPositions = new ArrayList<>(4);
 
     public static double JFLICKER_UP_POS = 0.1;
@@ -46,8 +49,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public static double GPITCH_UP_POS    = 0.16;
     public static double GPITCH_DOWN_POS  = 0.58;
     public static double GPITCH_CLEAR_POS = 0.3;
-    public static double GPITCH_MIN       = 0.16;
-    public static double GPITCH_MAX       = 0.9;
+           static double GPITCH_MIN       = 0.16;
+           static double GPITCH_MAX       = 0.9;
 
            static int    LIFT_AUTON_POS   = 0;
            static int    LIFT_ZERO_POS    = 0;
@@ -60,11 +63,14 @@ public class TilerunnerGtoBot extends ShelbyImuBot
            double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
            double LIFT_SCALE = 1.0;
     public double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM)/LIFT_SCALE;
-           int MIN_ELEV_CNT = 0;
-           @SuppressWarnings("WeakerAccess")
-           int MAX_ELEV_CNT = 0;
+    private int MIN_ELEV_CNT = 0;
+    @SuppressWarnings("FieldCanBeLocal")
+    private int MAX_ELEV_CNT = 0;
+
+    private int IDX_ELEV_CNT = 0;
 
     public  int MICRO_MIN = 0;
+    @SuppressWarnings("FieldCanBeLocal")
     private int MICRO_MAX = 0;
     public  int MICRO_RNG = 1;
 
@@ -226,6 +232,16 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
         try
         {
+            elevIndexSensor = hwMap.get(DigitalChannel.class, "elevTouch");
+            elevIndexSensor.setMode(DigitalChannel.Mode.INPUT);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ww(TAG, "WARNING initCollectorLifter - no elevTouch");
+        }
+
+        try
+        {
             gpitch = hwMap.servo.get("gpitch");
         }
         catch (Exception e)
@@ -367,6 +383,43 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
     }
 
+    private void setElevPositions()
+    {
+        //from the top of the tilerunner side rail (~4.25 in from ground)
+        double zoff = -3.5;
+        double aoff =  1.0;
+        double doff = -2.0;
+        double toff =  2.5;
+        LIFT_AUTON_POS = IDX_ELEV_CNT + (int)( aoff * ELEV_CPI) - MICRO_MIN;
+        LIFT_ZERO_POS  = IDX_ELEV_CNT + (int)( zoff * ELEV_CPI) - MICRO_MIN;
+        LIFT_DROP_POS  = IDX_ELEV_CNT + (int)( doff * ELEV_CPI) - MICRO_MIN;
+        LIFT_TIER2_POS = IDX_ELEV_CNT + (int)( toff * ELEV_CPI) - MICRO_MIN;
+
+        liftPositions.set(0, IDX_ELEV_CNT + (int)( zoff +  0.0 * ELEV_CPI) - MICRO_MIN);
+        liftPositions.set(1, IDX_ELEV_CNT + (int)( zoff +  6.0 * ELEV_CPI) - MICRO_MIN);
+        liftPositions.set(2, IDX_ELEV_CNT + (int)( zoff + 12.0 * ELEV_CPI) - MICRO_MIN);
+        liftPositions.set(3, IDX_ELEV_CNT + (int)( zoff + 18.0 * ELEV_CPI) - MICRO_MIN);
+    }
+
+    public void indexElev()
+    {
+        if(elevServo == null || elevIndexSensor == null) return;
+        setElevAuton();
+        op.sleep(1000);
+        stowGripper();
+        for(int micsec = LIFT_AUTON_POS; micsec > MIN_ELEV_CNT; micsec--)
+        {
+            elevServo.setPosition(micsec/MICRO_RNG);
+            if(isElevTouchPressed())
+            {
+                IDX_ELEV_CNT = micsec;
+                setElevPositions();
+                break;
+            }
+            op.sleep(5);
+        }
+    }
+
     public void stowFlicker ()
     {
         if(jflicker != null) jflicker.setPosition(JFLICKER_STOW_POS);
@@ -423,4 +476,12 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public double getGpitchMax() {return GPITCH_MAX;}
     public double getGpitchUpPos() {return GPITCH_UP_POS;}
     public double getGpitchDownPos() {return GPITCH_DOWN_POS;}
+
+    public boolean isElevTouchPressed()
+    {
+        boolean touch = false;
+        if(elevIndexSensor != null)
+            touch = !elevIndexSensor.getState();
+        return touch;
+    }
 }

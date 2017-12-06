@@ -60,10 +60,10 @@ public class RrPoints extends Points
             addPoint(points, itk, 0.30, 1.00, encType, key,  RrField.RLFP);
             addPoint(points, itk, 0.45, 1.00, encType, drop, RrField.RLDC);
             addPoint(points, psr, 0.40, 1.00, encType, escp, RrField.RLFP);
-            addPoint(points, itk, 0.40, 1.00, encType, pgrb, RrField.RLXP);
+            addPoint(points, itk, 0.70, 1.00, encType, pgrb, RrField.RLXP);
             addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RLPP);
-            addPoint(points, psr, 0.40, 1.00, encType, rtct, RrField.RLXP);
-            addPoint(points, itk, 0.60, 1.00, encType, thrw, RrField.RLTT);
+            addPoint(points, psr, 0.70, 1.00, encType, rtct, RrField.RLXP);
+            addPoint(points, itk, 0.70, 1.00, encType, thrw, RrField.RLTT);
         }
         else if(startPos == Field.StartPos.START_2)
         {

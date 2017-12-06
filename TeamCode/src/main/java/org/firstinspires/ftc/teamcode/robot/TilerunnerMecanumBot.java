@@ -143,10 +143,10 @@ public class TilerunnerMecanumBot extends TilerunnerGtoBot
             LIFT_DROP_POS  = (int)( 2.0 * ELEV_CPI);
             LIFT_TIER2_POS = (int)( 7.0 * ELEV_CPI);
 
-            liftPositions.add((int)( 0.25 * ELEV_CPI));
-            liftPositions.add((int)( 6.75 * ELEV_CPI));
-            liftPositions.add((int)(12.75 * ELEV_CPI));
-            liftPositions.add((int)(20.0 * ELEV_CPI));
+            liftPositions.add((int)( 0.25  * ELEV_CPI));
+            liftPositions.add((int)( 7.5 * ELEV_CPI));
+            liftPositions.add((int)(14.0 * ELEV_CPI));
+            liftPositions.add((int)(21.0 * ELEV_CPI));
         }
         catch (Exception e)
         {
