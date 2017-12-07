@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -19,6 +20,8 @@ public class MecanumTeleop extends InitLinearOpMode
     @SuppressWarnings("FieldCanBeLocal")
     private boolean fieldAlign = false;
     private boolean useSetVel = true;
+
+    private ElapsedTime resetTimer = new ElapsedTime();
 
     private TilerunnerMecanumBot robot = new TilerunnerMecanumBot();
 
@@ -229,8 +232,8 @@ public class MecanumTeleop extends InitLinearOpMode
                 int maxElev = robot.liftPositions.get(robot.liftPositions.size() - 1);
                 if(curElevPos < minElev && elev < 0.0)
                     elev = 0.0;
-                if(curElevPos > maxElev && elev > 0.0)
-                    elev = 0.0;
+//                if(curElevPos > maxElev && elev > 0.0)
+//                    elev = 0.0;
                 if(isBottom) elev = 0.0;
                 robot.elevMotor.setPower(elev);
             }
@@ -291,7 +294,7 @@ public class MecanumTeleop extends InitLinearOpMode
                 eActive = true;
             }
 
-            if(isBottom)
+            if(isBottom && resetTimer.seconds() > 1.0)
             {
                 robot.elevMotor.setPower(0.0);
                 robot.elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -300,6 +303,7 @@ public class MecanumTeleop extends InitLinearOpMode
                 elev = 0.25;
                 robot.elevMotor.setPower(elev);
                 eActive = true;
+                resetTimer.reset();
             }
 
             // Gripper (a: Somewhat Open, b: all the way open, neither: closed)

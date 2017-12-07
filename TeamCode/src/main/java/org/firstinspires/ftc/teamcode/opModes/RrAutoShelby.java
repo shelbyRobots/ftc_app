@@ -191,7 +191,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             robot.indexElev();
             robot.setElevAuton();
 
-            sleep(1000);
+            sleep(2000);
         }
         RobotLog.dd(TAG, "StowGripper");
         robot.stowGripper();
@@ -293,6 +293,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         if(robotName.equals("GTO1"))
         {
+            robot.setElevAuton();
+            sleep(400);
             robot.openGripper();
             sleep(100);
             robot.setElevZero();
@@ -494,7 +496,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case ESCAPE:
                 {
-                    if(robot.getName().equals("MEC"))
+                    if(!robot.getName().equals("GTO1"))
                     {
                         robot.closeGripper();
                         breakOut = true;

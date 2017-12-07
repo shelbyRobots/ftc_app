@@ -150,15 +150,25 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
                 elevServo = hwMap.servo.get("elevservo");
 
-                GRIPPER_CLOSE_POS    = 0.0;
-                GRIPPER_PARTIAL_POS  = 0.2;
-                GRIPPER_OPEN_POS     = 0.5;
-                GRIPPER_STOW_POS     = 1.0;
+//                GRIPPER_CLOSE_POS    = 0.0;
+//                GRIPPER_PARTIAL_POS  = 0.2;
+//                GRIPPER_OPEN_POS     = 0.5;
+//                GRIPPER_STOW_POS     = 1.0;
+//
+//                RGRIPPER_CLOSE_POS   = 1.0;
+//                RGRIPPER_PARTIAL_POS = 0.8;
+//                RGRIPPER_OPEN_POS    = 0.5;
+//                RGRIPPER_STOW_POS    = 0.0;
 
-                RGRIPPER_CLOSE_POS   = 1.0;
-                RGRIPPER_PARTIAL_POS = 0.8;
-                RGRIPPER_OPEN_POS    = 0.5;
-                RGRIPPER_STOW_POS    = 0.0;
+                GRIPPER_CLOSE_POS    = 0.86;
+                GRIPPER_PARTIAL_POS  = 0.78;
+                GRIPPER_OPEN_POS     = 0.72;
+                GRIPPER_STOW_POS     = 0.56;
+
+                RGRIPPER_CLOSE_POS   = 0.08;
+                RGRIPPER_PARTIAL_POS = 0.16;
+                RGRIPPER_OPEN_POS    = 0.22;
+                RGRIPPER_STOW_POS    = 0.4;
 
                 GPITCH_DOWN_POS = 0.62;
                 GPITCH_UP_POS = 0.1;
@@ -208,7 +218,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             }
             capMap.put("collector", true);
 
-            LIFT_AUTON_POS = MIN_ELEV_CNT + (int)( 4.0 * ELEV_CPI) - MICRO_MIN;
+            LIFT_AUTON_POS = MIN_ELEV_CNT + (int)( 4.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_ZERO_POS  = MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_DROP_POS  = MIN_ELEV_CNT + (int)( 2.0 * ELEV_CPI) - MICRO_MIN;
             LIFT_TIER2_POS = MIN_ELEV_CNT + (int)( 7.0 * ELEV_CPI) - MICRO_MIN;
@@ -405,7 +415,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     {
         if(elevServo == null || elevIndexSensor == null) return;
         setElevAuton();
-        op.sleep(1000);
+        op.sleep(1500);
         stowGripper();
         for(int micsec = LIFT_AUTON_POS; micsec > MIN_ELEV_CNT; micsec--)
         {
