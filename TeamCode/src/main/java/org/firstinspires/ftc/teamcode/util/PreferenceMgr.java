@@ -122,11 +122,11 @@ public class PreferenceMgr
       editor.putString(clubName + "." + botName  + ".gOffset", gOffset);
 
       editor.putString(clubName + "." + botName  + "." +
-                               allianceColor + "." + startPosition + "." + "left", leftOffset);
+                               allianceColor + "." + startPosition + "." + "LEFT", leftOffset);
       editor.putString(clubName + "." + botName  + "." +
-                               allianceColor + "." + startPosition + "." + "center", cntrOffset);
+                               allianceColor + "." + startPosition + "." + "CENTER", cntrOffset);
       editor.putString(clubName + "." + botName  + "." +
-                               allianceColor + "." + startPosition + "." + "right", rghtOffset);
+                               allianceColor + "." + startPosition + "." + "RIGHT", rghtOffset);
 
       editor.apply();
    }

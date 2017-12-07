@@ -198,9 +198,9 @@ public class AutoSetupMenu extends InitLinearOpMode implements FtcMenu.MenuButto
     private void doOffsets()
     {
         double gOffDeflt = prfMgr.getGlyphOffset(bot);
-        double leftDeflt = prfMgr.getDropOffset(bot, allianceColor, startPosition, "left");
-        double cntrDeflt = prfMgr.getDropOffset(bot, allianceColor, startPosition, "center");
-        double rghtDeflt = prfMgr.getDropOffset(bot, allianceColor, startPosition, "right");
+        double leftDeflt = prfMgr.getDropOffset(bot, allianceColor, startPosition, "LEFT");
+        double cntrDeflt = prfMgr.getDropOffset(bot, allianceColor, startPosition, "CENTER");
+        double rghtDeflt = prfMgr.getDropOffset(bot, allianceColor, startPosition, "RIGHT");
 
         FtcValueMenu  glphOffsetMenu = new FtcValueMenu("Goff:", null, this,
                                         9.0, 18.0, 0.25, gOffDeflt, "%5.2f");

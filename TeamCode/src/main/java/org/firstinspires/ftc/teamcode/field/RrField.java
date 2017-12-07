@@ -115,7 +115,7 @@ public class RrField extends Field
 
         if (robotName.equals("GTO1"))
         {
-            BOT_2_GLYPH = 12.0;
+            //BOT_2_GLYPH = 13.5;
 
             BLCLXT = 0.0;
             BLCCXT = 0.0;
@@ -398,8 +398,16 @@ public class RrField extends Field
 
         Point2d dpt = calcDropPt(pName, spt, ept);
 
-        if(startPos == StartPos.START_1) dpt.setX(dpt.getX() + cfgOff);
-        else if (startPos == StartPos.START_2) dpt.setY(dpt.getY() + cfgOff);
+        if(startPos == StartPos.START_1)
+        {
+            RobotLog.dd(TAG, "Offseting dpt %s in X by %.2f", dpt.toString(), cfgOff);
+            dpt.setX(dpt.getX() + cfgOff);
+        }
+        else if (startPos == StartPos.START_2)
+        {
+            RobotLog.dd(TAG, "Offseting dpt %s in Y by %.2f", dpt.toString(), cfgOff);
+            dpt.setY(dpt.getY() + cfgOff);
+        }
 
         return dpt;
     }

@@ -420,6 +420,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 {
                     double cfgOff = pmgr.getDropOffset(robotName, alliance.toString(),
                             startPos.toString(), key.toString());
+                    RobotLog.dd(TAG, "Drop offset for %s %s %s is %.2f",
+                            alliance.toString(), startPos.toString(), key.toString(), cfgOff);
                     Point2d dpt = RrField.getDropPt(alliance, startPos, key, cfgOff, align_type);
                     RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
                     pathSegs.get(i + 1).setEndPt(dpt); //drop
@@ -520,7 +522,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         {
                             drvTrn.driveDistanceLinear(8.0, 0.4, Drivetrain.Direction.FORWARD);
                             robot.openGripper();
-                            drvTrn.driveDistanceLinear(-8.0, 0.4, Drivetrain.Direction.FORWARD);
+                            drvTrn.driveDistanceLinear(-8.0, 0.6, Drivetrain.Direction.FORWARD);
                         }
                     }
 
@@ -1036,7 +1038,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         SNOWMAN
     }
 
-    private final static double DEF_ENCTRN_PWR  = 0.4;
+    private final static double DEF_ENCTRN_PWR  = 0.6;
     private final static double DEF_GYRTRN_PWR = 0.4;
 
     private List<Segment> pathSegs = new ArrayList<>();
