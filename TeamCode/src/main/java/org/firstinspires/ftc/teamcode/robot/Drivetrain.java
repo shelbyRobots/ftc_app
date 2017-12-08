@@ -230,14 +230,14 @@ public class Drivetrain
             {
                 int lcnt = curLpositions.get(0);
                 int rcnt = curRpositions.get(0);
-                int hiSlow  = 960;
-                int midSlow = 480 + colOverCnt/4;
-                int lowSlow = 240 + colOverCnt;
+                int hiSlow  = rampCntH;
+                int midSlow = rampCntM + colOverCnt/4;
+                int lowSlow = rampCntL + colOverCnt;
                 int remaining = Math.abs(((tgtLpositions.get(0) - lcnt)
                                         + (tgtRpositions.get(0) - rcnt)) / 2);
-                if (Math.abs(remaining) < hiSlow)  ppwr = Math.min(ppwr, 0.5);
-                if (Math.abs(remaining) < midSlow) ppwr = Math.min(ppwr, 0.25);
-                if (Math.abs(remaining) < lowSlow) ppwr = Math.min(ppwr, 0.09);
+                if (Math.abs(remaining) < hiSlow)  ppwr = Math.min(ppwr, rampSpdH);
+                if (Math.abs(remaining) < midSlow) ppwr = Math.min(ppwr, rampSpdM);
+                if (Math.abs(remaining) < lowSlow) ppwr = Math.min(ppwr, rampSpdL);
             }
 
             RobotLog.ii(TAG, "ppwr %4.2f curLpower %4.2f curRpower %4.2f %5.3f pwrIncr",
@@ -1236,6 +1236,13 @@ public class Drivetrain
         }
     }
 
+    public void setRampSpdL(double rampSpdL) { this.rampSpdL = rampSpdL; }
+    public void setRampSpdM(double rampSpdM) { this.rampSpdM = rampSpdM; }
+    public void setRampSpdH(double rampSpdH) { this.rampSpdH = rampSpdH; }
+    public void setRampCntL(int rampCntL)    { this.rampCntL = rampCntL; }
+    public void setRampCntM(int rampCntM)    { this.rampCntM = rampCntM; }
+    public void setRampCntH(int rampCntH)    { this.rampCntH = rampCntH; }
+
     enum MotorSide {LEFT, RIGHT}
 
     public enum DrivetrainType
@@ -1376,6 +1383,14 @@ public class Drivetrain
     private double busyTimeOut = 20;
     private double lBusyTime = 0;
     private double rBusyTime = 0;
+
+    private double rampSpdL = 0.09;
+    private double rampSpdM = 0.25;
+    private double rampSpdH = 0.50;
+
+    private int rampCntL = 240;
+    private int rampCntM = 480;
+    private int rampCntH = 960;
 
     private boolean lFirst = true;
 

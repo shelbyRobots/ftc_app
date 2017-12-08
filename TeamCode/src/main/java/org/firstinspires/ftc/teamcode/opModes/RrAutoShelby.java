@@ -294,13 +294,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         if(robotName.equals("GTO1"))
         {
             robot.setElevAuton();
-            sleep(400);
+            sleep(300);
             robot.openGripper();
             sleep(100);
             robot.setElevZero();
-            sleep(1500);
+            sleep(1300);
             robot.closeGripper();
-            sleep(400);
+            sleep(350);
             robot.setElevAuton();
         }
         else if(robotName.equals("MEC"))
@@ -430,7 +430,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     if(!robotName.equals("GTO2"))
                     {
                         robot.setElevDrop();
-                        sleep(200);
+                        //sleep(200);
                     }
                     break;
                 }
@@ -450,6 +450,17 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                     drvTrn.driveDistanceLinear(3.0, 0.3, Drivetrain.Direction.FORWARD);
                     drvTrn.driveDistanceLinear(-3.0, 0.3, Drivetrain.Direction.FORWARD);
+
+                    if(robotName.equals("GTO1"))
+                    {
+                        drvTrn.setRampSpdL(0.12);
+                        drvTrn.setRampSpdM(0.25);
+                        drvTrn.setRampSpdH(0.50);
+                        drvTrn.setRampCntH(750);
+                        drvTrn.setRampCntM(320);
+                        drvTrn.setRampCntL(180);
+                    }
+
                     break;
                 }
 
@@ -465,6 +476,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     }
                     robot.openGripper();
 
+                    if(!robot.getName().equals("GTO1"))
+                    {
+                        robot.closeGripper();
+                        breakOut = true;
+                    }
+
                     if(startTimer.seconds() > 25) breakOut = true;
 
                     break;
@@ -473,7 +490,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 case GRAB:
                 {
                     robot.closeGripper();
-                    sleep(300);
+                    sleep(250);
                     if(robotName.equals("GTO2"))
                     {
                         sleep(200);
@@ -488,6 +505,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case RETRACT:
                 {
+                    //kludge offset for BLTT being off.
+                    double ttOff = 0.0;
+                    if(alliance == Field.Alliance.BLUE) ttOff = 0.0;
+                    if(robotName.equals("GTO1"))
+                    {
+                        Point2d ttpt = pathSegs.get(i + 1).getTgtPt();
+                        ttpt.setX(ttpt.getX() + ttOff);
+                        pathSegs.get(i + 1).setEndPt(ttpt);
+                    }
+
                     robot.closeGripper();
                     if(robotName.equals("GTO2"))
                     {
@@ -498,11 +525,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case ESCAPE:
                 {
-                    if(!robot.getName().equals("GTO1"))
-                    {
-                        robot.closeGripper();
-                        breakOut = true;
-                    }
+//                    if(!robot.getName().equals("GTO1"))
+//                    {
+//                        robot.closeGripper();
+//                        breakOut = true;
+//                    }
                     break;
                 }
 
@@ -518,11 +545,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     }
                     else
                     {
-                        if(startTimer.seconds() < 27)
+                        if(startTimer.seconds() < 28)
                         {
-                            drvTrn.driveDistanceLinear(8.0, 0.4, Drivetrain.Direction.FORWARD);
+                            drvTrn.driveDistanceLinear(8.0, 0.6, Drivetrain.Direction.FORWARD);
                             robot.openGripper();
-                            drvTrn.driveDistanceLinear(-8.0, 0.6, Drivetrain.Direction.FORWARD);
+                            sleep(100);
+                            drvTrn.driveDistanceLinear(-6.0, 0.6, Drivetrain.Direction.FORWARD);
                         }
                     }
 
