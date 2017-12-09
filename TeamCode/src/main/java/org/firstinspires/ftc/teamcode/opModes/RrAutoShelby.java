@@ -453,12 +453,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                     if(robotName.equals("GTO1"))
                     {
-                        drvTrn.setRampSpdL(0.12);
-                        drvTrn.setRampSpdM(0.25);
+                        drvTrn.setRampSpdL(0.15);
+                        drvTrn.setRampSpdM(0.30);
                         drvTrn.setRampSpdH(0.50);
                         drvTrn.setRampCntH(750);
                         drvTrn.setRampCntM(320);
-                        drvTrn.setRampCntL(180);
+                        drvTrn.setRampCntL(150);
                     }
 
                     break;
