@@ -294,13 +294,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         if(robotName.equals("GTO1"))
         {
             robot.setElevAuton();
-            sleep(300);
+            sleep(250);
             robot.openGripper();
             sleep(100);
             robot.setElevZero();
-            sleep(1300);
+            sleep(1100);
             robot.closeGripper();
-            sleep(350);
+            sleep(320);
             robot.setElevAuton();
         }
         else if(robotName.equals("MEC"))
@@ -437,8 +437,14 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case DROP:
                 {
+                    if(robotName.equals("GTO2"))
+                    {
+                        robot.deployGpitch();
+                        sleep(500);
+                    }
+
                     robot.partialGripper();
-                    sleep(300);
+                    sleep(250);
                     if(robotName.equals("GTO2"))
                     {
                         robot.retractGpitch();
@@ -446,20 +452,21 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     if(!robotName.equals("GTO2"))
                     {
                         robot.setElevZero();
+                        sleep(150);
                     }
-
-                    drvTrn.driveDistanceLinear(3.0, 0.3, Drivetrain.Direction.FORWARD);
-                    drvTrn.driveDistanceLinear(-3.0, 0.3, Drivetrain.Direction.FORWARD);
 
                     if(robotName.equals("GTO1"))
                     {
                         drvTrn.setRampSpdL(0.15);
-                        drvTrn.setRampSpdM(0.30);
-                        drvTrn.setRampSpdH(0.50);
-                        drvTrn.setRampCntH(750);
-                        drvTrn.setRampCntM(320);
-                        drvTrn.setRampCntL(150);
+                        drvTrn.setRampSpdM(0.35);
+                        drvTrn.setRampSpdH(0.60);
+                        drvTrn.setRampCntH(600);
+                        drvTrn.setRampCntM(300);
+                        drvTrn.setRampCntL(100);
                     }
+
+                    drvTrn.driveDistanceLinear(3.0, 0.2, Drivetrain.Direction.FORWARD);
+                    drvTrn.driveDistanceLinear(-3.0, 0.2, Drivetrain.Direction.FORWARD);
 
                     break;
                 }
@@ -490,7 +497,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 case GRAB:
                 {
                     robot.closeGripper();
-                    sleep(250);
+                    sleep(230);
                     if(robotName.equals("GTO2"))
                     {
                         sleep(200);
@@ -547,10 +554,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     {
                         if(startTimer.seconds() < 28)
                         {
-                            drvTrn.driveDistanceLinear(8.0, 0.6, Drivetrain.Direction.FORWARD);
+                            drvTrn.driveDistanceLinear(8.0, 0.3, Drivetrain.Direction.FORWARD);
                             robot.openGripper();
                             sleep(100);
-                            drvTrn.driveDistanceLinear(-6.0, 0.6, Drivetrain.Direction.FORWARD);
+                            drvTrn.driveDistanceLinear(-6.0, 0.3, Drivetrain.Direction.FORWARD);
                         }
                     }
 
@@ -573,7 +580,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private void doScanPush(Segment postPushSeg)
     {
         double jewelPushDist = 3.2;
-        double jewelPushSpd  = 0.17;
+        double jewelPushSpd  = 0.18;
 
         if(useLight)
             CameraDevice.getInstance().setFlashTorchMode(true) ;
@@ -594,7 +601,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             sleep(400);
         }
         robot.deployFlicker();
-        sleep(700);
+        sleep(600);
 
         RobotLog.dd(TAG, "Deploy pusher");
         MajorColorDetector.Color badJewel = MajorColorDetector.Color.BLUE;

@@ -145,7 +145,7 @@ public class RrField extends Field
         }
         else if (robotName.equals("GTO2"))
         {
-            BOT_2_GLYPH = 13.0;
+            //BOT_2_GLYPH = 14.0;
 
             BLCLXT = 0.0;
             BLCCXT = 0.0;
@@ -318,7 +318,7 @@ public class RrField extends Field
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
     static final Point2d RLTT = new Point2d("RLTT", CBOX_LCTR,  -BSY);
-    static final Point2d RLPP = new Point2d("RLPP", CBOX_LCTR,  -30.0);
+    static final Point2d RLPP = new Point2d("RLPP", CBOX_LCTR,  -25.0);
     static final Point2d RLXP = new Point2d("RLXP", CBOX_LCTR,  -37.0);
 
     //Red Points > Right
@@ -330,7 +330,7 @@ public class RrField extends Field
 
     static final Point2d RRTT = new Point2d("RRTT",  BS2X + BS_CLEAR,  -36.0);
     static final Point2d RRPP = new Point2d("RRPP",  14.0,  -14.0);
-    static final Point2d RRXP = new Point2d("RRXP",  BS2X + BS_CLEAR,  -24.0);
+    static final Point2d RRXP = new Point2d("RRXP",  BS2X + BS_CLEAR,  -28.0);
 
     static final Point2d RARZ = new Point2d("RARZ", -72.0,  -12.0);
 

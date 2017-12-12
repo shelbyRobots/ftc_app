@@ -187,8 +187,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 ELEV_WHEEL_DIAM = 1.456; //2.35
                 LIFT_SCALE = 1.0;
                 ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM)/LIFT_SCALE;
-                MIN_ELEV_CNT = 950;
-                MAX_ELEV_CNT = 1925;
+                MIN_ELEV_CNT = 750; //950;
+                MAX_ELEV_CNT = 1775; //1925;
                 RobotLog.dd(TAG, "ELEV_CPI=%.2f MIN_ELEV_CNT=%d MAX_ELEV_CNT=%d",
                         ELEV_CPI, MIN_ELEV_CNT, MAX_ELEV_CNT);
             }
@@ -220,7 +220,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
             LIFT_AUTON_POS = MIN_ELEV_CNT + (int)( 4.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_ZERO_POS  = MIN_ELEV_CNT + (int)( 0.5 * ELEV_CPI) - MICRO_MIN;
-            LIFT_DROP_POS  = MIN_ELEV_CNT + (int)( 2.0 * ELEV_CPI) - MICRO_MIN;
+            LIFT_DROP_POS  = MIN_ELEV_CNT + (int)( 1.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_TIER2_POS = MIN_ELEV_CNT + (int)( 7.0 * ELEV_CPI) - MICRO_MIN;
 
             liftPositions.add(MIN_ELEV_CNT + (int)( 0.25 * ELEV_CPI) - MICRO_MIN);
