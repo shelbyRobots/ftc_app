@@ -65,7 +65,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     {
         dashboard.clearDisplay();
         drvTrn.start();
-        if(robotName.equals("GTO2"))
+        if(robot.gpitch != null)
         {
             robot.clearGpitch();
         }
@@ -185,13 +185,13 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         robot.stowFlicker();
 
         robot.initElevZero();
-        if(robotName.equals("GTO1"))
+        if(!robotName.equals("MEC"))
         {
             RobotLog.dd(TAG, "Moving elev to auton pos");
             robot.indexElev();
             robot.setElevAuton();
 
-            sleep(2000);
+            sleep(1000);
         }
         RobotLog.dd(TAG, "StowGripper");
         robot.stowGripper();
@@ -291,16 +291,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         robot.resetGyro();
 
-        if(robotName.equals("GTO1"))
+        if(!robotName.equals("MEC"))
         {
             robot.setElevAuton();
             sleep(250);
             robot.openGripper();
             sleep(100);
             robot.setElevZero();
-            sleep(1100);
+            sleep(750);
             robot.closeGripper();
-            sleep(320);
+            sleep(300);
             robot.setElevAuton();
         }
         else if(robotName.equals("MEC"))
@@ -426,18 +426,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     RobotLog.dd(TAG, "Setting drop point %s %s", key, dpt);
                     pathSegs.get(i + 1).setEndPt(dpt); //drop
                     pathSegs.get(i + 2).setStrtPt(dpt); //XP
-                    if(robotName.equals("GTO2")) robot.deployGpitch();
-                    if(!robotName.equals("GTO2"))
-                    {
-                        robot.setElevDrop();
-                        //sleep(200);
-                    }
+                    if(robot.gpitch != null) robot.deployGpitch();
+
+                    robot.setElevDrop();
+                    //sleep(200);
                     break;
                 }
 
                 case DROP:
                 {
-                    if(robotName.equals("GTO2"))
+                    if(robot.gpitch != null)
                     {
                         robot.deployGpitch();
                         sleep(500);
@@ -445,17 +443,15 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                     robot.partialGripper();
                     sleep(250);
-                    if(robotName.equals("GTO2"))
+                    if(robot.gpitch != null)
                     {
                         robot.retractGpitch();
                     }
-                    if(!robotName.equals("GTO2"))
-                    {
-                        robot.setElevZero();
-                        sleep(150);
-                    }
 
-                    if(robotName.equals("GTO1"))
+                    robot.setElevZero();
+                    sleep(150);
+
+                    if(!robotName.equals("MEC"))
                     {
                         drvTrn.setRampSpdL(0.15);
                         drvTrn.setRampSpdM(0.35);
@@ -473,7 +469,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case PREGRAB:
                 {
-                    if(robotName.equals("GTO2"))
+                    if(robot.gpitch != null)
                     {
                         robot.downGpitch();
                     }
@@ -483,7 +479,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     }
                     robot.openGripper();
 
-                    if(!robot.getName().equals("GTO1"))
+                    if(robot.getName().equals("MEC"))
                     {
                         robot.closeGripper();
                         breakOut = true;
@@ -498,7 +494,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 {
                     robot.closeGripper();
                     sleep(230);
-                    if(robotName.equals("GTO2"))
+
+                    if(robot.gpitch != null)
                     {
                         sleep(200);
                         robot.retractGpitch();
@@ -513,9 +510,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 case RETRACT:
                 {
                     //kludge offset for BLTT being off.
-                    double ttOff = 0.0;
-                    if(alliance == Field.Alliance.BLUE) ttOff = 0.0;
-                    if(robotName.equals("GTO1"))
+                    double ttOff = -1.0;
+                    if(alliance == Field.Alliance.BLUE) ttOff = -2.0;
+
+                    if(!robotName.equals("MEC"))
                     {
                         Point2d ttpt = pathSegs.get(i + 1).getTgtPt();
                         ttpt.setX(ttpt.getX() + ttOff);
@@ -523,7 +521,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     }
 
                     robot.closeGripper();
-                    if(robotName.equals("GTO2"))
+                    if(robot.gpitch != null)
                     {
                         robot.retractGpitch();
                     }
@@ -532,7 +530,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case ESCAPE:
                 {
-//                    if(!robot.getName().equals("GTO1"))
+//                    if(robot.getName().equals("MEC"))
 //                    {
 //                        robot.closeGripper();
 //                        breakOut = true;
@@ -542,7 +540,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case THROW:
                 {
-                    if(robotName.equals("GTO2"))
+                    if(robot.gpitch != null)
                     {
                         robot.deployGpitch();
                         sleep(100);
@@ -595,7 +593,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         if(jewelColor == MajorColorDetector.Color.NONE)
             return;
 
-        if(robotName.equals("GTO2"))
+        if(robot.gpitch != null)
         {
             robot.clearGpitch();
             sleep(400);
@@ -659,7 +657,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         doMove(pushSeg);
         drvTrn.setRampDown(curRampDown);
 
-        if(robotName.equals("GTO2"))
+        if(robot.gpitch != null)
         {
             robot.clearGpitch();
         }

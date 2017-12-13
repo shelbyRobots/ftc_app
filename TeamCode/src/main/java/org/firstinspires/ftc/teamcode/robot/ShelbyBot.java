@@ -145,6 +145,7 @@ public class ShelbyBot
         capMap.put("collector",  false);
         capMap.put("pusher",     false);
         capMap.put("sensor",     false);
+        capMap.put("arm",        false);
     }
 
     /* Initialize standard Hardware interfaces */
@@ -330,6 +331,11 @@ public class ShelbyBot
         {
             System.out.println(mEnt.getKey() + " = " + mEnt.getValue());
         }
+    }
+
+    public boolean getCapability(String cap)
+    {
+        return capMap.get(cap);
     }
 
     private double getTotalGearRatio()
