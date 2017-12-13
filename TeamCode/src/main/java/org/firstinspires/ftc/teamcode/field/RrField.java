@@ -66,14 +66,14 @@ public class RrField extends Field
     private static final int RGHT  = 2;
 
     public static final double CXY = 65.0;
-    public static final double BSY = 47.0;
-    private static final double BS1X = -49.0;
+    public static final double BSY = 47.5; //gm2 coords => 47.0;
+    private static final double BS1X = -47.5; //gm2 coords => -49.0;
     public static final double BS2X = 23.0;
 
     public static final double BS_CLEAR = 25.0;
 
     private static final double CBOX_GAP  = 7.5;
-    private static final double CBOX_LCTR = -13.25;
+    private static final double CBOX_LCTR = -12.0; //gm2 coords => -13.25;
     private static final double CBOX_RCTR = -36.0;
 
     private static double BLCLXT = 0.0;
