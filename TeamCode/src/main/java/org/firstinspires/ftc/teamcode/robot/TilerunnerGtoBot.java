@@ -129,7 +129,16 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         RobotLog.dd(TAG, "GTO initCollectorLifter");
 
         boolean useElevServo = false;
-        boolean useExtendedRange = false;
+        boolean useExtendedRange = true;
+
+        try
+        {
+            rgripper = hwMap.servo.get("rgripper");
+        }
+        catch (Exception e)
+        {
+            RobotLog.ww(TAG, "WARNING initCollectorLifter - no rgripper");
+        }
 
         try  //Collector
         {
@@ -153,7 +162,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             elevMotor = hwMap.dcMotor.get("elevmotor");
             elevMotor.setDirection(DcMotor.Direction.REVERSE);
             elevMotor.setPower(0.0);
-            elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            //elevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             elevMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             if(name.equals("GTO1"))
@@ -175,15 +184,17 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             {
                 //gpitch = hwMap.servo.get("gpitch");
 
-                GRIPPER_CLOSE_POS = 0.98;
-                GRIPPER_OPEN_POS = 0.2;
-                GRIPPER_PARTIAL_POS = 0.45;
-                GRIPPER_STOW_POS    = GRIPPER_CLOSE_POS;
+                elevMotor.setDirection(DcMotor.Direction.FORWARD);
 
-                RGRIPPER_CLOSE_POS   = 0.08;
-                RGRIPPER_PARTIAL_POS = 0.16;
-                RGRIPPER_OPEN_POS    = 0.22;
-                RGRIPPER_STOW_POS    = 0.4;
+                GRIPPER_CLOSE_POS   = 0.60;
+                GRIPPER_OPEN_POS    = 0.38;
+                GRIPPER_PARTIAL_POS = 0.52;
+                GRIPPER_STOW_POS    = 0.28 ;
+
+                RGRIPPER_CLOSE_POS   = 0.42;
+                RGRIPPER_PARTIAL_POS = 0.48;
+                RGRIPPER_OPEN_POS    = 0.64;
+                RGRIPPER_STOW_POS    = 0.74;
 
 //                GPITCH_DOWN_POS = 0.58;
 //                GPITCH_UP_POS = 0.08;
@@ -220,7 +231,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             capMap.put("collector", true);
 
             LIFT_AUTON_POS = MIN_ELEV_CNT + (int)(5.5 * ELEV_CPI) - MICRO_MIN;
-            LIFT_ZERO_POS  = MIN_ELEV_CNT + (int)(0.0 * ELEV_CPI) - MICRO_MIN;
+            LIFT_ZERO_POS  = MIN_ELEV_CNT + (int)(0.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_DROP_POS  = MIN_ELEV_CNT + (int)(1.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_TIER2_POS = MIN_ELEV_CNT + (int)(7.0 * ELEV_CPI) - MICRO_MIN;
 
@@ -258,15 +269,6 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         catch (Exception e)
         {
             RobotLog.ww(TAG, "WARNING initCollectorLifter - no gpitch");
-        }
-
-        try
-        {
-            rgripper = hwMap.servo.get("rgripper");
-        }
-        catch (Exception e)
-        {
-            RobotLog.ww(TAG, "WARNING initCollectorLifter - no rgripper");
         }
     }
 
@@ -384,7 +386,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         {
             elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             elevMotor.setTargetPosition(LIFT_ZERO_POS);
-            elevMotor.setPower(0.4);
+            elevMotor.setPower(0.5);
         }
         else if(elevServo != null)
         {

@@ -61,10 +61,10 @@ public class Teleop_Driver extends InitLinearOpMode
             currentPitchState = PitchState.PITCH_UP;
         }
 
-        if(robot.elevMotor != null)
-        {
-            robot.initElevZero();
-        }
+//        if(robot.elevMotor != null)
+//        {
+//            robot.initElevZero();
+//        }
 
         robot.setElevZero();
     }

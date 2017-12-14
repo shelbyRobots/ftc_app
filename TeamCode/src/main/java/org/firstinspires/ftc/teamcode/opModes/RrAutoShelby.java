@@ -298,7 +298,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
             robot.openGripper();
             sleep(100);
             robot.setElevZero();
-            sleep(750);
+            sleep(1250);
             robot.closeGripper();
             sleep(300);
             robot.setElevAuton();
@@ -510,7 +510,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 case RETRACT:
                 {
                     //kludge offset for BLTT being off.
-                    double ttOff = -1.0;
+                    double ttOff = -2.0;
                     if(alliance == Field.Alliance.BLUE) ttOff = -2.0;
 
                     if(!robotName.equals("MEC"))
