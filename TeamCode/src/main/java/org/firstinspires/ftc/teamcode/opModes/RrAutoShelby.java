@@ -510,8 +510,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 case RETRACT:
                 {
                     //kludge offset for BLTT being off.
-                    double ttOff = -2.0;
-                    if(alliance == Field.Alliance.BLUE) ttOff = -2.0;
+                    double ttOff = 0.0;
+                    if(alliance == Field.Alliance.BLUE) ttOff = 0.0;
 
                     if(!robotName.equals("MEC"))
                     {
