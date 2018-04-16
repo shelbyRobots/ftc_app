@@ -167,7 +167,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
             if(name.equals("GTO1"))
             {
-                GRIPPER_CLOSE_POS    = 0.89;
+                GRIPPER_CLOSE_POS    = 0.92 ;
                 GRIPPER_PARTIAL_POS  = 0.78;
                 GRIPPER_OPEN_POS     = 0.72;
                 GRIPPER_STOW_POS     = 0.56;

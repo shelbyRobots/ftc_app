@@ -94,7 +94,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void controlElevator()
     {
-        double elev         = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
+        double elev         = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
 
         boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
         boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
@@ -236,8 +236,12 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void controlPitch()
     {
+        if(robot.gpitch == null)
+        {
+            return;
+        }
         boolean toggle_gpitch = gpad2.just_pressed(ManagedGamepad.Button.X);
-        double pitch          = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+        double pitch          = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
 
         // Pitch (Gripper angle servo) (x: toggles between closed and open position)
 
@@ -413,7 +417,7 @@ public class Teleop_Driver extends InitLinearOpMode
         double step_ang  = 5.0;
 
         double fHdg = robot.getGyroFhdg();
-        double detail_speed = 0.14;
+        double detail_speed = 0.18;
 
         double maxIPS = 45.0;
         double maxRPS = maxIPS/(4.0*Math.PI);
@@ -517,7 +521,7 @@ public class Teleop_Driver extends InitLinearOpMode
         }
         else
         {
-            double governor = 0.75;
+            double governor = 0.8;
             out_left  = left * governor;
             out_right = right * governor;
             robot.leftMotors.get(0).setPower(out_left);

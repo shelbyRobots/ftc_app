@@ -516,8 +516,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     if(!robotName.equals("MEC"))
                     {
                         Point2d ttpt = pathSegs.get(i + 1).getTgtPt();
-                        ttpt.setX(ttpt.getX() + ttOff);
-                        pathSegs.get(i + 1).setEndPt(ttpt);
+                        Point2d ntt = new Point2d("KTT", ttpt.getX() + ttOff, ttpt.getY());
+                        pathSegs.get(i + 1).setEndPt(ntt);
                     }
 
                     robot.closeGripper();
