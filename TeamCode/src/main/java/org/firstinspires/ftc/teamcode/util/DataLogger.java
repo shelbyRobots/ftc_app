@@ -39,9 +39,9 @@ public class DataLogger {
             Date day = new Date();
             Calendar cal = Calendar.getInstance();
             cal.setTime(day);
-            fileName = String.format(Locale.US, "%d%d%d_%02d%02d",
+            fileName = String.format(Locale.US, "%d%02d%02d_%02d%02d",
                     cal.get(Calendar.YEAR),
-                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.MONTH)+1,
                     cal.get(Calendar.DAY_OF_MONTH),
                     cal.get(Calendar.HOUR_OF_DAY),
                     cal.get(Calendar.MINUTE));

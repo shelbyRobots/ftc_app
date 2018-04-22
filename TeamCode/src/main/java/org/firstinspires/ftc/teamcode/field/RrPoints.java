@@ -55,28 +55,30 @@ public class RrPoints extends Points
         if(startPos == Field.StartPos.START_1)
         {
             points.add(RrField.RLBS);
-            addPoint(points, itk, 0.45, 1.00, encType, scan, RLBs);
-            addPoint(points, fwd, 0.30, 1.00, encType, align, RrField.RLFP);
-            addPoint(points, itk, 0.30, 1.00, encType, key,  RrField.RLFP);
-            addPoint(points, itk, 0.45, 1.00, encType, drop, RrField.RLDC);
-            addPoint(points, psr, 0.60, 1.00, encType, escp, RrField.RLFP);
-            addPoint(points, itk, 0.70, 1.00, encType, pgrb, RrField.RLXP);
-            addPoint(points, itk, 0.60, 1.00, encType, grab, RrField.RLPP);
-            addPoint(points, psr, 0.70, 1.00, encType, rtct, RrField.RLXP);
-            addPoint(points, itk, 0.70, 1.00, encType, thrw, RrField.RLTT);
+            addPoint(points, itk, 0.45, 1.00, encType, scan,  RLBs);         //BS-BS(JP)
+            addPoint(points, fwd, 0.35, 1.00, encType, align, RrField.RLFP); //BS-FP
+            addPoint(points, fwd, 0.45, 1.00, encType, key,   RrField.RLFP); //FP-AP
+            addPoint(points, itk, 0.40, 1.00, encType, drop,  RrField.RLDC); //AP-DP
+            addPoint(points, psr, 0.60, 1.00, encType, pgrb,  RrField.RLFP); //DP-AP
+            addPoint(points, itk, 0.70, 1.00, encType, none,  RrField.RLXP); //AP-XP
+            addPoint(points, itk, 0.60, 1.00, encType, grab,  RrField.RLPP); //XP-PP
+            addPoint(points, psr, 0.70, 1.00, encType, none,  RrField.RLXP); //PP-XP
+            addPoint(points, psr, 0.70, 1.00, encType, key,   RrField.RLFP); //XP-AP
+            addPoint(points, itk, 0.40, 1.00, encType, drop,  RrField.RLTT); //AP-DP
         }
         else if(startPos == Field.StartPos.START_2)
         {
             points.add(RrField.RRBS);
-            addPoint(points, itk, 0.45, 1.00, encType, scan, RRBs);
-            addPoint(points, fwd, 0.30, 1.00, encType, align, RrField.RRFP);
-            addPoint(points, itk, 0.30, 1.00, encType, key,  RrField.RRFP);
-            addPoint(points, itk, 0.30, 1.00, encType, drop, RrField.RRDC);
-            addPoint(points, psr, 0.40, 1.00, encType, escp, RrField.RRFP);
-            addPoint(points, itk, 0.70, 1.00, encType, pgrb, RrField.RRXP);
-//            addPoint(points, itk, 0.70, 1.00, encType, grab, RrField.RRPP);
-//            addPoint(points, psr, 0.70, 1.00, encType, none, RrField.RRXP);
-//            addPoint(points, itk, 0.60, 1.00, encType, rtct, RrField.RRTT);
+            addPoint(points, itk, 0.45, 1.00, encType, scan,  RRBs);         //BS-BS(JP)
+            addPoint(points, fwd, 0.35, 1.00, encType, align, RrField.RRFP); //BS-FP
+            addPoint(points, itk, 0.45, 1.00, encType, key,   RrField.RRFP); //FP-AP
+            addPoint(points, itk, 0.40, 1.00, encType, drop,  RrField.RRDC); //AP-DP
+            addPoint(points, psr, 0.60, 1.00, encType, pgrb,  RrField.RRFP); //DP-AP
+            addPoint(points, itk, 0.70, 1.00, encType, none,  RrField.RRXP); //AP-XP
+            addPoint(points, itk, 0.60, 1.00, encType, grab,  RrField.RRPP); //XP-PP
+            addPoint(points, psr, 0.70, 1.00, encType, none,  RrField.RRXP); //PP-XP
+            addPoint(points, psr, 0.70, 1.00, encType, key,   RrField.RRFP); //XP-AP
+            addPoint(points, itk, 0.40, 1.00, encType, drop,  RrField.RRTT); //AP-DP
         }
 
         ShelbyBot.DriveDir parkDir = fwd;
@@ -99,15 +101,9 @@ public class RrPoints extends Points
         double bx =  rpt.getX();
         double by = Math.abs(rpt.getY());
         String nm = "B" + rpt.getName().substring(1);
-        //rpt.setName(nm);
 
         RobotLog.dd(TAG, "convertRtoB %s to %s", rpt.getName(), nm);
 
-        Point2d bpt = new Point2d(nm, bx, by);
-        //rpt.setX(bx);
-        //rpt.setY(by);
-        return bpt;
+        return new Point2d(nm, bx, by);
     }
 }
-
-

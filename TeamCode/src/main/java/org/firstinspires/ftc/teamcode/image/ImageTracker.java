@@ -456,6 +456,8 @@ public class ImageTracker
         }
     }
 
+    public void resetKey() {keyLoc = RelicRecoveryVuMark.UNKNOWN;}
+
     public void setFrameQueueSize(int size)
     {
         vuforia.setFrameQueueCapacity(size);

@@ -19,7 +19,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
+import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Units;
 
 import java.util.ArrayList;
@@ -86,10 +88,17 @@ public class ShelbyBot
 
     boolean colorEnabled = false;
 
+    private Field.Alliance alliance = Field.Alliance.RED;
+
     private int initHdg = 0;
     public static double autonEndHdg = 0.0;
     public double getAutonEndHdg() {return  autonEndHdg;}
     public void setAutonEndHdg(double hdg) {autonEndHdg = hdg;}
+    public static Point2d autonEndPos = new Point2d("AEND", 0.0, 0.0);
+    public Point2d getAutonEndPos() {return autonEndPos;};
+    public void setAutonEndPos(Point2d endPos) {autonEndPos = endPos;}
+    public Field.Alliance getAlliance() {return alliance;}
+    public void setAlliance(Field.Alliance alnc) {alliance = alnc;}
 
     //The values below are for the 6 wheel 2016-2017 drop center bot
     //with center wheels powered by Neverest 40 motors.
@@ -146,10 +155,11 @@ public class ShelbyBot
         capMap.put("pusher",     false);
         capMap.put("sensor",     false);
         capMap.put("arm",        false);
+        capMap.put("holder",     false);
     }
 
     /* Initialize standard Hardware interfaces */
-    public void init(LinearOpMode op)
+    public void init(LinearOpMode op, boolean initDirSensor)
     {
         RobotLog.dd(TAG, "ShelbyBot init");
         computeCPI();
@@ -161,6 +171,11 @@ public class ShelbyBot
         initPushers();
         initSensors();
         initCapabilities();
+    }
+
+    public void init(LinearOpMode op)
+    {
+        init(op, true);
     }
 
     public void init(LinearOpMode op, String name)
@@ -287,7 +302,7 @@ public class ShelbyBot
         }
     }
 
-    protected void initSensors()
+    protected void initSensors(boolean initDirSensor)
     {
         RobotLog.dd(TAG, "ShelbyBot sensors");
         try  //I2C and DAIO
@@ -325,11 +340,16 @@ public class ShelbyBot
         }
     }
 
+    protected void initSensors()
+    {
+        initSensors(true);
+    }
+
     protected void initCapabilities()
     {
         for (Map.Entry mEnt : capMap.entrySet())
         {
-            System.out.println(mEnt.getKey() + " = " + mEnt.getValue());
+            RobotLog.dd(TAG, mEnt.getKey() + " = " + mEnt.getValue());
         }
     }
 

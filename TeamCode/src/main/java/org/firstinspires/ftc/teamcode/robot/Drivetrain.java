@@ -662,6 +662,9 @@ public class Drivetrain
         setCurrPt(curPt, false);
     }
 
+    public Point2d getCurrPt() { return currPt; }
+    public Point2d getEstPos() { return estPos; }
+
     public void estimatePosition()
     {
         int curLcnt = curLpositions.get(0);
@@ -717,6 +720,8 @@ public class Drivetrain
         RobotLog.dd(TAG, "Drivetrain.init");
         RobotLog.dd(TAG, " numLmotors %d", robot.numLmotors);
         RobotLog.dd(TAG, " numRmotors %d", robot.numRmotors);
+
+        datalogtimer.reset();
 
         initLPositions(begLpositions, 0);
         initRPositions(begRpositions, 0);
@@ -847,21 +852,33 @@ public class Drivetrain
     {
         setPos(curLpositions, robot.leftMotors);
         setPos(curRpositions, robot.rightMotors);
-        StringBuilder sb = new StringBuilder(16);
-        for(int i = 0; i < curLpositions.size(); i++)
-        {
-            sb.append(curLpositions.get(i));
-            if(i < curLpositions.size() - 1) sb.append(" ");
-        }
-        RobotLog.dd(TAG, "curLpos: %s", sb.toString());
+        boolean printVals = false;
 
-        if(sb != null) sb.delete(0, sb.length());
-        for(int i = 0; i < curRpositions.size(); i++)
+        if (datalogtimer.seconds() > 0.1)
         {
-            sb.append(curRpositions.get(i));
-            if(i < curRpositions.size() - 1) sb.append(" ");
+            printVals = true;
+            datalogtimer.reset();
         }
-        RobotLog.dd(TAG, "curRpos: %s", sb.toString());
+
+        if(printVals)
+        {
+            StringBuilder sb = new StringBuilder(16);
+            for (int i = 0; i < curLpositions.size(); i++)
+            {
+                sb.append(curLpositions.get(i));
+                if (i < curLpositions.size() - 1) sb.append(" ");
+            }
+            RobotLog.dd(TAG, "curLpos: %s", sb.toString());
+
+            //noinspection ConstantConditions
+            if (sb != null) sb.delete(0, sb.length());
+            for (int i = 0; i < curRpositions.size(); i++)
+            {
+                sb.append(curRpositions.get(i));
+                if (i < curRpositions.size() - 1) sb.append(" ");
+            }
+            RobotLog.dd(TAG, "curRpos: %s", sb.toString());
+        }
 
         curHdg  = robot.getGyroFhdg();
         if(robot.colorEnabled)

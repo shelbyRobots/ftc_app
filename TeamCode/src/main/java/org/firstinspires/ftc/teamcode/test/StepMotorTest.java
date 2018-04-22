@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
@@ -45,10 +46,12 @@ public class StepMotorTest extends InitLinearOpMode
 
         SparseArray<DcMotor> motors = new SparseArray<>(MAX_MOTORS);
 
+        int p = 0;
+
         for(int m = 0; m < MAX_MOTORS; m++)
         {
             String motorName = "testmotor" + m;
-            DcMotor mot = null;
+            DcMotor mot;
             try
             {
                 mot = hardwareMap.dcMotor.get(motorName);
@@ -85,14 +88,32 @@ public class StepMotorTest extends InitLinearOpMode
 
         // Wait for the start button
         dashboard.displayPrintf(0, "Press Start to run Motors.");
+        ElapsedTime timer = new ElapsedTime();
+        double t1;
+        double t2;
+        double dt;
+        double tt = 0.0;
+        double at;
+        int encPos;
+        int numCycles = 0;
         while(!isStarted())
         {
             for(int m = 0; m < MAX_MOTORS; m++)
             {
                 DcMotor mot = motors.get(m);
                 if(mot != null)
-                    dashboard.displayPrintf(m, "CNT_%d %d", m, mot.getCurrentPosition());
+                {
+                    t1 = timer.milliseconds();
+                    encPos = mot.getCurrentPosition();
+                    t2 = timer.milliseconds();
+                    dt = t2 - t1;
+                    dashboard.displayPrintf(m, "CNT_%d %d encTime=%4.3f", m, encPos, dt);
+                    dt = t2 - t1;
+                    tt += dt;
+                }
             }
+            at = tt / ++numCycles;
+            dashboard.displayPrintf(MAX_MOTORS + p++, "AvgEncTime %4.3f", at);
             sleep(10);
         }
         waitForStart();
@@ -101,6 +122,9 @@ public class StepMotorTest extends InitLinearOpMode
         int lmult = 1;
         while(opModeIsActive())
         {
+            p=0;
+            tt = 0.0;
+            numCycles = 0;
             gpad1.update();
             boolean step_up    = gpad1.just_pressed(ManagedGamepad.Button.D_UP);
             boolean step_down  = gpad1.just_pressed(ManagedGamepad.Button.D_DOWN);
@@ -128,7 +152,7 @@ public class StepMotorTest extends InitLinearOpMode
             }
 
             // Display the current value
-            dashboard.displayPrintf(MAX_MOTORS, "Motor Power %4.2f", power);
+            dashboard.displayPrintf(MAX_MOTORS + p++, "Motor Power %4.2f", power);
             for(int m = 0; m < MAX_MOTORS; m++)
             {
                 double opwr = power;
@@ -136,18 +160,27 @@ public class StepMotorTest extends InitLinearOpMode
                 if(mot != null)
                 {
                     if(m%2 == 0) opwr = power * lmult;
+
+                    encPos = mot.getCurrentPosition();
                     dashboard.displayPrintf(m, "Mot_%d CNT:%d PWR:%.2f MOD:%s",
-                            m, mot.getCurrentPosition(), opwr, mot.getMode());
+                            m, encPos, opwr, mot.getMode());
+                    t1 = timer.milliseconds();
                     mot.setPower(opwr);
+                    t2 = timer.milliseconds();
+                    dt = t2 - t1;
+                    tt += dt;
                 }
             }
 
-            dashboard.displayPrintf(MAX_MOTORS + 1, "Press Stop to end test.");
-            dashboard.displayPrintf(MAX_MOTORS + 2, "Incr power : Dpad up");
-            dashboard.displayPrintf(MAX_MOTORS + 3, "Decr power : Dpad down");
-            dashboard.displayPrintf(MAX_MOTORS + 4, "Zero power : Dpad right");
-            dashboard.displayPrintf(MAX_MOTORS + 5, "Toggle turn: Dpad left");
-            dashboard.displayPrintf(MAX_MOTORS + 6, "Toggle mode: Right bumper");
+            at = tt / ++numCycles;
+            dashboard.displayPrintf(MAX_MOTORS + p++, "AvgSetTime %4.3f", at);
+
+            dashboard.displayPrintf(MAX_MOTORS + p++, "Press Stop to end test.");
+            dashboard.displayPrintf(MAX_MOTORS + p++, "Incr power : Dpad up");
+            dashboard.displayPrintf(MAX_MOTORS + p++, "Decr power : Dpad down");
+            dashboard.displayPrintf(MAX_MOTORS + p++, "Zero power : Dpad right");
+            dashboard.displayPrintf(MAX_MOTORS + p++, "Toggle turn: Dpad left");
+            dashboard.displayPrintf(MAX_MOTORS + p,   "Toggle mode: Right bumper");
 
             sleep(CYCLE_MS);
         }

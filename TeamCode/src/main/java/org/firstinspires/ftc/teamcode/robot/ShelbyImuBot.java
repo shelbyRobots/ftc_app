@@ -24,9 +24,9 @@ class ShelbyImuBot extends ShelbyBot
     private static final String TAG = "SJH_Imu";
 
     @Override
-    protected void initSensors()
+    protected void initSensors(boolean initDirSensor)
     {
-        System.out.println("In TilerunnerGtoBot.initSensors");
+        RobotLog.dd(TAG, "In TilerunnerGtoBot.initSensors");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -38,7 +38,7 @@ class ShelbyImuBot extends ShelbyBot
         try
         {
             imu = (BNO055IMU) com.getHardwareMap().get("imu");
-            imu.initialize(parameters);
+            if(initDirSensor) imu.initialize(parameters);
 
             if(useImuThread)
             {

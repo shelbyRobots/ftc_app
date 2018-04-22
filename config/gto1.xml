@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <LynxUsbDevice name="gto" serialNumber="DQ1NX3D3" parentModuleAddress="2">
+        <LynxModule name="gtoh" port="2">
+            <NeveRest20Gearmotor name="leftdrive" port="0" />
+            <NeveRest20Gearmotor name="rightdrive" port="1" />
+            <RevRoboticsCoreHexMotor name="elevmotor" port="2" />
+            <Servo name="jflicker" port="0" />
+            <Servo name="rgripper" port="1" />
+            <Servo name="gripper" port="2" />
+            <Servo name="holder" port="3" />
+            <LynxEmbeddedIMU name="imu" port="0" bus="0" />
+        </LynxModule>
+    </LynxUsbDevice>
+</Robot>

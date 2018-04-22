@@ -39,7 +39,7 @@ public class RrField extends Field
 
     private static double BOT_2_GLYPH = 12.0;
 
-    private static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
+    public static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
     {
         Point2d dropPt = new Point2d(dName, 0.0, 0.0);
         double dSegLen = strt.distance(end);
@@ -56,6 +56,8 @@ public class RrField extends Field
                 dSegLen, BOT_2_GLYPH, dropPt);
         return  dropPt;
     }
+
+    public static double getCboxGap() {return CBOX_GAP;}
 
     private static final int BLUE  = 0;
     private static final int RED   = 1;
@@ -207,7 +209,7 @@ public class RrField extends Field
 
     //3-dimensional array of crypto box points [alliance][start][key]
     //allows inidividual adjustment
-    private static final Point2d CPTS[][][] =
+    public static final Point2d CPTS[][][] =
     {
         {
             {
@@ -242,7 +244,7 @@ public class RrField extends Field
         {
             {
                 new Point2d("BLAL", CBOX_LCTR - CBOX_GAP,  BSY), //BLUE-LEFT-LEFT
-                new Point2d("BLAC", CBOX_LCTR,             BSY), //BLUE-LEFT-CENTER
+                new Point2d("BLAC", CBOX_LCTR           ,  BSY), //BLUE-LEFT-CENTER
                 new Point2d("BLAR", CBOX_LCTR + CBOX_GAP,  BSY)  //BLUE-LEFT-RIGHT
             },
             {
@@ -273,7 +275,7 @@ public class RrField extends Field
         {
             {
                 new Point2d("BLAL", CBOX_LCTR - CBOX_GAP + CA_OFF,  BSY), //BLUE-LEFT-LEFT
-                new Point2d("BLAC", CBOX_LCTR            - CA_OFF,  BSY), //BLUE-LEFT-CENTER
+                new Point2d("BLAC", CBOX_LCTR + 1.0      - CA_OFF,  BSY), //BLUE-LEFT-CENTER
                 new Point2d("BLAR", CBOX_LCTR + CBOX_GAP - CA_OFF,  BSY)  //BLUE-LEFT-RIGHT
         },
             {
@@ -285,7 +287,7 @@ public class RrField extends Field
         {
             {
                 new Point2d("RLAL", CBOX_LCTR + CBOX_GAP - CA_OFF, -BSY), //RED-LEFT-LEFT
-                new Point2d("RLAC", CBOX_LCTR            - CA_OFF, -BSY), //RED-LEFT-CENTER
+                new Point2d("RLAC", CBOX_LCTR + 1.0      - CA_OFF, -BSY), //RED-LEFT-CENTER
                 new Point2d("RLAR", CBOX_LCTR - CBOX_GAP + CA_OFF, -BSY)  //RED-LEFT-RIGHT
         },
             {
@@ -313,13 +315,21 @@ public class RrField extends Field
     //Red Points > Left
     static final Point2d RLBS = new Point2d("RLBS", BS1X,  -BSY);
     static final Point2d RLJB = new Point2d("RLJB", -BSY,  -68.0);
-    static final Point2d RLFP = new Point2d("RLFP", BS1X + BS_CLEAR, -BSY);
+    static final Point2d RLFP = new Point2d("RLFP", BS1X + BS_CLEAR + 1.0, -BSY);
     static final Point2d RLDC = calcDropPt("RLDC", RLFP, CPTS[RED][STRT1][CNTR]);
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
-    static final Point2d RLTT = new Point2d("RLTT", CBOX_LCTR,  -BSY);
-    static final Point2d RLPP = new Point2d("RLPP", CBOX_LCTR,  -25.0);
-    static final Point2d RLXP = new Point2d("RLXP", CBOX_LCTR,  -37.0);
+    static final double PPY1 = -25.0;
+    static final double PPY2 = -17.0;
+    static final double PPLX = CBOX_LCTR;
+    public static double getPPx()  {return PPLX;}
+    public static double getPPy1() {return PPY1;}
+    public static double getPPy2() {return PPY2;}
+    static final Point2d RLTT = new Point2d("RLTT", PPLX,  -BSY);
+    public static double getTTx()  {return PPLX;}
+    public static double getTTy()  {return -BSY;}
+    static final Point2d RLPP = new Point2d("RLPP", PPLX,  PPY1);
+    static final Point2d RLXP = new Point2d("RLXP", PPLX,  PPY1);
 
     //Red Points > Right
     static final Point2d RRBS = new Point2d("RRBS",  BS2X,  -BSY);
