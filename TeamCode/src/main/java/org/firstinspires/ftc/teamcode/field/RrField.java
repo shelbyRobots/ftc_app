@@ -68,7 +68,8 @@ public class RrField extends Field
     private static final int RGHT  = 2;
 
     public static final double CXY = 65.0;
-    public static final double BSY = 47.5; //gm2 coords => 47.0;
+    public static final double BSY  = 47.5; //gm2 coords => 47.0;
+    public static final double BSY2 = 45.0;
     private static final double BS1X = -47.5; //gm2 coords => -49.0;
     public static final double BS2X = 23.0;
 
@@ -208,7 +209,7 @@ public class RrField extends Field
     }
 
     //3-dimensional array of crypto box points [alliance][start][key]
-    //allows inidividual adjustment
+    //allows individual adjustment
     public static final Point2d CPTS[][][] =
     {
         {
@@ -319,8 +320,8 @@ public class RrField extends Field
     static final Point2d RLDC = calcDropPt("RLDC", RLFP, CPTS[RED][STRT1][CNTR]);
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
-    static final double PPY1 = -25.0;
-    static final double PPY2 = -17.0;
+    static final double PPY1 = -29.0;
+    static final double PPY2 = -21.0;
     static final double PPLX = CBOX_LCTR;
     public static double getPPx()  {return PPLX;}
     public static double getPPy1() {return PPY1;}

@@ -95,7 +95,7 @@ public class ShelbyBot
     public double getAutonEndHdg() {return  autonEndHdg;}
     public void setAutonEndHdg(double hdg) {autonEndHdg = hdg;}
     public static Point2d autonEndPos = new Point2d("AEND", 0.0, 0.0);
-    public Point2d getAutonEndPos() {return autonEndPos;};
+    public Point2d getAutonEndPos() {return autonEndPos;}
     public void setAutonEndPos(Point2d endPos) {autonEndPos = endPos;}
     public Field.Alliance getAlliance() {return alliance;}
     public void setAlliance(Field.Alliance alnc) {alliance = alnc;}

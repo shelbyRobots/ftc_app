@@ -34,8 +34,6 @@ import ftclib.FtcChoiceMenu;
 import ftclib.FtcMenu;
 import ftclib.FtcValueMenu;
 
-import static org.firstinspires.ftc.teamcode.opModes.RrAutoShelby.GMode.GRIP_CLOSE;
-
 //After starting on balance stone, opmode needs to read vumark to find L, C, R
 //and left ball color.
 // Then
@@ -304,31 +302,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         int dropCycle = 0;
 
-        gSleep = 500;
-        gMode = GRIP_CLOSE;
-
-        Thread gripThread = new Thread()
-        {
-            public void run()
-            {
-                try
-                {
-                    Thread.sleep(gSleep);
-                } catch (InterruptedException e)
-                {
-                    Thread.currentThread().interrupt();
-                }
-                switch (gMode)
-                {
-                    case GRIP_CLOSE:   robot.closeGripper();   break;
-                    case GRIP_PARTIAL: robot.partialGripper(); break;
-                    case GRIP_OPEN:    robot.openGripper();    break;
-                    case GRIP_STOW:    robot.stowGripper();    break;
-                    default:           robot.closeGripper();   break;
-                }
-            }
-        };
-
         RobotLog.ii(TAG, "STARTING AT %4.2f", timer.seconds());
         if(logData)
         {
@@ -370,16 +343,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         {
             if(!robot.getCapability("holder"))
             {
-                //gSleep = 100;
-                //gMode = GRIP_OPEN;
-                //gripThread.start();
                 robot.setElevAuton();
                 sleep(200);
                 robot.openGripper();
                 sleep(100);
-                //gSleep = 800;
-                //gMode = GRIP_CLOSE;
-                //gripThread.start();
                 robot.setElevZero();
                 sleep(1250);
                 //sleep(1000);
@@ -474,7 +441,12 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 if (curSeg.getAction() == Segment.Action.DROP &&
                     (dropCycle == 0 || dropCycle == 2))
                 {
-                    robot.partialGripper();
+                    robot.setElevZero();
+                    robot.openGripper();
+                    if(startTimer.seconds() > 29.0)
+                    {
+                        break;
+                    }
                 }
                 RobotLog.ii(TAG, "MOVE %s t=%6.4f", curSeg.getName(),
                         startTimer.seconds());
@@ -524,7 +496,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     if(key == RelicRecoveryVuMark.UNKNOWN ||
                        jewelColor == MajorColorDetector.Color.NONE)
                     {
+                        deployPusher();
                         doScan();
+                        sleep(200);
                     }
                     if(jewelColor == MajorColorDetector.Color.NONE)
                     {
@@ -581,6 +555,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     {
                         pathSegs.add(pathSegs.get(i + 3)); //DPAP
                     }
+
+                    robot.setElevZero();
                     break;
                 }
 
@@ -593,16 +569,18 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     RobotLog.dd(TAG, "DropCycle = %d", dropCycle);
                     dropCycle = Math.max(0, dropCycle);
                     dropCycle = Math.min(3, dropCycle);
-                    int elvl = dropCycle;
-                    if (dropCycle == 2) elvl = 0;
-                    robot.setElevToIdxPos(elvl);
-                    //sleep(200);
+
+                    if (dropCycle == 1) robot.setElevToIdxPos(1);
+                    if (dropCycle == 2) robot.setElevToIdxPos(0);
+
                     //SBH
-                    double xerr = drvTrn.getCurrPt().distance(drvTrn.getEstPos());
+                    Point2d cp = drvTrn.getCurrPt();
+                    Point2d ep = drvTrn.getEstPos();
+                    double xerr = cp.distance(ep);
                     adjustedKeyPoint = false;
                     if(useKeyPtAdjust && Math.abs(xerr) > 1.0 && dropCycle > 0)
                     {
-                        RobotLog.dd(TAG, "Adjusting position");
+                        RobotLog.dd(TAG, "Adjusting AP position from %s to %s", cp, ep);
                         adjustedKeyPoint = true;
                         Point2d dbeg = pathSegs.get(i + 1).getStrtPt();
                         origKeyPoint = dbeg;
@@ -641,7 +619,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                             newKeyInt = 2;
                             if(alliance == Field.Alliance.BLUE) newKeyInt = 0;
                         }
-
+                        else if(key == RelicRecoveryVuMark.LEFT)  newKeyInt = 2;
+                        else if(key == RelicRecoveryVuMark.RIGHT) newKeyInt = 0;
 
                         Point2d newCbox= RrField.CPTS[allInt][0][newKeyInt];
 
@@ -650,11 +629,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         s.setEndPt(newDrop);
                         s = pathSegs.get(i + 2);
                         s.setStrtPt(newDrop);
-                    }
-
-                    if(startTimer.seconds() > 28.5)
-                    {
-                        breakOut = true;
                     }
 
                     break;
@@ -680,17 +654,17 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                     if(dropCycle == 0)
                     {
-                        robot.partialGripper();
-                        robot.setElevZero();
-                        //sleep(250);
                         if(robot.gpitch != null)
                         {
                             robot.retractGpitch();
                         }
                     }
 
-                    robot.partialGripper();
-                    sleep(100);
+                    if(dropCycle == 1)
+                    {
+                        robot.partialGripper();
+                        sleep(100);
+                    }
 
 //                    if(startTimer.seconds() < 28.5)
 //                    {
@@ -725,14 +699,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         robot.setElevZero();
                     }
                     robot.openGripper();
-
-                    if(robot.getName().equals("MEC"))
-                    {
-                        robot.closeGripper();
-                        breakOut = true;
-                    }
-
-                    if(startTimer.seconds() > 25) breakOut = true;
 
                     if(dropCycle == 0)
                     {
@@ -811,6 +777,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         }
                     }
 
+                    if(robot.getName().equals("MEC"))
+                    {
+                        robot.closeGripper();
+                        breakOut = true;
+                    }
+
+                    double tooLate = 25.0;
+                    if(startPos == Field.StartPos.START_2) tooLate = 22.0;
+                    if(startTimer.seconds() > tooLate) breakOut = true;
+
                     break;
                 }
 
@@ -835,8 +811,33 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     else
                     {
                         int elvl = dropCycle;
-                        if (dropCycle == 2) elvl = 1;
+                        if (dropCycle == 2) elvl = 0;
                         robot.setElevToIdxPos(elvl);
+                    }
+
+                    if(dropCycle == 2 && startPos == Field.StartPos.START_1)
+                    {
+                        Segment s;
+                        int lstSeg = pathSegs.size();
+                        if(lstSeg >= i + 2)
+                        {
+                            s = pathSegs.get(i + 2);
+                            Point2d ap = s.getTgtPt();
+                            double y = RrField.BSY2;
+                            if(alliance == Field.Alliance.RED) y = -y;
+                            ap.setY(y);
+                            s.setEndPt(ap);
+                            if(lstSeg >= i + 3)
+                            {
+                                s = pathSegs.get(i + 3);
+                                s.setStrtPt(ap);
+                            }
+                            if(lstSeg >= i + 4)
+                            {
+                                s = pathSegs.get(i + 4);
+                                s.setStrtPt(ap);
+                            }
+                        }
                     }
                     break;
                 }
@@ -902,7 +903,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         RobotLog.dd(TAG, "Finished auton segments");
         robot.setAutonEndHdg(robot.getGyroFhdg());
-        robot.setAutonEndPos(drvTrn.getCurrPt());
+        //robot.setAutonEndPos(drvTrn.getCurrPt());
+        robot.setAutonEndPos(drvTrn.getEstPos());
 
         while(opModeIsActive() && !isStopRequested())
         {
@@ -1254,7 +1256,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         double keyTimeout = 1.0;
         ElapsedTime ktimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
-        while ((opModeIsActive() || !isStarted()) &&
+        while (opModeIsActive()                      &&
                lockey == RelicRecoveryVuMark.UNKNOWN &&
                ktimer.seconds() < keyTimeout)
         {
@@ -1313,7 +1315,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         double jewelTimeout = 1.0;
         ElapsedTime jtimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        while((opModeIsActive() || !isStarted())              &&
+        while(opModeIsActive()                                &&
               leftJewelColor == MajorColorDetector.Color.NONE &&
               jtimer.seconds() < jewelTimeout)
         {
@@ -1422,7 +1424,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         SNOWMAN
     }
 
-    private final static double DEF_ENCTRN_PWR  = 0.65;
+    private final static double DEF_ENCTRN_PWR  = 0.6;
     private final static double DEF_GYRTRN_PWR = 0.4;
 
     private List<Segment> pathSegs = new ArrayList<>();
@@ -1461,16 +1463,6 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private boolean firstInState = true;
 
     private int postSleep = 150;
-    private static int gSleep = 500;
-    enum GMode
-    {
-        GRIP_CLOSE,
-        GRIP_PARTIAL,
-        GRIP_OPEN,
-        GRIP_STOW
-    }
-
-    private GMode gMode = GRIP_CLOSE;
 
     private int colSegNum = 0;
 

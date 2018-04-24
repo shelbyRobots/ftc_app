@@ -29,7 +29,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
         /* Initialize the hardware variables. */
         RobotLog.dd(TAG, "Initialize robot");
-        robot.init(this);
+        //robot.init(this);
+        robot.init(this, false);
 
         if (robot.numLmotors  > 0 &&
             robot.numRmotors  > 0)
@@ -40,7 +41,8 @@ public class Teleop_Driver extends InitLinearOpMode
             dtrn.setRampUp(false);
             dtrn.setRampDown(false);
             robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
-            RobotLog.dd(TAG, "Start Hdg %.2f", robot.getAutonEndHdg());
+            RobotLog.dd(TAG, "Start Aend fHdg %.2f", robot.getAutonEndHdg());
+            //RobotLog.dd(TAG, "Start Hdg %.2f", robot.get);
             RobotLog.dd(TAG, "Start Pos %s", robot.getAutonEndPos().toString());
             RobotLog.dd(TAG, "Start mode to %s", robot.leftMotor.getMode());
 

@@ -63,7 +63,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
            int    ELEV_COUNTS_PER_MOTOR_REV = 4;
            double ELEV_GEAR_ONE = 72;
-           double ELEV_WHEEL_DIAM = 1.5;
+           double ELEV_WHEEL_DIAM = 2.0625; //1.5;
            double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
            double LIFT_SCALE = 1.0;
     public double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM)/LIFT_SCALE;
@@ -175,12 +175,12 @@ public class TilerunnerGtoBot extends ShelbyImuBot
                 GRIPPER_CLOSE_POS    = 0.94;
                 GRIPPER_PARTIAL_POS  = 0.84;
                 GRIPPER_OPEN_POS     = 0.72;
-                GRIPPER_STOW_POS     = 0.62;
+                GRIPPER_STOW_POS     = 0.60;
 
                 RGRIPPER_CLOSE_POS   = 0.04;
                 RGRIPPER_PARTIAL_POS = 0.12;
                 RGRIPPER_OPEN_POS    = 0.22;
-                RGRIPPER_STOW_POS    = 0.37;
+                RGRIPPER_STOW_POS    = 0.35;
 
                 MIN_ELEV_CNT = (int)(-3.5 * ELEV_CPI);
                 MAX_ELEV_CNT = MIN_ELEV_CNT + (int)(19.5 * ELEV_CPI);
