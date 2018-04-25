@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.test;
 
 import android.widget.TextView;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,6 +26,7 @@ import ftclib.FtcMenu;
 import hallib.HalDashboard;
 
 @Autonomous(name="DriveTestOpMode", group="Auton")
+@Disabled
 public class DriveTestOpMode extends LinearOpMode implements FtcMenu.MenuButtons
 {
 

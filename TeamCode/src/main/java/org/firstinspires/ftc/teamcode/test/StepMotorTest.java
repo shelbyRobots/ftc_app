@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.test;
 import android.util.SparseArray;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
@@ -21,7 +22,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
  * CYCLE_MS sets the update period.
  */
 @Autonomous(name = "Concept: Step Motor Speed", group = "Test")
-//@Disabled
+@Disabled
 public class StepMotorTest extends InitLinearOpMode
 {
 

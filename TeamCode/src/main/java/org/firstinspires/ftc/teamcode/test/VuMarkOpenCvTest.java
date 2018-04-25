@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.test;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -46,7 +47,7 @@ import org.firstinspires.ftc.teamcode.util.Point2d;
 import java.util.List;
 
 @Autonomous(name="Concept: VuMark Id", group ="Concept")
-//@Disabled
+@Disabled
 public class VuMarkOpenCvTest extends InitLinearOpMode
 {
     private static ImageTracker tracker;

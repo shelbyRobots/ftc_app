@@ -31,6 +31,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -42,7 +43,7 @@ import org.firstinspires.ftc.teamcode.util.DataLogger;
 import java.util.Date;
 
 @Autonomous(name="Auto Drive By Gyro", group="Test")
-//@Disabled
+@Disabled
 public class AutoDriveByGyro_Linear extends InitLinearOpMode
 {
 

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -26,7 +27,7 @@ import hallib.HalDashboard;
 
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach", "UnusedAssignment"})
 @Autonomous(name="AutonTest", group="Auton")
-//@Disabled
+@Disabled
 public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
 {
     public FtcAutoTest()

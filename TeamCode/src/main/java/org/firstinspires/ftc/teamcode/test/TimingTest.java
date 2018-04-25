@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.Locale;
 
 @TeleOp(name="Test: Loop Timing", group="3543TestSamples")
+@Disabled
 public class TimingTest extends LinearOpMode
 {
     private enum SensorType
