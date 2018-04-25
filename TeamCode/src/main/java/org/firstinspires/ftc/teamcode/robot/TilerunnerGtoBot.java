@@ -319,7 +319,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             if(name.equals("GTO1"))
             {
                 HOLDER_EXTD_POS = 0.36;
-                HOLDER_STOW_POS = 0.76;
+                HOLDER_STOW_POS = 0.74;
             }
 
             capMap.put("holder", true);

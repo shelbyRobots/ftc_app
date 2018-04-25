@@ -87,11 +87,21 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         alliance = Field.Alliance.valueOf(pmgr.getAllianceColor());
         startPos = Field.StartPos.valueOf(pmgr.getStartPosition());
+        try
+        {
+            parkPos  = Field.ParkChoice.valueOf(pmgr.getParkPosition());
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee(TAG, "ParkPosition %s invalid.", pmgr.getParkPosition());
+            parkPos = Field.ParkChoice.CENTER_PARK;
+        }
+
         delay    = pmgr.getDelay();
 
         dashboard.displayPrintf(2, "Pref BOT: %s", robotName);
         dashboard.displayPrintf(3, "Pref Alliance: %s", alliance);
-        dashboard.displayPrintf(4, "Pref StartPos: %s", startPos);
+        dashboard.displayPrintf(4, "Pref StartPos: %s %s", startPos, parkPos);
         dashboard.displayPrintf(5, "Pref Delay: %.2f", delay);
 
         setup();
@@ -250,8 +260,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         dl.addField("Start: " + startPos.toString());
         dl.addField("Alliance: " + alliance.toString());
+        dl.addField("Park: "     + parkPos.toString());
         RobotLog.ii(TAG, "STARTPOS %s", startPos);
         RobotLog.ii(TAG, "ALLIANCE %s", alliance);
+        RobotLog.ii(TAG, "PARKPOS %s", parkPos);
         RobotLog.ii(TAG, "DELAY    %4.2f", delay);
         RobotLog.ii(TAG, "BOT      %s", robotName);
 
@@ -737,17 +749,28 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         //Make pitpoint deeper on 2nd pass
                         Segment s;
                         double pitY = RrField.getPPy1();
+                        if (dropCycle == 2)
+                        {
+                            pitY = RrField.getPPy2();
+                        }
+                        else
+                        {
+                            if(startPos == Field.StartPos.START_1 &&
+                               parkPos  == Field.ParkChoice.DEFEND_PARK)
+                            {
+                                pitY = RrField.getPPyD();
+                            }
+                        }
+
+                        if (alliance == Field.Alliance.BLUE) pitY = -pitY;
+
                         Point2d ppt = null;
                         int lstSeg = pathSegs.size() - 1;
                         if(lstSeg >= i + 2)
                         {
                             ppt = pathSegs.get(i + 2).getTgtPt();
                         }
-                        if (dropCycle == 2)
-                        {
-                            pitY = RrField.getPPy2();
-                        }
-                        if (alliance == Field.Alliance.BLUE) pitY = -pitY;
+
                         if(ppt != null)
                         {
                             ppt.setY(pitY);
@@ -1370,14 +1393,20 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 new FtcChoiceMenu<>("ALLIANCE:", startPosMenu, this);
         FtcChoiceMenu<String> robotNameMenu =
                 new FtcChoiceMenu<>("BOT_NAME:", allianceMenu, this);
-        FtcValueMenu delayMenu     = new FtcValueMenu("DELAY:", robotNameMenu, this,
+        FtcChoiceMenu<Field.ParkChoice> parkMenu
+                = new FtcChoiceMenu<>("Park:",   robotNameMenu, this);
+        FtcValueMenu delayMenu
+                = new FtcValueMenu("DELAY:", parkMenu, this,
                 0.0, 20.0, 1.0, 0.0, "%5.2f");
 
         startPosMenu.addChoice("Start_1", Field.StartPos.START_1, allianceMenu);
         startPosMenu.addChoice("Start_2", Field.StartPos.START_2, allianceMenu);
 
-        allianceMenu.addChoice("RED",  Field.Alliance.RED,  robotNameMenu);
-        allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, robotNameMenu);
+        allianceMenu.addChoice("RED",  Field.Alliance.RED,  parkMenu);
+        allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, parkMenu);
+
+        parkMenu.addChoice("CENTER_PARK", RrField.ParkChoice.CENTER_PARK, delayMenu);
+        parkMenu.addChoice("DEFEND_PARK", RrField.ParkChoice.DEFEND_PARK, delayMenu);
 
         robotNameMenu.addChoice("GTO1", "GTO1", delayMenu);
         robotNameMenu.addChoice("GTO2", "GTO2", delayMenu);
@@ -1385,10 +1414,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
         FtcMenu.walkMenuTree(startPosMenu, this);
 
-        startPos = startPosMenu.getCurrentChoiceObject();
-        alliance = allianceMenu.getCurrentChoiceObject();
+        startPos  = startPosMenu.getCurrentChoiceObject();
+        alliance  = allianceMenu.getCurrentChoiceObject();
         robotName = robotNameMenu.getCurrentChoiceObject();
-        delay = delayMenu.getCurrentValue();
+        parkPos   = parkMenu.getCurrentChoiceObject();
+        delay     = delayMenu.getCurrentValue();
 
         int lnum = 3;
         dashboard.displayPrintf(lnum++, "START: %s", startPos);
@@ -1449,6 +1479,8 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     private static Field.StartPos startPos = Field.StartPos.START_1;
     private static Field.Alliance alliance = Field.Alliance.RED;
     private static Team team = Team.SNOWMAN;
+
+    private static Field.ParkChoice parkPos = Field.ParkChoice.CENTER_PARK;
 
     private int RED_THRESH = 15;
     private int GRN_THRESH = 15;

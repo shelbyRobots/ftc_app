@@ -322,10 +322,12 @@ public class RrField extends Field
 
     static final double PPY1 = -29.0;
     static final double PPY2 = -21.0;
+    static final double PPYD =  10.0;
     static final double PPLX = CBOX_LCTR;
     public static double getPPx()  {return PPLX;}
     public static double getPPy1() {return PPY1;}
     public static double getPPy2() {return PPY2;}
+    public static double getPPyD() {return PPYD;}
     static final Point2d RLTT = new Point2d("RLTT", PPLX,  -BSY);
     public static double getTTx()  {return PPLX;}
     public static double getTTy()  {return -BSY;}
