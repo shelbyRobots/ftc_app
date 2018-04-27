@@ -443,6 +443,16 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
             if (curSeg.getLength() >= 0.1)
             {
+                if (curSeg.getAction() == Segment.Action.PREGRAB)
+                {
+                    if (startTimer.seconds() > 25.0)
+                    {
+                        RobotLog.ii(TAG, "SKIP TURN MOVE %s t=%6.4f", curSeg.getName(),
+                                startTimer.seconds());
+                        doMove(curSeg);
+                        break;
+                    }
+                }
                 RobotLog.ii(TAG, "ENCODER TURN %s t=%6.4f", curSeg.getName(),
                         startTimer.seconds());
                 doEncoderTurn(curSeg.getFieldHeading(), segName + " encoderTurn"); //quick but rough
@@ -450,14 +460,23 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         startTimer.seconds());
                 doGyroTurn(curSeg.getFieldHeading(), segName + " gyroTurn");
 
-                if (curSeg.getAction() == Segment.Action.DROP &&
-                    (dropCycle == 0 || dropCycle == 2))
+                if (curSeg.getAction() == Segment.Action.DROP)
                 {
-                    robot.setElevZero();
-                    robot.openGripper();
-                    if(startTimer.seconds() > 29.0)
+                    if (dropCycle == 0 || dropCycle == 2)
                     {
-                        break;
+                        robot.setElevZero();
+                        robot.openGripper();
+                        if (startTimer.seconds() > 28.7)
+                        {
+                            break;
+                        }
+                    }
+                    else if (dropCycle == 1)
+                    {
+                        if (startTimer.seconds() > 28.7)
+                        {
+                            break;
+                        }
                     }
                 }
                 RobotLog.ii(TAG, "MOVE %s t=%6.4f", curSeg.getName(),
