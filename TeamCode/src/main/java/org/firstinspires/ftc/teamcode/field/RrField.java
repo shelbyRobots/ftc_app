@@ -327,7 +327,11 @@ public class RrField extends Field
     public static double getPPx()  {return PPLX;}
     public static double getPPy1() {return PPY1;}
     public static double getPPy2() {return PPY2;}
-    public static double getPPyD() {return PPYD;}
+    public static double getPPyD(StartPos startPos)
+    {
+        if(startPos == StartPos.START_2) return 3.0;
+        return PPYD;
+    }
     static final Point2d RLTT = new Point2d("RLTT", PPLX,  -BSY);
     public static double getTTx()  {return PPLX;}
     public static double getTTy()  {return -BSY;}

@@ -767,6 +767,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     {
                         //Make pitpoint deeper on 2nd pass
                         Segment s;
+                        double pitX = RrField.getPPx();
                         double pitY = RrField.getPPy1();
                         if (dropCycle == 2)
                         {
@@ -774,10 +775,9 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         }
                         else
                         {
-                            if(startPos == Field.StartPos.START_1 &&
-                               parkPos  == Field.ParkChoice.DEFEND_PARK)
+                            if(parkPos  == Field.ParkChoice.DEFEND_PARK)
                             {
-                                pitY = RrField.getPPyD();
+                                pitY = RrField.getPPyD(startPos);
                             }
                         }
 
@@ -792,6 +792,10 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                         if(ppt != null)
                         {
+                            if(parkPos  == Field.ParkChoice.DEFEND_PARK)
+                            {
+                                ppt.setX(pitX);
+                            }
                             ppt.setY(pitY);
                             RobotLog.dd(TAG, "Adjusting PitPoint to %s", ppt);
                             if (lstSeg >= i + 1)
