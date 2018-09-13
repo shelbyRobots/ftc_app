@@ -1,12 +1,9 @@
 dependencies {
-    compile project(':FtcRobotController')
-    compile (name: 'RobotCore-release', ext: 'aar')
-    compile (name: 'Hardware-release', ext: 'aar')
-    compile (name: 'FtcCommon-release', ext: 'aar')
-    compile (name:'Analytics-release', ext:'aar')
-    compile (name:'WirelessP2p-release', ext:'aar')
-    compile (name:'ModernRobotics-release', ext:'aar')
-
-    compile project(':openCVLibrary310')
-    compile project(':Ftc3543Lib')
+    implementation project(':FtcRobotController')
+    implementation (name: 'RobotCore-release', ext: 'aar')
+    implementation (name: 'Hardware-release', ext: 'aar')
+    implementation (name: 'FtcCommon-release', ext: 'aar')
+    implementation (name:'WirelessP2p-release', ext:'aar')
+    implementation project(':openCVLibrary310')
+    implementation project(':Ftc3543Lib')
 }
