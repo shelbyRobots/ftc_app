@@ -95,6 +95,7 @@ android {
         jni.srcDirs = []
         jniLibs.srcDir rootProject.file('libs')
     }
+
 }
 
 repositories {
