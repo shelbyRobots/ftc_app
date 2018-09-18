@@ -313,7 +313,7 @@ public class RrField extends Field
         }
     };
 
-    //Red Points > Left
+    //Red Route > Left
     static final Point2d RLBS = new Point2d("RLBS", BS1X,  -BSY);
     static final Point2d RLJB = new Point2d("RLJB", -BSY,  -68.0);
     static final Point2d RLFP = new Point2d("RLFP", BS1X + BS_CLEAR + 1.0, -BSY);
@@ -338,7 +338,7 @@ public class RrField extends Field
     static final Point2d RLPP = new Point2d("RLPP", PPLX,  PPY1);
     static final Point2d RLXP = new Point2d("RLXP", PPLX,  PPY1);
 
-    //Red Points > Right
+    //Red Route > Right
     static final Point2d RRBS = new Point2d("RRBS",  BS2X,  -BSY);
     static final Point2d RRJB = new Point2d("RRJB",  BS2X,  -68.0);
     static final Point2d RRFP = new Point2d("RRFP",  BS2X + BS_CLEAR,  -BSY);

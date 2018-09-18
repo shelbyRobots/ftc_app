@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.util.Segment;
 import java.util.Vector;
 
 @SuppressWarnings("unused")
-public class VvPoints extends Points
+public class VvRoute extends Route
 {
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -118,11 +118,11 @@ public class VvPoints extends Points
         return points;
     }
 
-    public VvPoints(Field.StartPos startPos,
-                    Field.Alliance alliance,
-                    Field.BeaconChoice pushChoice,
-                    Field.ParkChoice parkChoice,
-                    boolean useFly2Light)
+    public VvRoute(Field.StartPos startPos,
+                   Field.Alliance alliance,
+                   Field.BeaconChoice pushChoice,
+                   Field.ParkChoice parkChoice,
+                   boolean useFly2Light)
     {
         super(startPos, alliance);
         this.parkChoice = parkChoice;

@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.util.Segment;
 import java.util.Vector;
 
 @SuppressWarnings("unused")
-public abstract class Points
+public abstract class Route
 {
 
     private static final String TAG = "SJH_PNT";
@@ -20,13 +20,13 @@ public abstract class Points
         return new Vector<>(MAX_SEGMENTS);
     }
 
-    Points(Field.StartPos startPos,
-           Field.Alliance alliance)
+    Route(Field.StartPos startPos,
+          Field.Alliance alliance)
     {
         this.startPos     = startPos;
         this.alliance     = alliance;
 
-        RobotLog.dd(TAG, "In base Points ctor.  Alliance=%s", alliance);
+        RobotLog.dd(TAG, "In base Route ctor.  Alliance=%s", alliance);
 
         Vector<Point2d> pts = initPoints();
         Vector<Point2d> points;
@@ -47,7 +47,7 @@ public abstract class Points
     void addPoint(Vector<Point2d> points,
                   ShelbyBot.DriveDir dir,
                   double speed,
-                  double tune,
+                  @SuppressWarnings("SameParameterValue") double tune,
                   Segment.TargetType targetType,
                   Segment.Action action,
                   Point2d pt)
@@ -69,10 +69,7 @@ public abstract class Points
     {
         Vector<Point2d> rpts = new Vector<>(inpts.size());
 
-        for(Point2d rpt : inpts)
-        {
-            rpts.add(rpt);
-        }
+        rpts.addAll(inpts);
         return rpts;
     }
 
@@ -155,8 +152,8 @@ public abstract class Points
     private Vector<Double> tuners = new Vector<>(MAX_SEGMENTS);
     private Vector<Segment.TargetType> ttypes = new Vector<>(MAX_SEGMENTS);
 
-    Field.StartPos     startPos   = Field.StartPos.START_1;
-    Field.Alliance     alliance   = Field.Alliance.RED;
+    Field.StartPos     startPos;
+    Field.Alliance     alliance;
 }
 
 

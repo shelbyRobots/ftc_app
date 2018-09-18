@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.util.Segment;
 import java.util.Vector;
 
 @SuppressWarnings("unused")
-public class RrPoints extends Points
+public class RrRoute extends Route
 {
     private static final String TAG = "SJH_RRP";
 
@@ -17,7 +17,7 @@ public class RrPoints extends Points
     @Override
     protected Vector<Point2d> initPoints()
     {
-        RobotLog.dd(TAG, "In RrPoints initPoints alliance=%s startPos=%s",
+        RobotLog.dd(TAG, "In RrRoute initPoints alliance=%s startPos=%s",
                 alliance, startPos);
         Vector<Point2d> points = new Vector<>(MAX_SEGMENTS);
 
@@ -29,6 +29,7 @@ public class RrPoints extends Points
         if(alliance == Field.Alliance.BLUE)
         {
             fwd = ShelbyBot.DriveDir.PUSHER;
+            //noinspection UnusedAssignment
             rev = ShelbyBot.DriveDir.INTAKE;
         }
         Segment.Action none    = Segment.Action.NOTHING;
@@ -87,10 +88,10 @@ public class RrPoints extends Points
         return points;
     }
 
-    public RrPoints(Field.StartPos startPos,
-                    Field.Alliance alliance,
-                    String robotName,
-                    double glyphOff)
+    public RrRoute(Field.StartPos startPos,
+                   Field.Alliance alliance,
+                   String robotName,
+                   double glyphOff)
     {
         super(startPos, alliance);
         RrField.initField(robotName, glyphOff);

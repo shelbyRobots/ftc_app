@@ -9,9 +9,9 @@ import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.field.Field;
-import org.firstinspires.ftc.teamcode.field.Points;
+import org.firstinspires.ftc.teamcode.field.Route;
 import org.firstinspires.ftc.teamcode.field.RrField;
-import org.firstinspires.ftc.teamcode.field.RrPoints;
+import org.firstinspires.ftc.teamcode.field.RrRoute;
 import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
 import org.firstinspires.ftc.teamcode.image.MajorColorDetector;
@@ -268,7 +268,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         RobotLog.ii(TAG, "BOT      %s", robotName);
 
         double glyphOff = pmgr.getGlyphOffset(robotName);
-        Points pts = new RrPoints(startPos, alliance, robotName, glyphOff);
+        Route pts = new RrRoute(startPos, alliance, robotName, glyphOff);
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
 
         initHdg = pathSegs.get(0).getFieldHeading();
@@ -541,7 +541,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                 case SET_ALIGN:
                 {
-                    //Note:  The segment ordering in RrPoints needs to match below
+                    //Note:  The segment ordering in RrRoute needs to match below
                     Point2d apt = RrField.getAlignPt(alliance, startPos, key, align_type);
                     RobotLog.dd(TAG, "Setting align point %s %s", key, apt);
                     double cfgOff = pmgr.getDropOffset(robotName, alliance.toString(),
