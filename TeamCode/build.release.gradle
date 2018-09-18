@@ -4,6 +4,6 @@ dependencies {
     api (name: 'Hardware-release', ext: 'aar')
     api (name: 'FtcCommon-release', ext: 'aar')
     api (name:'WirelessP2p-release', ext:'aar')
-    api project(':openCVLibrary310')
+    api project(':opencv')
     api project(':Ftc3543Lib')
 }
