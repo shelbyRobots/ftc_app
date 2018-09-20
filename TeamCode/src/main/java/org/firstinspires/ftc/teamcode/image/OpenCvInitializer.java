@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.JavaCameraView;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
@@ -78,14 +77,20 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
                 ViewGroup vg = act.findViewById(camMonViewId);
 
                 RobotLog.dd(TAG, "Creating JavaCameraView");
-                jcv = new JavaCameraView(act, CameraBridgeViewBase.CAMERA_ID_BACK);
-                RobotLog.dd(TAG, "setMaxFrameSize");
-                jcv.setMaxFrameSize(480, 320);
+                jcv = new ModCameraView(act, CameraBridgeViewBase.CAMERA_ID_BACK);
+                //Note:  Check the supported camera resolutions to set this appropriately.
+                //       The size used will be the supported size equal to or the next
+                //       smaller supported size.
+                //       A reasonable  size will help frame rates.
+                int maxW = 640;
+                int maxH = 480;
+                RobotLog.dd(TAG, "setMaxFrameSize %dx%d", maxW, maxH);
+                jcv.setMaxFrameSize(maxW, maxH);
 
                 //ViewGroup.LayoutParams.MATCH_PARENT
                 ViewGroup.LayoutParams vglop =
-                        new ViewGroup.LayoutParams(480,
-                                                   320);
+                        new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,   //maxW
+                                                   ViewGroup.LayoutParams.MATCH_PARENT);  //maxH
 
                 RobotLog.dd(TAG, "setLayoutParams");
                 jcv.setLayoutParams(vglop);
@@ -116,14 +121,11 @@ public class OpenCvInitializer implements CameraBridgeViewBase.CvCameraViewListe
         openCVCamera = jcv;
         RobotLog.dd(TAG, "Set visible JavaCameraView");
         openCVCamera.setVisibility(CameraBridgeViewBase.VISIBLE);
+
         RobotLog.dd(TAG, "Set cameraViewListener");
         openCVCamera.setCvCameraViewListener(this);
 
         openCVCamera.enableFpsMeter();
-
-        width = openCVCamera.getMeasuredWidth();
-        height = openCVCamera.getMeasuredHeight();
-        RobotLog.ii(TAG, "CAMERA %d x %d", width, height);
 
         RobotLog.dd(TAG, "OpenCvLoad: enabling view");
         openCVCamera.enableView();

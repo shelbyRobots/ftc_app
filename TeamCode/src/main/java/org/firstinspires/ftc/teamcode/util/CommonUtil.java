@@ -11,12 +11,12 @@ import android.widget.TextView;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.image.OpenCvInitializer;
 import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
@@ -34,6 +34,7 @@ public class CommonUtil
     private static DataLogger   dl;
 
     private static final int topLayoutViewId = R.id.entire_screen;
+    private static final int cameraViewId = R.id.cameraMonitorViewId;
 
     private boolean cfgLayout = false;
     private boolean layoutModified = false;
@@ -49,6 +50,8 @@ public class CommonUtil
     private boolean vuforiaInitialized = false;
     private VuforiaInitializer vufInit;
     private static VuforiaLocalizer vuforia = null;
+
+    //private View mainView = null;
 
     private static final String TAG = "SJH_COM";
 
@@ -132,7 +135,7 @@ public class CommonUtil
 
         if(cfgLayout)
         {
-            setupImageLayout();
+            setupImageLayout(topLayoutViewId, cameraViewId);
         }
 
 //        if(vuforiaInitialized && vuforia !=null)
@@ -153,14 +156,14 @@ public class CommonUtil
                     " useOcvCamera: " + useOcvCamera);
         if(!useOpenCV) return;
 
+        if(cfgLayout)
+        {
+            setupImageLayout(topLayoutViewId, cameraViewId);
+        }
+
         RobotLog.dd(TAG, "Creating new OpenCvInitializer");
         ocvInit = new OpenCvInitializer(useOcvCamera);
         RobotLog.dd(TAG, "Back from Creating new OpenCvInitializer");
-
-         if(cfgLayout)
-        {
-            setupImageLayout();
-        }
     }
 
     private void initOpenCvCamera()
@@ -171,7 +174,7 @@ public class CommonUtil
                     " ocvInit null: " + (ocvInit == null ? "true" : "false"));
         //if(!useOcvCamera || ocvInit == null) return;
         if(useVuforia || ocvInit == null) return;
-        if(useOpenCV == false) return;
+        if(!useOpenCV) return;
         setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         ocvInit.setupCameraView();
     }
@@ -228,10 +231,7 @@ public class CommonUtil
         return (FtcRobotControllerActivity)getActivity();
     }
 
-    public int getCameraMonitorViewId()
-    {
-        return R.id.cameraMonitorViewId;
-    }
+    public int getCameraMonitorViewId() { return cameraViewId; }
 
     public boolean getConfigLayout() { return cfgLayout; }
 
@@ -309,17 +309,12 @@ public class CommonUtil
     private void setScreenOrientation(final int actInfo)
     {
         final Activity act = getActivity();
-        act.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                act.setRequestedOrientation(actInfo);
-            }
-        });
+        AppUtil appUtil = AppUtil.getInstance();
+        appUtil.synchronousRunOnUiThread(act, new Runnable()
+           { public void run() { act.setRequestedOrientation(actInfo); }});
     }
 
-    private void setupImageLayout()
+    private void setupImageLayout(final int topId, final int botId)
     {
         if(!cfgLayout || layoutModified) return;
 
@@ -334,19 +329,19 @@ public class CommonUtil
             public void run()
             {
                 RobotLog.dd(TAG, "Setting up ImageLayout");
-                ViewGroup top = act.findViewById(R.id.entire_screen);
-                ViewGroup cmv = act.findViewById(R.id.cameraMonitorViewId);
+                ViewGroup top = act.findViewById(topId);
+                ViewGroup bot = act.findViewById(botId);
                 for (int v = 0; v < top.getChildCount(); v++)
                 {
                     top.getChildAt(v).setVisibility(View.GONE);
                 }
-                ViewGroup gp = (ViewGroup)((cmv.getParent()).getParent());
+                ViewGroup gp = (ViewGroup)((bot.getParent()).getParent());
 
                 for (int v = 0; gp != null && v < gp.getChildCount(); v++)
                 {
                     gp.getChildAt(v).setVisibility(View.GONE);
                 }
-                View vw = cmv;
+                View vw = bot;
                 while (vw != null && vw != top)
                 {
                     vw.setVisibility(View.VISIBLE);
@@ -359,23 +354,8 @@ public class CommonUtil
         }
 
         LayoutRunnable lrun = new LayoutRunnable();
-        act.runOnUiThread(lrun);
-
-        ElapsedTime layoutTimer = new ElapsedTime();
-        while(!lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
-        {
-            if(l != null) l.sleep(5);
-            else
-            {
-                try
-                {
-                    Thread.sleep(5);
-                } catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
+        AppUtil appUtil = AppUtil.getInstance();
+        appUtil.synchronousRunOnUiThread(act, lrun);
 
         layoutModified = true;
     }
@@ -394,7 +374,7 @@ public class CommonUtil
             @Override
             public void run()
             {
-                ViewGroup top = act.findViewById(R.id.entire_screen);
+                ViewGroup top = act.findViewById(topLayoutViewId);
                 for (int v = 0; v < top.getChildCount() - 1; v++)
                 {
                     RobotLog.dd(TAG, "Restoring child %d of %d", v, top.getChildCount());
@@ -405,25 +385,32 @@ public class CommonUtil
         }
 
         LayoutRunnable lrun = new LayoutRunnable();
-        act.runOnUiThread(lrun);
-
-        RobotLog.dd(TAG, "Waiting for restoreLayout to complete");
-        ElapsedTime layoutTimer = new ElapsedTime();
-        while(lrun.getLayoutConfigured() && layoutTimer.seconds() < 2)
-        {
-            if(l != null) l.sleep(5);
-            else
-            {
-                try
-                {
-                    Thread.sleep(5);
-                } catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
+        AppUtil appUtil = AppUtil.getInstance();
+        appUtil.synchronousRunOnUiThread(act, lrun);
 
         layoutModified = false;
+    }
+
+    //Returns the current root view so it can be reset later
+    public View switchFullLayout(final View view)
+    {
+        final Activity act = getActivity();
+        View mainView = getMainView();
+        AppUtil appUtil = AppUtil.getInstance();
+        appUtil.synchronousRunOnUiThread(act,
+           new Runnable()
+           {
+            @Override
+            public void run() { if(view != null) act.setContentView(view); }
+           }
+        );
+        return mainView;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private View getMainView()
+    {
+        final Activity act = getActivity();
+        return act.getCurrentFocus().getRootView();
     }
 }
