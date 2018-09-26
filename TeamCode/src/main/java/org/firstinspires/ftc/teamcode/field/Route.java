@@ -20,7 +20,7 @@ public abstract class Route
         return new Vector<>(MAX_SEGMENTS);
     }
 
-    Route(Field.StartPos startPos,
+    Route(PositionOption startPos,
           Field.Alliance alliance)
     {
         this.startPos     = startPos;
@@ -152,8 +152,22 @@ public abstract class Route
     private Vector<Double> tuners = new Vector<>(MAX_SEGMENTS);
     private Vector<Segment.TargetType> ttypes = new Vector<>(MAX_SEGMENTS);
 
-    Field.StartPos     startPos;
+    PositionOption     startPos;
+    PositionOption     parkChoice;
     Field.Alliance     alliance;
+
+    public enum StartPos implements PositionOption
+    {
+        START_1,
+        START_2
+    }
+
+    public enum ParkPos implements PositionOption
+    {
+        CENTER_PARK,
+        CORNER_PARK,
+        DEFEND_PARK
+    }
 }
 
 

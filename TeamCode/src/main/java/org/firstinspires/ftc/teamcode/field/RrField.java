@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.field;
 
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Units;
@@ -17,6 +18,15 @@ import java.util.List;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class RrField extends Field
 {
+    public RrField()
+    {
+        super("RelicRecovery", TRACKABLE_NAMES, LOCATIONS_ON_FIELD);
+    }
+
+    private static final String ASSET_NAME = "RelicVuMark";
+    private static final String[] TRACKABLE_NAMES = {"Relic"};
+    private static final OpenGLMatrix[] LOCATIONS_ON_FIELD = {null};
+
     //Point naming key:
     //1st char: R=Red, B=Blue
     //2nd char: L=Left start, R=Right start (viewed from red side - along field X)
@@ -116,95 +126,94 @@ public class RrField extends Field
     {
         BOT_2_GLYPH = gOffset;
 
-        if (robotName.equals("GTO1"))
-        {
-            //BOT_2_GLYPH = 13.5;
+        switch (robotName) {
+            case "GTO1":
+                //BOT_2_GLYPH = 13.5;
 
-            BLCLXT = 0.0;
-            BLCCXT = 0.0;
-            BLCRXT = 0.0;
-            BRCLXT = 0.0;
-            BRCCXT = 0.0;
-            BRCRXT = 0.0;
-            RLCLXT = 0.0;
-            RLCCXT = 0.0;
-            RLCRXT = 0.0;
-            RRCLXT = 0.0;
-            RRCCXT = 0.0;
-            RRCRXT = 0.0;
+                BLCLXT = 0.0;
+                BLCCXT = 0.0;
+                BLCRXT = 0.0;
+                BRCLXT = 0.0;
+                BRCCXT = 0.0;
+                BRCRXT = 0.0;
+                RLCLXT = 0.0;
+                RLCCXT = 0.0;
+                RLCRXT = 0.0;
+                RRCLXT = 0.0;
+                RRCCXT = 0.0;
+                RRCRXT = 0.0;
 
-            BLCLYT = 0.0;
-            BLCCYT = 0.0;
-            BLCRYT = 0.0;
-            BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = 0.0;
-            RLCLYT = 0.0;
-            RLCCYT = 0.0;
-            RLCRYT = 0.0;
-            RRCLYT = 0.0;
-            RRCCYT = 0.0;
-            RRCRYT = 0.0;
-        }
-        else if (robotName.equals("GTO2"))
-        {
-            //BOT_2_GLYPH = 14.0;
+                BLCLYT = 0.0;
+                BLCCYT = 0.0;
+                BLCRYT = 0.0;
+                BRCLYT = 0.0;
+                BRCCYT = 0.0;
+                BRCRYT = 0.0;
+                RLCLYT = 0.0;
+                RLCCYT = 0.0;
+                RLCRYT = 0.0;
+                RRCLYT = 0.0;
+                RRCCYT = 0.0;
+                RRCRYT = 0.0;
+                break;
+            case "GTO2":
+                //BOT_2_GLYPH = 14.0;
 
-            BLCLXT = 0.0;
-            BLCCXT = 0.0;
-            BLCRXT = 0.0;
-            BRCLXT = 0.0;
-            BRCCXT = 0.0;
-            BRCRXT = 0.0;
-            RLCLXT = 0.0;
-            RLCCXT = 0.0;
-            RLCRXT = 0.0;
-            RRCLXT = 0.0;
-            RRCCXT = 0.0;
-            RRCRXT = 0.0;
+                BLCLXT = 0.0;
+                BLCCXT = 0.0;
+                BLCRXT = 0.0;
+                BRCLXT = 0.0;
+                BRCCXT = 0.0;
+                BRCRXT = 0.0;
+                RLCLXT = 0.0;
+                RLCCXT = 0.0;
+                RLCRXT = 0.0;
+                RRCLXT = 0.0;
+                RRCCXT = 0.0;
+                RRCRXT = 0.0;
 
-            BLCLYT = 0.0;
-            BLCCYT = 0.0;
-            BLCRYT = 0.0;
-            BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = 0.0;
-            RLCLYT = 0.0;
-            RLCCYT = 0.0;
-            RLCRYT = 0.0;
-            RRCLYT = 0.0;
-            RRCCYT = 0.0;
-            RRCRYT = 0.0;
-        }
-        else if (robotName.equals("MEC"))
-        {
-            BOT_2_GLYPH = 11.0;
+                BLCLYT = 0.0;
+                BLCCYT = 0.0;
+                BLCRYT = 0.0;
+                BRCLYT = 0.0;
+                BRCCYT = 0.0;
+                BRCRYT = 0.0;
+                RLCLYT = 0.0;
+                RLCCYT = 0.0;
+                RLCRYT = 0.0;
+                RRCLYT = 0.0;
+                RRCCYT = 0.0;
+                RRCRYT = 0.0;
+                break;
+            case "MEC":
+                BOT_2_GLYPH = 11.0;
 
-            BLCLXT = 0.0;
-            BLCCXT = 0.0;
-            BLCRXT = 0.0;
-            BRCLXT = 0.0;
-            BRCCXT = 0.0;
-            BRCRXT = 0.0;
-            RLCLXT = 0.0;
-            RLCCXT = 0.0;
-            RLCRXT = 0.0;
-            RRCLXT = 0.0;
-            RRCCXT = 0.0;
-            RRCRXT = 0.0;
+                BLCLXT = 0.0;
+                BLCCXT = 0.0;
+                BLCRXT = 0.0;
+                BRCLXT = 0.0;
+                BRCCXT = 0.0;
+                BRCRXT = 0.0;
+                RLCLXT = 0.0;
+                RLCCXT = 0.0;
+                RLCRXT = 0.0;
+                RRCLXT = 0.0;
+                RRCCXT = 0.0;
+                RRCRXT = 0.0;
 
-            BLCLYT = 0.0;
-            BLCCYT = 0.0;
-            BLCRYT = 0.0;
-            BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = 0.0;
-            RLCLYT = 0.0;
-            RLCCYT = 0.0;
-            RLCRYT = 0.0;
-            RRCLYT = 0.0;
-            RRCCYT = 0.0;
-            RRCRYT = 0.0;
+                BLCLYT = 0.0;
+                BLCCYT = 0.0;
+                BLCRYT = 0.0;
+                BRCLYT = 0.0;
+                BRCCYT = 0.0;
+                BRCRYT = 0.0;
+                RLCLYT = 0.0;
+                RLCCYT = 0.0;
+                RLCRYT = 0.0;
+                RRCLYT = 0.0;
+                RRCCYT = 0.0;
+                RRCRYT = 0.0;
+                break;
         }
     }
 
@@ -327,9 +336,9 @@ public class RrField extends Field
     public static double getPPx()  {return PPLX;}
     public static double getPPy1() {return PPY1;}
     public static double getPPy2() {return PPY2;}
-    public static double getPPyD(StartPos startPos)
+    public static double getPPyD(PositionOption startPos)
     {
-        if(startPos == StartPos.START_2) return 3.0;
+        if(startPos == Route.StartPos.START_2) return 3.0;
         return PPYD;
     }
     static final Point2d RLTT = new Point2d("RLTT", PPLX,  -BSY);
@@ -353,12 +362,12 @@ public class RrField extends Field
 
 
     public static Point2d getAlignPt(Alliance alliance,
-                                     StartPos startPos,
+                                     PositionOption startPos,
                                      RelicRecoveryVuMark key,
                                      Align_Type align_type)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
-        int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
+        int strt = (startPos == Route.StartPos.START_1) ? STRT1 : STRT2;
         int ckey = CNTR;
 
         switch (key)
@@ -389,13 +398,13 @@ public class RrField extends Field
     }
 
     public static Point2d getDropPt(Alliance alliance,
-                                    StartPos startPos,
+                                    PositionOption startPos,
                                     RelicRecoveryVuMark key,
                                     double cfgOff,
                                     Align_Type align_type)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
-        int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
+        int strt = (startPos == Route.StartPos.START_1) ? STRT1 : STRT2;
         int ckey = CNTR;
 
         switch (key)
@@ -415,12 +424,12 @@ public class RrField extends Field
 
         Point2d dpt = calcDropPt(pName, spt, ept);
 
-        if(startPos == StartPos.START_1)
+        if(startPos == Route.StartPos.START_1)
         {
             RobotLog.dd(TAG, "Offseting dpt %s in X by %.2f", dpt.toString(), cfgOff);
             dpt.setX(dpt.getX() + cfgOff);
         }
-        else if (startPos == StartPos.START_2)
+        else if (startPos == Route.StartPos.START_2)
         {
             RobotLog.dd(TAG, "Offseting dpt %s in Y by %.2f", dpt.toString(), cfgOff);
             dpt.setY(dpt.getY() + cfgOff);

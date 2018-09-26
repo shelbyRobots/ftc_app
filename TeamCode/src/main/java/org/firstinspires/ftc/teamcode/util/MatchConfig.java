@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.PositionOption;
 
 public class MatchConfig
 {
@@ -14,22 +15,22 @@ public class MatchConfig
         this.alliance = alliance;
     }
 
-    public Field.StartPos getStartPos()
+    public PositionOption getStartPos()
     {
         return startPos;
     }
 
-    public void setStartPos(Field.StartPos startPos)
+    public void setStartPos(PositionOption startPos)
     {
         this.startPos = startPos;
     }
 
-    public Field.ParkChoice getParkPos()
+    public PositionOption getParkPos()
     {
         return parkPos;
     }
 
-    public void setParkPos(Field.ParkChoice parkPos)
+    public void setParkPos(PositionOption parkPos)
     {
         this.parkPos = parkPos;
     }
@@ -55,8 +56,8 @@ public class MatchConfig
     }
 
     private Field.Alliance   alliance;
-    private Field.StartPos   startPos;
-    private Field.ParkChoice parkPos;
+    private PositionOption   startPos;
+    private PositionOption parkPos;
     private String           botName = "";
     private double           delay = 0.0;
 }

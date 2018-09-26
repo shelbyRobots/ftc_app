@@ -9,6 +9,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.GoalOption;
+import org.firstinspires.ftc.teamcode.field.PositionOption;
+import org.firstinspires.ftc.teamcode.field.Route;
+import org.firstinspires.ftc.teamcode.field.VvRoute;
 import org.firstinspires.ftc.teamcode.image.BeaconDetector;
 import org.firstinspires.ftc.teamcode.image.BeaconFinder;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
@@ -594,11 +598,11 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
         //
         // Create the menus.
         //
-        FtcChoiceMenu<Field.StartPos> startPosMenu =
+        FtcChoiceMenu<PositionOption> startPosMenu =
                 new FtcChoiceMenu<>("START:", null, this);
-        FtcChoiceMenu<Field.BeaconChoice> pushMenu =
+        FtcChoiceMenu<GoalOption> pushMenu =
                 new FtcChoiceMenu<>("PUSH:", startPosMenu, this);
-        FtcChoiceMenu<Field.ParkChoice> parkMenu   =
+        FtcChoiceMenu<PositionOption> parkMenu   =
                 new FtcChoiceMenu<>("PARK:", pushMenu, this);
         FtcChoiceMenu<Field.Alliance> allianceMenu =
                 new FtcChoiceMenu<>("ALLIANCE:", parkMenu, this);
@@ -615,16 +619,13 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
         FtcValueMenu  testKMenu    =
                 new FtcValueMenu("K:",     testSpdMenu,  this, 0.5, 1.5, 0.01, 1.0, "%4.2f");
 
-        startPosMenu.addChoice("Start_A", Field.StartPos.START_A_SWEEPER, pushMenu);
-        startPosMenu.addChoice("Start_B", Field.StartPos.START_B_SWEEPER, pushMenu);
-        startPosMenu.addChoice("Start_TEST", Field.StartPos.START_TEST, testMaxMenu);
-        pushMenu.addChoice("BOTH", Field.BeaconChoice.BOTH, parkMenu);
-        pushMenu.addChoice("NEAR", Field.BeaconChoice.NEAR, parkMenu);
-        pushMenu.addChoice("FAR",  Field.BeaconChoice.FAR,  parkMenu);
-        pushMenu.addChoice("NONE", Field.BeaconChoice.NONE, parkMenu);
+        pushMenu.addChoice("BOTH", VvRoute.BeaconChoice.BOTH, parkMenu);
+        pushMenu.addChoice("NEAR", VvRoute.BeaconChoice.NEAR, parkMenu);
+        pushMenu.addChoice("FAR",  VvRoute.BeaconChoice.FAR,  parkMenu);
+        pushMenu.addChoice("NONE", VvRoute.BeaconChoice.NONE, parkMenu);
 
-        parkMenu.addChoice("CENTER", Field.ParkChoice.CENTER_PARK, allianceMenu);
-        parkMenu.addChoice("CORNER", Field.ParkChoice.CORNER_PARK, allianceMenu);
+        parkMenu.addChoice("CENTER", Route.ParkPos.CENTER_PARK, allianceMenu);
+        parkMenu.addChoice("CORNER", Route.ParkPos.CORNER_PARK, allianceMenu);
 
         allianceMenu.addChoice("RED",  Field.Alliance.RED,  teamMenu);
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, teamMenu);
@@ -753,9 +754,9 @@ public class FtcAutoTest extends InitLinearOpMode implements FtcMenu.MenuButtons
     private static Point2d curPos;
     private static double  curHdg;
 
-    private static Field.StartPos startPos = Field.StartPos.START_A_SWEEPER;
-    private static Field.BeaconChoice beaconChoice = Field.BeaconChoice.NEAR;
-    private static Field.ParkChoice parkChoice = Field.ParkChoice.CENTER_PARK;
+    private static PositionOption startPos = Route.StartPos.START_1;
+    private static GoalOption beaconChoice = VvRoute.BeaconChoice.NEAR;
+    private static PositionOption parkChoice = Route.ParkPos.CENTER_PARK;
     private static Field.Alliance alliance = Field.Alliance.RED;
     private static Team team = Team.SONIC;
 

@@ -9,6 +9,7 @@ import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.PositionOption;
 import org.firstinspires.ftc.teamcode.field.Route;
 import org.firstinspires.ftc.teamcode.field.RrField;
 import org.firstinspires.ftc.teamcode.field.RrRoute;
@@ -86,15 +87,15 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
         pmgr.logPrefs();
 
         alliance = Field.Alliance.valueOf(pmgr.getAllianceColor());
-        startPos = Field.StartPos.valueOf(pmgr.getStartPosition());
+        startPos = Route.StartPos.valueOf(pmgr.getStartPosition());
         try
         {
-            parkPos  = Field.ParkChoice.valueOf(pmgr.getParkPosition());
+            parkPos  = Route.ParkPos.valueOf(pmgr.getParkPosition());
         }
         catch (Exception e)
         {
             RobotLog.ee(TAG, "ParkPosition %s invalid.", pmgr.getParkPosition());
-            parkPos = Field.ParkChoice.CENTER_PARK;
+            parkPos = Route.ParkPos.CENTER_PARK;
         }
 
         delay    = pmgr.getDelay();
@@ -634,7 +635,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         }
                     }
 
-                    if(doMore && dropCycle > 1 && startPos == Field.StartPos.START_1)
+                    if(doMore && dropCycle > 1 && startPos == Route.StartPos.START_1)
                     {
                         //shift to another drop location
                         Segment s;
@@ -763,7 +764,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         }
                     }
 
-                    if(startPos == Field.StartPos.START_1 && doMore && dropCycle != 0)
+                    if(startPos == Route.StartPos.START_1 && doMore && dropCycle != 0)
                     {
                         //Make pitpoint deeper on 2nd pass
                         Segment s;
@@ -775,7 +776,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         }
                         else
                         {
-                            if(parkPos  == Field.ParkChoice.DEFEND_PARK)
+                            if(parkPos  == Route.ParkPos.DEFEND_PARK)
                             {
                                 pitY = RrField.getPPyD(startPos);
                             }
@@ -792,7 +793,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
                         if(ppt != null)
                         {
-                            if(parkPos  == Field.ParkChoice.DEFEND_PARK)
+                            if(parkPos  == Route.ParkPos.DEFEND_PARK)
                             {
                                 ppt.setX(pitX);
                             }
@@ -830,7 +831,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                     }
 
                     double tooLate = 25.0;
-                    if(startPos == Field.StartPos.START_2) tooLate = 22.0;
+                    if(startPos == Route.StartPos.START_2) tooLate = 22.0;
                     if(startTimer.seconds() > tooLate) breakOut = true;
 
                     break;
@@ -861,7 +862,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                         robot.setElevToIdxPos(elvl);
                     }
 
-                    if(dropCycle == 2 && startPos == Field.StartPos.START_1)
+                    if(dropCycle == 2 && startPos == Route.StartPos.START_1)
                     {
                         Segment s;
                         int lstSeg = pathSegs.size();
@@ -1410,26 +1411,26 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
 
     private void doMenus()
     {
-        FtcChoiceMenu<Field.StartPos> startPosMenu =
+        FtcChoiceMenu<PositionOption> startPosMenu =
                 new FtcChoiceMenu<>("START:", null, this);
         FtcChoiceMenu<Field.Alliance> allianceMenu =
                 new FtcChoiceMenu<>("ALLIANCE:", startPosMenu, this);
         FtcChoiceMenu<String> robotNameMenu =
                 new FtcChoiceMenu<>("BOT_NAME:", allianceMenu, this);
-        FtcChoiceMenu<Field.ParkChoice> parkMenu
+        FtcChoiceMenu<PositionOption> parkMenu
                 = new FtcChoiceMenu<>("Park:",   robotNameMenu, this);
         FtcValueMenu delayMenu
                 = new FtcValueMenu("DELAY:", parkMenu, this,
                 0.0, 20.0, 1.0, 0.0, "%5.2f");
 
-        startPosMenu.addChoice("Start_1", Field.StartPos.START_1, allianceMenu);
-        startPosMenu.addChoice("Start_2", Field.StartPos.START_2, allianceMenu);
+        startPosMenu.addChoice("Start_1", Route.StartPos.START_1, allianceMenu);
+        startPosMenu.addChoice("Start_2", Route.StartPos.START_2, allianceMenu);
 
         allianceMenu.addChoice("RED",  Field.Alliance.RED,  parkMenu);
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, parkMenu);
 
-        parkMenu.addChoice("CENTER_PARK", RrField.ParkChoice.CENTER_PARK, delayMenu);
-        parkMenu.addChoice("DEFEND_PARK", RrField.ParkChoice.DEFEND_PARK, delayMenu);
+        parkMenu.addChoice("CENTER_PARK", Route.ParkPos.CENTER_PARK, delayMenu);
+        parkMenu.addChoice("DEFEND_PARK", Route.ParkPos.DEFEND_PARK, delayMenu);
 
         robotNameMenu.addChoice("GTO1", "GTO1", delayMenu);
         robotNameMenu.addChoice("GTO2", "GTO2", delayMenu);
@@ -1499,11 +1500,11 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
     @SuppressWarnings("FieldCanBeLocal")
     private boolean usePostTurn = true;
 
-    private static Field.StartPos startPos = Field.StartPos.START_1;
+    private static PositionOption startPos = Route.StartPos.START_1;
     private static Field.Alliance alliance = Field.Alliance.RED;
     private static Team team = Team.SNOWMAN;
 
-    private static Field.ParkChoice parkPos = Field.ParkChoice.CENTER_PARK;
+    private static PositionOption parkPos = Route.ParkPos.CENTER_PARK;
 
     private int RED_THRESH = 15;
     private int GRN_THRESH = 15;

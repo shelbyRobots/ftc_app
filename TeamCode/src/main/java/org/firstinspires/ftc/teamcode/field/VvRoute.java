@@ -18,28 +18,28 @@ public class VvRoute extends Route
         Point2d start_pt = ASTART_PT;
         Point2d shoot_pt = ASHOOT_PT;
 
-        if(startPos == Field.StartPos.START_B_SWEEPER)
+        if(startPos == StartPos.START_B_SWEEPER)
         {
             start_pt = BSTART_PT;
             shoot_pt = BSHOOT_PT;
         }
-        else if(startPos == Field.StartPos.START_R_PUSHER)
+        else if(startPos == StartPos.START_R_PUSHER)
         {
             start_pt = RSTART_PT;
             shoot_pt = RSHOOT_PT;
         }
 
         Point2d park_pt = CTRPRKPT;
-        if(parkChoice == Field.ParkChoice.CENTER_PARK &&
-           startPos == Field.StartPos.START_B_SWEEPER)
+        if(parkChoice == ParkPos.CENTER_PARK &&
+           startPos == StartPos.START_B_SWEEPER)
         {
             park_pt = BCTPRKPT;
         }
-        if(parkChoice == Field.ParkChoice.CORNER_PARK)
+        if(parkChoice == ParkPos.CORNER_PARK)
         {
             park_pt = CRNPRKPT;
         }
-        else if(parkChoice == Field.ParkChoice.DEFEND_PARK)
+        else if(parkChoice == ParkPos.DEFEND_PARK)
         {
             park_pt = DFNPRKPT;
         }
@@ -56,12 +56,12 @@ public class VvRoute extends Route
         //SHOOT PTS
         points.add(start_pt);
 
-        if(startPos == Field.StartPos.START_B_SWEEPER)
+        if(startPos == StartPos.START_B_SWEEPER)
         {
             addPoint(points, rev, 0.3, 1.00, Segment.TargetType.ENCODER, none, BPRSHT_PT);
         }
 
-        if(startPos != Field.StartPos.START_R_PUSHER)
+        if(startPos != StartPos.START_R_PUSHER)
         {
             addPoint(points, rev, 0.45, 1.00, Segment.TargetType.ENCODER, shoot, shoot_pt);
             //addPoint(points, fwd, 0.5, 1.00, Segment.TargetType.ENCODER, none, TMP_PT);
@@ -73,13 +73,13 @@ public class VvRoute extends Route
             becnSegType = Segment.TargetType.ENCODER;
         }
 
-        if(pushChoice == Field.BeaconChoice.NEAR ||
-           pushChoice == Field.BeaconChoice.BOTH)
+        if(pushChoice == BeaconChoice.NEAR ||
+           pushChoice == BeaconChoice.BOTH)
         {
 
             addPoint(points, fwd, 0.45,  1.00, becnSegType, beacon, BECN1_PT);
 
-            if(startPos == Field.StartPos.START_R_PUSHER)
+            if(startPos == StartPos.START_R_PUSHER)
             {
                 addPoint(points, rev, 0.4, 1.00, Segment.TargetType.ENCODER, shoot, shoot_pt);
             }
@@ -90,8 +90,8 @@ public class VvRoute extends Route
 //            addPoint(points, fwd, 0.5, 1.00, Segment.TargetType.ENCODER, none, B_MID_PT);
 //        }
 
-        if(pushChoice == Field.BeaconChoice.FAR ||
-           pushChoice == Field.BeaconChoice.BOTH)
+        if(pushChoice == BeaconChoice.FAR ||
+           pushChoice == BeaconChoice.BOTH)
         {
             addPoint(points, fwd, 0.45, 1.00, becnSegType, beacon, BECN2_PT);
         }
@@ -99,14 +99,14 @@ public class VvRoute extends Route
         //PARK PTS
         ShelbyBot.DriveDir parkDir = rev;
         boolean parkFull = true;
-        if(parkChoice == Field.ParkChoice.DEFEND_PARK)
+        if(parkChoice == ParkPos.DEFEND_PARK)
         {
             addPoint(points, fwd, 0.6, 1.00, Segment.TargetType.ENCODER, none, DP1);
             //addPoint(points, fwd, 0.6, 1.00, Segment.TargetType.ENCODER, none, DP2);
         }
-        else if(parkChoice == Field.ParkChoice.CENTER_PARK && parkFull)
+        else if(parkChoice == ParkPos.CENTER_PARK && parkFull)
         {
-            if(startPos == Field.StartPos.START_B_SWEEPER)
+            if(startPos == StartPos.START_B_SWEEPER)
                 addPoint(points, rev, 0.6, 1.00, Segment.TargetType.ENCODER, none, BPRCTRPT);
 //            else
 //                addPoint(points, rev, 0.6, 1.00, Segment.TargetType.ENCODER, none, PRECTRPT);
@@ -118,10 +118,10 @@ public class VvRoute extends Route
         return points;
     }
 
-    public VvRoute(Field.StartPos startPos,
+    public VvRoute(PositionOption startPos,
                    Field.Alliance alliance,
-                   Field.BeaconChoice pushChoice,
-                   Field.ParkChoice parkChoice,
+                   GoalOption pushChoice,
+                   ParkPos parkChoice,
                    boolean useFly2Light)
     {
         super(startPos, alliance);
@@ -285,10 +285,32 @@ public class VvRoute extends Route
 
     private Point2d DP1 = new Point2d("DP1", DFNPTHX, DFNPTHY);
 
-    private boolean            useFly2Light = false;
+    private boolean            useFly2Light;
 
-    Field.BeaconChoice pushChoice = Field.BeaconChoice.NEAR;
-    Field.ParkChoice   parkChoice = Field.ParkChoice.CENTER_PARK;
+    private GoalOption pushChoice;
+
+    public enum StartPos implements PositionOption
+    {
+        START_1,
+        START_2,
+        START_B_SWEEPER,
+        START_R_PUSHER
+    }
+
+    public enum ParkPos implements PositionOption
+    {
+        CENTER_PARK,
+        CORNER_PARK,
+        DEFEND_PARK
+    }
+
+    public enum BeaconChoice implements GoalOption
+    {
+        BOTH,
+        NEAR,
+        FAR,
+        NONE
+    }
 }
 
 

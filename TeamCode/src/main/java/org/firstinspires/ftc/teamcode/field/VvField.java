@@ -1,38 +1,39 @@
 package org.firstinspires.ftc.teamcode.field;
 
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.util.Units;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 
 @SuppressWarnings("unused")
 public class VvField extends Field
 {
-    private static final float[] toolsPos  = {W_WALL_X,  3.0f*12, IMAGE_Z};
-    private static final float[] gearsPos  = {W_WALL_X, -1.0f*12, IMAGE_Z};
-    private static final float[] wheelsPos = { 1.0f*12, N_WALL_Y, IMAGE_Z};
-    private static final float[] legosPos  = {-3.0f*12, N_WALL_Y, IMAGE_Z};
-    //static final float[] legosPos  = {0.0f*12, 0.0f, 0.0f};
+    public VvField()
+    {
+        super("RoverRuckus", TRACKABLE_NAMES, LOCATIONS_ON_FIELD);
+    }
 
-    private static final float[] toolsRot  = {90.0f, 0.0f, 90.0f};
-    private static final float[] gearsRot  = {90.0f, 0.0f, 90.0f};
-    private static final float[] wheelsRot = {90.0f, 0.0f,  0.0f};
-    private static final float[] legosRot  = {90.0f, 0.0f,  0.0f};
+    private static final String[] TRACKABLE_NAMES = {
+            "BlueWheels",
+            "BlueLegos",
+            "RedTools",
+            "RedGears"};
 
-    private static final float[] toolsPosMm  = scaleArr(toolsPos,  (float)Units.MM_PER_INCH);
-    private static final float[] gearsPosMm  = scaleArr(gearsPos,  (float)Units.MM_PER_INCH);
-    private static final float[] wheelsPosMm = scaleArr(wheelsPos, (float)Units.MM_PER_INCH);
-    private static final float[] legosPosMm  = scaleArr(legosPos,  (float)Units.MM_PER_INCH);
+    private static final float[] TRACKABLE_POS[] = {
+            scaleArr(new float[] {W_WALL_X,  3.0f*12, IMAGE_Z}, scale),
+            scaleArr(new float[] {W_WALL_X, -1.0f*12, IMAGE_Z}, scale),
+            scaleArr(new float[] { 1.0f*12, N_WALL_Y, IMAGE_Z}, scale),
+            scaleArr(new float[] {-3.0f*12, N_WALL_Y, IMAGE_Z}, scale)};
 
-    public static final OpenGLMatrix redToolsLocationOnField   =
-            genMatrix(toolsPosMm,  toolsRot);
-    public static final OpenGLMatrix redGearsLocationOnField   =
-            genMatrix(gearsPosMm,  gearsRot);
-    public static final OpenGLMatrix blueWheelsLocationOnField =
-            genMatrix(wheelsPosMm, wheelsRot);
-    public static final OpenGLMatrix blueLegosLocationOnField  =
-            genMatrix(legosPosMm,  legosRot);
+    private static final OpenGLMatrix[] LOCATIONS_ON_FIELD = {
+            genMatrix(TRACKABLE_POS[0], new float[] {90.0f, 0.0f, 90.0f}),
+            genMatrix(TRACKABLE_POS[1], new float[] {90.0f, 0.0f, 90.0f}),
+            genMatrix(TRACKABLE_POS[2], new float[] {90.0f, 0.0f,  0.0f}),
+            genMatrix(TRACKABLE_POS[3], new float[] {90.0f, 0.0f,  0.0f})};
+
+    public static final OpenGLMatrix redToolsLocationOnField   = LOCATIONS_ON_FIELD[0];
+    public static final OpenGLMatrix redGearsLocationOnField   = LOCATIONS_ON_FIELD[1];
+    public static final OpenGLMatrix blueWheelsLocationOnField = LOCATIONS_ON_FIELD[2];
+    public static final OpenGLMatrix blueLegosLocationOnField  = LOCATIONS_ON_FIELD[3];
 }

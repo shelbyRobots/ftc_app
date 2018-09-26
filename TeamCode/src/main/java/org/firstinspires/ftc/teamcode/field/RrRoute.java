@@ -53,7 +53,7 @@ public class RrRoute extends Route
         Point2d RRBs = new Point2d("RRBs", RrField.RRBS.getX() + fakeDist,
                                            RrField.RRBS.getY());
 
-        if(startPos == Field.StartPos.START_1)
+        if(startPos == StartPos.START_1)
         {
             points.add(RrField.RLBS);
             addPoint(points, itk, 0.45, 1.00, encType, scan,  RLBs);         //BS-BS(JP)
@@ -67,7 +67,7 @@ public class RrRoute extends Route
             addPoint(points, psr, 0.70, 1.00, encType, key,   RrField.RLFP); //XP-AP
             addPoint(points, itk, 0.40, 1.00, encType, drop,  RrField.RLTT); //AP-DP
         }
-        else if(startPos == Field.StartPos.START_2)
+        else if(startPos == StartPos.START_2)
         {
             points.add(RrField.RRBS);
             addPoint(points, itk, 0.45, 1.00, encType, scan,  RRBs);         //BS-BS(JP)
@@ -88,7 +88,7 @@ public class RrRoute extends Route
         return points;
     }
 
-    public RrRoute(Field.StartPos startPos,
+    public RrRoute(PositionOption startPos,
                    Field.Alliance alliance,
                    String robotName,
                    double glyphOff)
