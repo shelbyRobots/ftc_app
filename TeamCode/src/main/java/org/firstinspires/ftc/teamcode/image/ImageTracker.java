@@ -44,7 +44,7 @@ public class ImageTracker
         dashboard = com.getDashboard();
         this.challenge = challenge;
         setupVuforia();
-        setTrackableCorners();
+        //setTrackableCorners();
     }
 
     private void setupVuforia()
@@ -98,7 +98,7 @@ public class ImageTracker
         }
         else
         {
-            pose = l.getRawPose();
+            pose = l.getVuforiaCameraFromTarget();
             poseType += "Raw";
         }
         if (pose != null)
@@ -139,8 +139,9 @@ public class ImageTracker
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
                 currYaw = (double) currOri.firstAngle;
 
+                Bitmap fullPic = getImage();
 
-                if (keyLoc == RelicRecoveryVuMark.UNKNOWN &&
+                if (challenge == VuforiaInitializer.Challenge.RR &&keyLoc == RelicRecoveryVuMark.UNKNOWN &&
                     RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
                 {
                     keyLoc = RelicRecoveryVuMark.from(trackable);
@@ -149,16 +150,15 @@ public class ImageTracker
                     dashboard.displayPrintf(6, "VuMark key = %s", keyLoc);
                     RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
 
-                    Bitmap fullPic = getImage();
                     List<Point2d>  trackablePixCorners =
                             getTrackableCornersInCamera(rawPose);
 
+                    lastImage        = fullPic;
+
                     List<Point2d> jewelBoxPixCorners =
                             getCropCornersInCamera(rawPose);
-                   Bitmap jewelImg = getCroppedImage(jewelBoxPixCorners, fullPic);
-
-                    lastImage        = fullPic;
-                    lastCroppedImage = jewelImg;
+                    if(jewelBoxPixCorners == null) continue;
+                    lastCroppedImage = getCroppedImage(jewelBoxPixCorners, fullPic);
 
                     if (breakOnVumarkFound)
                     {
@@ -482,7 +482,7 @@ public class ImageTracker
     private RelicRecoveryVuMark keyLoc = RelicRecoveryVuMark.UNKNOWN;
 
     VuforiaInitializer vInit = null;
-    VuforiaInitializer.Challenge challenge = VuforiaInitializer.Challenge.RR;
+    VuforiaInitializer.Challenge challenge;
 
     private boolean breakOnVumarkFound = true;
 

@@ -123,6 +123,7 @@ public class VuforiaInitializer
         RobotLog.dd(TAG, "Setting up trackables " + assetName);
         trackables = vuforia.loadTrackablesFromAsset(assetName);
 
+        RobotLog.dd(TAG, "Set up trackables " + assetName);
         OpenGLMatrix phoneLocationOnRobot = ShelbyBot.phoneLocationOnRobot;
         RobotLog.ii(TAG, "phone=%s", getLocString(phoneLocationOnRobot));
 
@@ -160,6 +161,18 @@ public class VuforiaInitializer
                 fld = new RoRuField();
                 break;
         }
+
+        RobotLog.dd(TAG, "Setting up trackables from %s", fld.getAssetName());
+
+        StringBuilder nsb = new StringBuilder();
+        for (String s : fld.getImageNames()) nsb.append(s);
+
+        RobotLog.dd(TAG, "Trackable names %s", nsb.toString());
+
+        StringBuilder osb = new StringBuilder();
+        for (OpenGLMatrix o : fld.getImageTransforms()) osb.append(o.toString());
+
+        RobotLog.dd(TAG, "Transforms %s", osb.toString());
 
         setupTrackables(fld.getAssetName(), Arrays.asList(fld.getImageNames()),
                 Arrays.asList(fld.getImageTransforms()));

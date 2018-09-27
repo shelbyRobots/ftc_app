@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.field.Field;
@@ -62,7 +63,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     public void runOpMode() throws InterruptedException
     {
         RobotLog.dd(TAG, "initCommon");
-        initCommon(this, true, true, false, true);
+        initCommon(this, true, true, false, false);
 
         RobotLog.dd(TAG, "getBotName");
         robotName = pmgr.getBotName();
@@ -165,32 +166,30 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             robot = new TilerunnerGtoBot();
         }
 
-        dashboard.displayPrintf(1, "HERE1");
+        dashboard.displayPrintf(1, "Prefs Done");
 
         //Since we only have 5 seconds between Auton and Teleop, automatically load
         //teleop opmode
         RobotLog.dd(TAG, "Setting up auto tele loader : %s", teleopName);
         AutoTransitioner.transitionOnStop(this, teleopName);
 
-        dashboard.displayPrintf(1, "HERE2");
+        dashboard.displayPrintf(1, "AutoTrans setup");
 
         robot.init(this, robotName);
         robot.setAlliance(alliance);
 
-        dashboard.displayPrintf(1, "HERE3");
+        dashboard.displayPrintf(1, "Robot Inited");
 
         RobotLog.dd(TAG, "Robot CPI " + robot.CPI);
 
         drvTrn.init(robot);
         drvTrn.setRampUp(false);
 
-        dashboard.displayPrintf(1, "HERE4");
-
-        //RobotLog.dd(TAG, "JFLICKER_UP_POS %.2f", TilerunnerGtoBot.JFLICKER_UP_POS);
+        dashboard.displayPrintf(1, "DrvTrn Inited");
 
         det = new MajorColorDetector();
-        tracker = new ImageTracker(VuforiaInitializer.Challenge.RR);
-        tracker.setTrackableRelativeCropCorners(RrField.getTrackableRelativeCropCorners());
+        RobotLog.dd(TAG, "Setting up vuforia");
+        tracker = new ImageTracker(VuforiaInitializer.Challenge.RoRu);
 
         setupLogger();
 
@@ -205,7 +204,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         Route pts = new RoRuRoute(startPos, alliance, robotName);
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
-//TODO Figure out how to initialize heading
+
         initHdg = pathSegs.get(0).getFieldHeading();
 
         ShelbyBot.DriveDir startDdir = pathSegs.get(0).getDir();
@@ -215,26 +214,48 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         dashboard.displayPrintf(0, "GYRO CALIBRATING DO NOT TOUCH OR START");
 
-        if (robot.imu != null || robot.gyro  != null)
+        //Add wait for gamepad button press to indicate start of gyro init
+        //Drive team aligns bot with field
+        //Drive team hits another button to lock in gyro init
+
+        dashboard.displayPrintf(6, "HIT A TO START GYRO INIT - THEN ALIGN TO FIELD");
+        dashboard.displayPrintf(7, "HIT B TO SKIP");
+        ElapsedTime gyroTimer = new ElapsedTime();
+        boolean gyroSetToField = false;
+        while(gyroTimer.seconds() < 15.0)
         {
-            gyroReady = robot.calibrateGyro();
+            gpad1.update();
+            if(gpad1.just_pressed(ManagedGamepad.Button.A))
+            {
+                if (robot.imu != null || robot.gyro  != null)
+                {
+                    gyroReady = robot.calibrateGyro();
+                    if(gyroReady) gyroSetToField = true;
+                }
+                break;
+            }
+            if(gpad1.just_pressed(ManagedGamepad.Button.B))
+            {
+                break;
+            }
         }
 
-        if(gyroReady)
-            dashboard.displayPrintf(0, "GYRO CALIBATED!!");
+        dashboard.displayPrintf(0, "GYRO CALIBATED: %s", gyroReady);
 
         RobotLog.ii(TAG, "ROUTE: \n" + pts.toString());
 
         Point2d currPoint = pathSegs.get(0).getStrtPt();
         drvTrn.setCurrPt(currPoint);
 
-        drvTrn.setStartHdg(initHdg);
-        robot.setInitHdg(initHdg);
+        drvTrn.setStartHdg(gyroSetToField ? 0 : initHdg);
+        robot.setInitHdg(gyroSetToField ? 0 : initHdg);
 
         RobotLog.ii(TAG, "Start %s.", currPoint);
         dashboard.displayPrintf(8, "PATH: Start at %s", currPoint);
 
         RobotLog.ii(TAG, "IHDG %4.2f", initHdg);
+
+        //TODO: Setup for latch
 
         det.setTelemetry(telemetry);
     }
@@ -271,15 +292,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         //robot.resetGyro();
 
-        //TODO: Change to RoverRuckus
-//        if(key == RelicRecoveryVuMark.UNKNOWN ||
-//           mineralColor == MajorColorDetector.Color.NONE)
-//        {
-//            doScan();
-//        }
-
-        //doLower();
-        //doRelease();
+        doLower();
+        doRelease();
 
         boolean SkipNextSegment = false;
         boolean breakOut = false;
@@ -390,11 +404,12 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             switch (act)
             {
                 case SCAN_IMAGE:
-                    if(key == RelicRecoveryVuMark.UNKNOWN ||
-                       mineralColor == MajorColorDetector.Color.NONE)
+                    //TODO: change key to LCR
+                    if(key == RelicRecoveryVuMark.UNKNOWN )
                     {
                         doScan();
                         sleep(200);
+                        //TODO: set end of curseg+1 and start of curseg+2 based on LCR
                     }
                     break;
 
@@ -403,13 +418,21 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
                     break;
                 }
 
-                case SET_KEY:
+                case PUSH:
                 {
+                    //TODO: If we have a grabber, grab block, else just push with chassis
                     break;
                 }
 
                 case DROP:
                 {
+                    //TODO:  Release marker when mechanism available
+                    break;
+                }
+
+                case PARK:
+                {
+                    //TODO: Extend arm into crater
                     break;
                 }
             }
@@ -426,16 +449,29 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
     }
 
+    private void doLower()
+    {
+        //Lower the bot to the ground
+    }
+
+    private void doRelease()
+    {
+        //Release from the latch
+    }
+
     private void doScan()
     {
-//        if(useLight)
-//            CameraDevice.getInstance().setFlashTorchMode(true) ;
+        //TODO:  Turn to right slightly to get two right minerals in pic
+        if(useLight)
+            CameraDevice.getInstance().setFlashTorchMode(true) ;
+
+        //TODO: Integrate openCV gold mineral finder
 //        mineralColor =  getMineralColor();
 //        RobotLog.dd(TAG, "SCAN_IMAGE KEY = %s mineralColor = %s",
 //                key, mineralColor);
 //
-//        if(useLight)
-//            CameraDevice.getInstance().setFlashTorchMode(false);
+        if(useLight)
+            CameraDevice.getInstance().setFlashTorchMode(false);
     }
 
     private void doMove(Segment seg)

@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -104,14 +104,14 @@ public class ShelbyBot
     //with center wheels powered by Neverest 40 motors.
     //NOTE:  Notes reference center of bot on ground as bot coord frame origin.
     //However, it seems logical to use the center of the rear axis (pivot point)
-    public float BOT_WIDTH       = 16.8f; //Vehicle width at rear wheels
-    public float BOT_LENGTH      = 18.0f;
+    public float BOT_WIDTH; //Vehicle width at rear wheels
+    public float BOT_LENGTH;
 
-    protected double COUNTS_PER_MOTOR_REV = 28;
+    protected double COUNTS_PER_MOTOR_REV;
     protected double DRIVE_GEARS[];
 
     protected double WHEEL_DIAMETER_INCHES;
-    protected double TUNE = 1.00;
+    protected double TUNE;
     public double CPI;
 
     public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
@@ -212,13 +212,13 @@ public class ShelbyBot
             if (leftMotor instanceof DcMotorEx)
             {
                 DcMotorEx lex = (DcMotorEx) leftMotor;
-                PIDCoefficients pid;
-                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-                RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                        pid.p, pid.i, pid.d);
-                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-                RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                        pid.p, pid.i, pid.d);
+                PIDFCoefficients pid;
+                pid = lex.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+                RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f F:%.2f",
+                        pid.p, pid.i, pid.d, pid.f);
+                pid = lex.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f F:%.2f",
+                        pid.p, pid.i, pid.d, pid.f);
             }
 
             capMap.put("drivetrain", true);
@@ -353,6 +353,7 @@ public class ShelbyBot
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean getCapability(String cap)
     {
         return capMap.get(cap);

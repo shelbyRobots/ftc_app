@@ -317,6 +317,7 @@ public class Drivetrain
         return driveDistanceLinear(dst, pwr, dir, targetHdg, false);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public int driveDistanceLinear(double dst, double pwr, Direction dir)
     {
         return driveDistanceLinear(dst, pwr, dir, robot.getGyroFhdg());
@@ -338,6 +339,7 @@ public class Drivetrain
         return dist;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public int driveToPointLinear(Point2d tgtPt, double pwr, Direction dir)
     {
         return driveToPointLinear(tgtPt, pwr, dir, robot.getGyroFhdg());
@@ -419,7 +421,7 @@ public class Drivetrain
             {
                 rightSpeed += d;
             }
-            Range.clip(rightSpeed, -1, 1);
+            rightSpeed = Range.clip(rightSpeed, -1, 1);
             if(Math.abs(rightSpeed) < minGyroTurnSpeed)
             {
                 rightSpeed = Math.signum(rightSpeed) * minGyroTurnSpeed;
@@ -966,6 +968,7 @@ public class Drivetrain
         logData(true, "ENDOVER");
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean areTurnMotorsStuck()
     {
         if(usePosStop)
@@ -1162,8 +1165,8 @@ public class Drivetrain
             dl.addField(frame);
             if(robot.imu != null || robot.gyro != null) dl.addField(curHdg);
             else                   dl.addField("");
-            dl.addField(curLpositions.get(0));
-            dl.addField(curRpositions.get(0));
+            dl.addField(curLpositions.size() > 0 ? curLpositions.get(0) : 0);
+            dl.addField(curRpositions.size() > 0 ? curRpositions.get(0) : 0);
             dl.addField(curLpower);
             dl.addField(curRpower);
             dl.addField(curRed);

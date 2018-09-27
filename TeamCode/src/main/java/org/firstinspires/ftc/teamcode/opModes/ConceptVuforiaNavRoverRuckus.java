@@ -161,14 +161,22 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
 
         // Load the data sets that for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
-        VuforiaTrackable blueRover = targetsRoverRuckus.get(0);
+        int br = 0;
+        int rf = 1;
+        int fc = 2;
+        int bs = 3;
+        br = 3;
+        rf = 2;
+        fc = 1;
+        bs = 0;
+        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus_SJH");
+        VuforiaTrackable blueRover = targetsRoverRuckus.get(br);
         blueRover.setName("Blue-Rover");
-        VuforiaTrackable redFootprint = targetsRoverRuckus.get(1);
+        VuforiaTrackable redFootprint = targetsRoverRuckus.get(rf);
         redFootprint.setName("Red-Footprint");
-        VuforiaTrackable frontCraters = targetsRoverRuckus.get(2);
+        VuforiaTrackable frontCraters = targetsRoverRuckus.get(fc);
         frontCraters.setName("Front-Craters");
-        VuforiaTrackable backSpace = targetsRoverRuckus.get(3);
+        VuforiaTrackable backSpace = targetsRoverRuckus.get(bs);
         backSpace.setName("Back-Space");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
@@ -264,6 +272,8 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
          * The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
          * Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
          *
+         * SHELBY CHANGE:  TREAT THE ROBOT X OUT RIGHT, Y OUT FRONT
+         *
          * The phone starts out lying flat, with the screen facing Up and with the physical top of the phone
          * pointing to the LEFT side of the Robot.  It's very important when you test this code that the top of the
          * camera is pointing to the left side of the  robot.  The rotation angles don't work if you flip the phone.
@@ -293,7 +303,7 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
         OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES,
-                        CAMERA_CHOICE == FRONT ? 90 : -90, 0, 0));
+                        CAMERA_CHOICE == FRONT ? 90 : -90, 90, 0));
 
         /**  Let all the trackable listeners know where the phone is.  */
         for (VuforiaTrackable trackable : allTrackables)

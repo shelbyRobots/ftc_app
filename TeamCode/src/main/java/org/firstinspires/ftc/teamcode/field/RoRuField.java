@@ -10,6 +10,7 @@ public class RoRuField extends Field
     {
         super("RoverRuckus", TRACKABLE_NAMES, LOCATIONS_ON_FIELD);
     }
+
     //Point naming key:
     //1st char: R=Red, B=Blue
     //2nd char: L=Left start, R=Right start (viewed from red side - along field X)
@@ -33,13 +34,15 @@ public class RoRuField extends Field
 
     //Red Route > Left
     static final Point2d RLLP = new Point2d("RLLP", -8.25,  -8.25);
-    static final Point2d RLTP = new Point2d("RLTP", -17.25, -17.25);
+    static final Point2d RLTP = new Point2d("RLTP", -16.00, -16.00);
     static final Point2d RLM1 = new Point2d("RLM1", -48.0,  -24.0);
-    static final Point2d RLM2 = new Point2d("RLM2", -36.0,  -36.0);
+    static final Point2d RLM2 = new Point2d("RLM2", -33.0,  -33.0);
     static final Point2d RLM3 = new Point2d("RLM3", -24.0,  -48.0);
-    static final Point2d RLDT = new Point2d("RLDT",   0.0,  -52.0);
-    static final Point2d RLDP = new Point2d("RLDP",  42.0,  -55.0);
-    static final Point2d RLPP = new Point2d("RLPP", -24.0,  -55.0);
+    static final Point2d RLR1 = new Point2d("RLR1", -24.00, -24.00);
+    static final Point2d RLR2 = new Point2d("RLR2",  -3.00, -55.00);
+    static final Point2d RLDT = new Point2d("RLDT",   0.0,  -56.0);
+    static final Point2d RLDP = new Point2d("RLDP",  42.0,  -56.0);
+    static final Point2d RLPP = new Point2d("RLPP", -20.0,  -56.0);
 
     static final Point2d BLLP = new Point2d("BLLP",   8.25,  8.25);
     static final Point2d BLTP = new Point2d("BLTP",  17.25, 17.25);
@@ -71,12 +74,12 @@ public class RoRuField extends Field
     private static final String ASSET_NAME = "RoverRuckus";
 
     public static final String[] TRACKABLE_NAMES =
-    {
-        "BluePerimeter",
-        "RedPerimeter",
-        "FrontPerimeter",
-        "BackPerimeter",
-    };
+            {
+                    "BluePerimeter",
+                    "RedPerimeter",
+                    "FrontPerimeter",
+                    "BackPerimeter",
+            };
 
     private static final float[] TRACKABLE_POS[] = {
             scaleArr(new float[]{0.0f,     E_WALL_X, IMAGE_Z}, scale),
@@ -85,10 +88,10 @@ public class RoRuField extends Field
             scaleArr(new float[]{N_WALL_Y, 0.0f,     IMAGE_Z}, scale)};
 
     private static final OpenGLMatrix[] LOCATIONS_ON_FIELD =
-     {
-         genMatrix(TRACKABLE_POS[0], new float[]{90.0f,   0.0f, 0.0f}),
-         genMatrix(TRACKABLE_POS[1], new float[]{90.0f, 180.0f, 0.0f}),
-         genMatrix(TRACKABLE_POS[2], new float[]{90.0f,  90.0f, 0.0f}),
-         genMatrix(TRACKABLE_POS[3], new float[]{90.0f, 270.0f, 0.0f})
-     };
+            {
+                    genMatrix(TRACKABLE_POS[0], new float[]{90.0f,   0.0f, 0.0f}),
+                    genMatrix(TRACKABLE_POS[1], new float[]{90.0f, 180.0f, 0.0f}),
+                    genMatrix(TRACKABLE_POS[2], new float[]{90.0f,  90.0f, 0.0f}),
+                    genMatrix(TRACKABLE_POS[3], new float[]{90.0f, 270.0f, 0.0f})
+            };
 }
