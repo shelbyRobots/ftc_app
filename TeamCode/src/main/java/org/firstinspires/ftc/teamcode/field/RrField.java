@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.field;
 
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Units;
@@ -17,6 +18,15 @@ import java.util.List;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class RrField extends Field
 {
+    public RrField()
+    {
+        super("RelicRecovery", TRACKABLE_NAMES, LOCATIONS_ON_FIELD);
+    }
+
+    private static final String ASSET_NAME = "RelicVuMark";
+    private static final String[] TRACKABLE_NAMES = {"Relic"};
+    private static final OpenGLMatrix[] LOCATIONS_ON_FIELD = {null};
+
     //Point naming key:
     //1st char: R=Red, B=Blue
     //2nd char: L=Left start, R=Right start (viewed from red side - along field X)
@@ -39,7 +49,7 @@ public class RrField extends Field
 
     private static double BOT_2_GLYPH = 12.0;
 
-    private static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
+    public static Point2d calcDropPt(String dName, Point2d strt, Point2d end)
     {
         Point2d dropPt = new Point2d(dName, 0.0, 0.0);
         double dSegLen = strt.distance(end);
@@ -57,6 +67,8 @@ public class RrField extends Field
         return  dropPt;
     }
 
+    public static double getCboxGap() {return CBOX_GAP;}
+
     private static final int BLUE  = 0;
     private static final int RED   = 1;
     private static final int STRT1 = 0;
@@ -66,7 +78,8 @@ public class RrField extends Field
     private static final int RGHT  = 2;
 
     public static final double CXY = 65.0;
-    public static final double BSY = 47.5; //gm2 coords => 47.0;
+    public static final double BSY  = 47.5; //gm2 coords => 47.0;
+    public static final double BSY2 = 45.0;
     private static final double BS1X = -47.5; //gm2 coords => -49.0;
     public static final double BS2X = 23.0;
 
@@ -113,101 +126,100 @@ public class RrField extends Field
     {
         BOT_2_GLYPH = gOffset;
 
-        if (robotName.equals("GTO1"))
-        {
-            //BOT_2_GLYPH = 13.5;
+        switch (robotName) {
+            case "GTO1":
+                //BOT_2_GLYPH = 13.5;
 
-            BLCLXT = 0.0;
-            BLCCXT = 0.0;
-            BLCRXT = 0.0;
-            BRCLXT = 0.0;
-            BRCCXT = 0.0;
-            BRCRXT = 0.0;
-            RLCLXT = 0.0;
-            RLCCXT = 0.0;
-            RLCRXT = 0.0;
-            RRCLXT = 0.0;
-            RRCCXT = 0.0;
-            RRCRXT = 0.0;
+                BLCLXT = 0.0;
+                BLCCXT = 0.0;
+                BLCRXT = 0.0;
+                BRCLXT = 0.0;
+                BRCCXT = 0.0;
+                BRCRXT = 0.0;
+                RLCLXT = 0.0;
+                RLCCXT = 0.0;
+                RLCRXT = 0.0;
+                RRCLXT = 0.0;
+                RRCCXT = 0.0;
+                RRCRXT = 0.0;
 
-            BLCLYT = 0.0;
-            BLCCYT = 0.0;
-            BLCRYT = 0.0;
-            BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = 0.0;
-            RLCLYT = 0.0;
-            RLCCYT = 0.0;
-            RLCRYT = 0.0;
-            RRCLYT = 0.0;
-            RRCCYT = 0.0;
-            RRCRYT = 0.0;
-        }
-        else if (robotName.equals("GTO2"))
-        {
-            //BOT_2_GLYPH = 14.0;
+                BLCLYT = 0.0;
+                BLCCYT = 0.0;
+                BLCRYT = 0.0;
+                BRCLYT = 0.0;
+                BRCCYT = 0.0;
+                BRCRYT = 0.0;
+                RLCLYT = 0.0;
+                RLCCYT = 0.0;
+                RLCRYT = 0.0;
+                RRCLYT = 0.0;
+                RRCCYT = 0.0;
+                RRCRYT = 0.0;
+                break;
+            case "GTO2":
+                //BOT_2_GLYPH = 14.0;
 
-            BLCLXT = 0.0;
-            BLCCXT = 0.0;
-            BLCRXT = 0.0;
-            BRCLXT = 0.0;
-            BRCCXT = 0.0;
-            BRCRXT = 0.0;
-            RLCLXT = 0.0;
-            RLCCXT = 0.0;
-            RLCRXT = 0.0;
-            RRCLXT = 0.0;
-            RRCCXT = 0.0;
-            RRCRXT = 0.0;
+                BLCLXT = 0.0;
+                BLCCXT = 0.0;
+                BLCRXT = 0.0;
+                BRCLXT = 0.0;
+                BRCCXT = 0.0;
+                BRCRXT = 0.0;
+                RLCLXT = 0.0;
+                RLCCXT = 0.0;
+                RLCRXT = 0.0;
+                RRCLXT = 0.0;
+                RRCCXT = 0.0;
+                RRCRXT = 0.0;
 
-            BLCLYT = 0.0;
-            BLCCYT = 0.0;
-            BLCRYT = 0.0;
-            BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = 0.0;
-            RLCLYT = 0.0;
-            RLCCYT = 0.0;
-            RLCRYT = 0.0;
-            RRCLYT = 0.0;
-            RRCCYT = 0.0;
-            RRCRYT = 0.0;
-        }
-        else if (robotName.equals("MEC"))
-        {
-            BOT_2_GLYPH = 11.0;
+                BLCLYT = 0.0;
+                BLCCYT = 0.0;
+                BLCRYT = 0.0;
+                BRCLYT = 0.0;
+                BRCCYT = 0.0;
+                BRCRYT = 0.0;
+                RLCLYT = 0.0;
+                RLCCYT = 0.0;
+                RLCRYT = 0.0;
+                RRCLYT = 0.0;
+                RRCCYT = 0.0;
+                RRCRYT = 0.0;
+                break;
+            case "MEC":
+                BOT_2_GLYPH = 11.0;
 
-            BLCLXT = 0.0;
-            BLCCXT = 0.0;
-            BLCRXT = 0.0;
-            BRCLXT = 0.0;
-            BRCCXT = 0.0;
-            BRCRXT = 0.0;
-            RLCLXT = 0.0;
-            RLCCXT = 0.0;
-            RLCRXT = 0.0;
-            RRCLXT = 0.0;
-            RRCCXT = 0.0;
-            RRCRXT = 0.0;
+                BLCLXT = 0.0;
+                BLCCXT = 0.0;
+                BLCRXT = 0.0;
+                BRCLXT = 0.0;
+                BRCCXT = 0.0;
+                BRCRXT = 0.0;
+                RLCLXT = 0.0;
+                RLCCXT = 0.0;
+                RLCRXT = 0.0;
+                RRCLXT = 0.0;
+                RRCCXT = 0.0;
+                RRCRXT = 0.0;
 
-            BLCLYT = 0.0;
-            BLCCYT = 0.0;
-            BLCRYT = 0.0;
-            BRCLYT = 0.0;
-            BRCCYT = 0.0;
-            BRCRYT = 0.0;
-            RLCLYT = 0.0;
-            RLCCYT = 0.0;
-            RLCRYT = 0.0;
-            RRCLYT = 0.0;
-            RRCCYT = 0.0;
-            RRCRYT = 0.0;
+                BLCLYT = 0.0;
+                BLCCYT = 0.0;
+                BLCRYT = 0.0;
+                BRCLYT = 0.0;
+                BRCCYT = 0.0;
+                BRCRYT = 0.0;
+                RLCLYT = 0.0;
+                RLCCYT = 0.0;
+                RLCRYT = 0.0;
+                RRCLYT = 0.0;
+                RRCCYT = 0.0;
+                RRCRYT = 0.0;
+                break;
         }
     }
 
     //3-dimensional array of crypto box points [alliance][start][key]
-    //allows inidividual adjustment
-    private static final Point2d CPTS[][][] =
+    //allows individual adjustment
+    public static final Point2d CPTS[][][] =
     {
         {
             {
@@ -242,7 +254,7 @@ public class RrField extends Field
         {
             {
                 new Point2d("BLAL", CBOX_LCTR - CBOX_GAP,  BSY), //BLUE-LEFT-LEFT
-                new Point2d("BLAC", CBOX_LCTR,             BSY), //BLUE-LEFT-CENTER
+                new Point2d("BLAC", CBOX_LCTR           ,  BSY), //BLUE-LEFT-CENTER
                 new Point2d("BLAR", CBOX_LCTR + CBOX_GAP,  BSY)  //BLUE-LEFT-RIGHT
             },
             {
@@ -273,7 +285,7 @@ public class RrField extends Field
         {
             {
                 new Point2d("BLAL", CBOX_LCTR - CBOX_GAP + CA_OFF,  BSY), //BLUE-LEFT-LEFT
-                new Point2d("BLAC", CBOX_LCTR            - CA_OFF,  BSY), //BLUE-LEFT-CENTER
+                new Point2d("BLAC", CBOX_LCTR + 1.0      - CA_OFF,  BSY), //BLUE-LEFT-CENTER
                 new Point2d("BLAR", CBOX_LCTR + CBOX_GAP - CA_OFF,  BSY)  //BLUE-LEFT-RIGHT
         },
             {
@@ -285,7 +297,7 @@ public class RrField extends Field
         {
             {
                 new Point2d("RLAL", CBOX_LCTR + CBOX_GAP - CA_OFF, -BSY), //RED-LEFT-LEFT
-                new Point2d("RLAC", CBOX_LCTR            - CA_OFF, -BSY), //RED-LEFT-CENTER
+                new Point2d("RLAC", CBOX_LCTR + 1.0      - CA_OFF, -BSY), //RED-LEFT-CENTER
                 new Point2d("RLAR", CBOX_LCTR - CBOX_GAP + CA_OFF, -BSY)  //RED-LEFT-RIGHT
         },
             {
@@ -310,18 +322,32 @@ public class RrField extends Field
         }
     };
 
-    //Red Points > Left
+    //Red Route > Left
     static final Point2d RLBS = new Point2d("RLBS", BS1X,  -BSY);
     static final Point2d RLJB = new Point2d("RLJB", -BSY,  -68.0);
-    static final Point2d RLFP = new Point2d("RLFP", BS1X + BS_CLEAR, -BSY);
+    static final Point2d RLFP = new Point2d("RLFP", BS1X + BS_CLEAR + 1.0, -BSY);
     static final Point2d RLDC = calcDropPt("RLDC", RLFP, CPTS[RED][STRT1][CNTR]);
     static final Point2d RLRR = new Point2d("RLRR", -68.0,  -68.0);
 
-    static final Point2d RLTT = new Point2d("RLTT", CBOX_LCTR,  -BSY);
-    static final Point2d RLPP = new Point2d("RLPP", CBOX_LCTR,  -25.0);
-    static final Point2d RLXP = new Point2d("RLXP", CBOX_LCTR,  -37.0);
+    static final double PPY1 = -29.0;
+    static final double PPY2 = -21.0;
+    static final double PPYD =  10.0;
+    static final double PPLX = CBOX_LCTR;
+    public static double getPPx()  {return PPLX;}
+    public static double getPPy1() {return PPY1;}
+    public static double getPPy2() {return PPY2;}
+    public static double getPPyD(PositionOption startPos)
+    {
+        if(startPos == Route.StartPos.START_2) return 3.0;
+        return PPYD;
+    }
+    static final Point2d RLTT = new Point2d("RLTT", PPLX,  -BSY);
+    public static double getTTx()  {return PPLX;}
+    public static double getTTy()  {return -BSY;}
+    static final Point2d RLPP = new Point2d("RLPP", PPLX,  PPY1);
+    static final Point2d RLXP = new Point2d("RLXP", PPLX,  PPY1);
 
-    //Red Points > Right
+    //Red Route > Right
     static final Point2d RRBS = new Point2d("RRBS",  BS2X,  -BSY);
     static final Point2d RRJB = new Point2d("RRJB",  BS2X,  -68.0);
     static final Point2d RRFP = new Point2d("RRFP",  BS2X + BS_CLEAR,  -BSY);
@@ -336,12 +362,12 @@ public class RrField extends Field
 
 
     public static Point2d getAlignPt(Alliance alliance,
-                                     StartPos startPos,
+                                     PositionOption startPos,
                                      RelicRecoveryVuMark key,
                                      Align_Type align_type)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
-        int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
+        int strt = (startPos == Route.StartPos.START_1) ? STRT1 : STRT2;
         int ckey = CNTR;
 
         switch (key)
@@ -372,13 +398,13 @@ public class RrField extends Field
     }
 
     public static Point2d getDropPt(Alliance alliance,
-                                    StartPos startPos,
+                                    PositionOption startPos,
                                     RelicRecoveryVuMark key,
                                     double cfgOff,
                                     Align_Type align_type)
     {
         int alnc = (alliance == Alliance.RED) ? RED : BLUE;
-        int strt = (startPos == StartPos.START_1) ? STRT1 : STRT2;
+        int strt = (startPos == Route.StartPos.START_1) ? STRT1 : STRT2;
         int ckey = CNTR;
 
         switch (key)
@@ -398,12 +424,12 @@ public class RrField extends Field
 
         Point2d dpt = calcDropPt(pName, spt, ept);
 
-        if(startPos == StartPos.START_1)
+        if(startPos == Route.StartPos.START_1)
         {
             RobotLog.dd(TAG, "Offseting dpt %s in X by %.2f", dpt.toString(), cfgOff);
             dpt.setX(dpt.getX() + cfgOff);
         }
-        else if (startPos == StartPos.START_2)
+        else if (startPos == Route.StartPos.START_2)
         {
             RobotLog.dd(TAG, "Offseting dpt %s in Y by %.2f", dpt.toString(), cfgOff);
             dpt.setY(dpt.getY() + cfgOff);

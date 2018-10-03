@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.test;
 import android.util.SparseArray;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
  * CYCLE_MS sets the update period.
  */
 @Autonomous(name = "Concept: Step Servo Position", group = "Test")
-//@Disabled
+@Disabled
 public class StepServoTest extends InitLinearOpMode
 {
 

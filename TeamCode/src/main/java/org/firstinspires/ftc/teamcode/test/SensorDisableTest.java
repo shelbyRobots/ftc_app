@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package org.firstinspires.ftc.teamcode.test;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
@@ -52,6 +53,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *
  */
 @TeleOp(name = "Gyro Heading with Color Sensor", group = "Sensor")
+@Disabled
 public class SensorDisableTest extends LinearOpMode {
 
     public void runOpMode() {

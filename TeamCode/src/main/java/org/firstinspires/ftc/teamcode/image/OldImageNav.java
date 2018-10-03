@@ -35,6 +35,7 @@ package org.firstinspires.ftc.teamcode.image;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -51,7 +52,7 @@ import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 @Autonomous(name="OldImageNav", group ="Concept")
-//@Disabled
+@Disabled
 public class OldImageNav extends LinearOpMode {
 
     private static final String TAG = "SJH Image Tracker";

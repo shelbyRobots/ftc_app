@@ -18,11 +18,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.field.Field;
+import org.firstinspires.ftc.teamcode.field.RoRuField;
+import org.firstinspires.ftc.teamcode.field.RrField;
 import org.firstinspires.ftc.teamcode.field.VvField;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,7 +50,8 @@ public class VuforiaInitializer
     public enum Challenge
     {
         VV,
-        RR
+        RR,
+        RoRu
     }
 
     public VuforiaInitializer()
@@ -56,14 +62,14 @@ public class VuforiaInitializer
     {
         if(initialized && vuforia !=null) return vuforia;
 
-        VuforiaLocalizer.Parameters parameters = getParameters(useScreen);
+        genParameters(useScreen);
 
-        vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
         //Set the image sets to allow getting frames from vuforia
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
         vuforia.setFrameQueueCapacity(NUM_FRAME_IMAGES);
 
-        Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS,4);
+        Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS,2);
 
         RobotLog.ii("SJH", "Vuforia LicKey: " + parameters.vuforiaLicenseKey);
 
@@ -72,14 +78,12 @@ public class VuforiaInitializer
         return vuforia;
     }
 
-    private VuforiaLocalizer.Parameters getParameters(boolean useScreen)
+    private void genParameters(boolean useScreen)
     {
         CommonUtil com = CommonUtil.getInstance();
         Activity act = com.getActivity();
         String pName = act.getPackageName();
         int viewId = com.getCameraMonitorViewId();
-
-        //int viewId = com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId;
 
         if(useScreen) parameters = new VuforiaLocalizer.Parameters(viewId);
         else          parameters = new VuforiaLocalizer.Parameters();
@@ -95,7 +99,6 @@ public class VuforiaInitializer
                 "9Q6DZmhz4FCT49shA+4PyNOzqsjhRC";
 
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        return parameters;
     }
 
     private void setupTrackables(String assetName,
@@ -120,6 +123,7 @@ public class VuforiaInitializer
         RobotLog.dd(TAG, "Setting up trackables " + assetName);
         trackables = vuforia.loadTrackablesFromAsset(assetName);
 
+        RobotLog.dd(TAG, "Set up trackables " + assetName);
         OpenGLMatrix phoneLocationOnRobot = ShelbyBot.phoneLocationOnRobot;
         RobotLog.ii(TAG, "phone=%s", getLocString(phoneLocationOnRobot));
 
@@ -141,32 +145,37 @@ public class VuforiaInitializer
 
     List<VuforiaTrackable> setupTrackables(Challenge challenge)
     {
-        List<String> tNames = new ArrayList<>();
-        List<OpenGLMatrix> locs = new ArrayList<>();
-        String assetName = "FTC_2016-17";
+        Field fld = null;
 
         switch(challenge)
         {
             case VV:
-                tNames.add("BlueWheels");
-                tNames.add("BlueLegos");
-                tNames.add("RedTools");
-                tNames.add("RedGears");
-                locs.add(VvField.blueWheelsLocationOnField);
-                locs.add(VvField.blueLegosLocationOnField);
-                locs.add(VvField.redToolsLocationOnField);
-                locs.add(VvField.redToolsLocationOnField);
-                assetName = "FTC_2016-17";
+                fld = new VvField();
                 break;
 
             case RR:
-                tNames.add("RelicTrack");
-                locs.add(OpenGLMatrix.identityMatrix());
-                assetName = "RelicVuMark";
+                fld = new RrField();
+                break;
+
+            case RoRu:
+                fld = new RoRuField();
                 break;
         }
 
-        setupTrackables(assetName, tNames, locs);
+        RobotLog.dd(TAG, "Setting up trackables from %s", fld.getAssetName());
+
+        StringBuilder nsb = new StringBuilder();
+        for (String s : fld.getImageNames()) nsb.append(s);
+
+        RobotLog.dd(TAG, "Trackable names %s", nsb.toString());
+
+        StringBuilder osb = new StringBuilder();
+        for (OpenGLMatrix o : fld.getImageTransforms()) osb.append(o.toString());
+
+        RobotLog.dd(TAG, "Transforms %s", osb.toString());
+
+        setupTrackables(fld.getAssetName(), Arrays.asList(fld.getImageNames()),
+                Arrays.asList(fld.getImageTransforms()));
         return allTrackables;
     }
 
@@ -179,8 +188,8 @@ public class VuforiaInitializer
         }
         else
         {
-            trackables.deactivate();
             //vuforia.setFrameQueueCapacity(0);
+            trackables.deactivate();
         }
     }
 

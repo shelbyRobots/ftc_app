@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
 
 @TeleOp(name = "Mecanum")
+@Disabled
 public class MecanumTeleop extends InitLinearOpMode
 {
     @SuppressWarnings("FieldCanBeLocal")

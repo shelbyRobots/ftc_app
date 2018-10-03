@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.util.CommonUtil;
  */
 @SuppressWarnings("WeakerAccess")
 @Autonomous(name="OpenCvBeaconAuton", group ="Test")
+@Disabled
 public class OpenCvBeaconAuton extends InitLinearOpMode
 {
     private CommonUtil com = CommonUtil.getInstance();

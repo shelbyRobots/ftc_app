@@ -38,7 +38,7 @@ import org.firstinspires.ftc.teamcode.opModes.InitLinearOpMode;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
 @Autonomous(name = "Concept: Scan Servo", group = "Concept")
-//@Disabled
+@Disabled
 public class ConceptScanServo extends InitLinearOpMode
 {
     private static final double INCREMENT   = 0.05;     // amount to slew servo each CYCLE_MS cycle

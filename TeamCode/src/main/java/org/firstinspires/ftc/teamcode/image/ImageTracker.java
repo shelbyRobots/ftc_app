@@ -44,7 +44,7 @@ public class ImageTracker
         dashboard = com.getDashboard();
         this.challenge = challenge;
         setupVuforia();
-        setTrackableCorners();
+        //setTrackableCorners();
     }
 
     private void setupVuforia()
@@ -98,7 +98,7 @@ public class ImageTracker
         }
         else
         {
-            pose = l.getRawPose();
+            pose = l.getVuforiaCameraFromTarget();
             poseType += "Raw";
         }
         if (pose != null)
@@ -139,8 +139,9 @@ public class ImageTracker
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
                 currYaw = (double) currOri.firstAngle;
 
+                Bitmap fullPic = getImage();
 
-                if (keyLoc == RelicRecoveryVuMark.UNKNOWN &&
+                if (challenge == VuforiaInitializer.Challenge.RR && keyLoc == RelicRecoveryVuMark.UNKNOWN &&
                     RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
                 {
                     keyLoc = RelicRecoveryVuMark.from(trackable);
@@ -149,16 +150,15 @@ public class ImageTracker
                     dashboard.displayPrintf(6, "VuMark key = %s", keyLoc);
                     RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
 
-                    Bitmap fullPic = getImage();
                     List<Point2d>  trackablePixCorners =
                             getTrackableCornersInCamera(rawPose);
 
+                    lastImage        = fullPic;
+
                     List<Point2d> jewelBoxPixCorners =
                             getCropCornersInCamera(rawPose);
-                   Bitmap jewelImg = getCroppedImage(jewelBoxPixCorners, fullPic);
-
-                    lastImage        = fullPic;
-                    lastCroppedImage = jewelImg;
+                    if(jewelBoxPixCorners == null) continue;
+                    lastCroppedImage = getCroppedImage(jewelBoxPixCorners, fullPic);
 
                     if (breakOnVumarkFound)
                     {
@@ -166,8 +166,16 @@ public class ImageTracker
                         break;
                     }
                 }
-
-            } else
+                else if (challenge == VuforiaInitializer.Challenge.RoRu)
+                {
+                    rawPose = getImagePose(trackable, true);
+                    RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
+                    lastImage        = fullPic;
+                    lastCroppedImage = fullPic;
+                    //TODO: Figure out image crop
+                }
+            }
+            else
             {
                 currPos = null;
                 currOri = null;
@@ -181,14 +189,14 @@ public class ImageTracker
         return currPos;
     }
 
-    public double getSensedFldHeading()
+    public Double getSensedFldHeading()
     {
         return currYaw;
     }
 
     public String getLocString()
     {
-        String locStr = null;
+        String locStr = "Unknown sensed location";
         if (currPos != null && currYaw != null)
         {
             locStr = "";
@@ -456,6 +464,8 @@ public class ImageTracker
         }
     }
 
+    public void resetKey() {keyLoc = RelicRecoveryVuMark.UNKNOWN;}
+
     public void setFrameQueueSize(int size)
     {
         vuforia.setFrameQueueCapacity(size);
@@ -480,7 +490,7 @@ public class ImageTracker
     private RelicRecoveryVuMark keyLoc = RelicRecoveryVuMark.UNKNOWN;
 
     VuforiaInitializer vInit = null;
-    VuforiaInitializer.Challenge challenge = VuforiaInitializer.Challenge.RR;
+    VuforiaInitializer.Challenge challenge;
 
     private boolean breakOnVumarkFound = true;
 

@@ -31,8 +31,10 @@ package org.firstinspires.ftc.teamcode.test;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.field.RrField;
@@ -71,6 +73,7 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
         RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
         tracker.setActive(true);
         RobotLog.dd(TAG, "Finding VuMark first");
+        CameraDevice.getInstance().setFlashTorchMode(true) ;
 
         while (!isStarted() && key == RelicRecoveryVuMark.UNKNOWN)
         {
@@ -130,6 +133,10 @@ public class VuMarkOpenCvTest extends InitLinearOpMode
                 leftJewelColor = ((MajorColorDetector) det).getMajorColor();
             sleep(100);
         }
+        CameraDevice.getInstance().setFlashTorchMode(true) ;
+        det.logDebug();
+        det.logTelemetry();
+
 //        Bitmap fullImage = tracker.getLastImage();
 //        List<Point2d> tpcs = tracker.getTrackableCornersInCamera(tracker.getRawImagePose());
 //        MajorColorDetector mcd = (MajorColorDetector) det;

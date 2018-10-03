@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.LedDetector;
 
 @Autonomous(name="OpenCvLedAuton", group ="Test")
+//Disabled
 public class OpenCvLedAuton extends InitLinearOpMode
 {
     @Override

@@ -93,18 +93,18 @@ public class Segment
 
     //enum SegDir {FORWARD, REVERSE}
     public enum Action {NOTHING, SHOOT, SCAN_IMAGE, FIND_BEACON, PUSH,
-        RST_PUSHER, SET_KEY, DROP, GRAB, PREGRAB, SET_ALIGN, RETRACT, ESCAPE, THROW}
+        RST_PUSHER, SET_KEY, DROP, GRAB, PREGRAB, SET_ALIGN, RETRACT, ESCAPE, THROW, PARK}
     public enum TargetType{ENCODER, TIME, COLOR}
     private static final double DEF_SEG_SPD = 0.5;
-    private double  fldHdg = 0.0;
+    private double  fldHdg;
     private Point2d strtPt;
     private Point2d tgtPt;
     private String  name;
     private ShelbyBot.DriveDir dir;
     private double speed;
-    private double len = 0;
-    private Action act = Action.NOTHING;
-    private double drvTuner = 1.0;
+    private double len;
+    private Action act;
+    private double drvTuner;
     private Double postTurn = null;
-    private TargetType tgtType = TargetType.ENCODER;
+    private TargetType tgtType;
 }

@@ -4,7 +4,6 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.ImuRunner;
 
@@ -24,9 +23,9 @@ class ShelbyImuBot extends ShelbyBot
     private static final String TAG = "SJH_Imu";
 
     @Override
-    protected void initSensors()
+    protected void initSensors(boolean initDirSensor)
     {
-        System.out.println("In TilerunnerGtoBot.initSensors");
+        RobotLog.dd(TAG, "In TilerunnerGtoBot.initSensors");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -38,7 +37,7 @@ class ShelbyImuBot extends ShelbyBot
         try
         {
             imu = (BNO055IMU) com.getHardwareMap().get("imu");
-            imu.initialize(parameters);
+            if(initDirSensor) imu.initialize(parameters);
 
             if(useImuThread)
             {

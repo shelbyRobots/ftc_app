@@ -48,17 +48,20 @@ public class MajorColorDetector extends Detector {
         dashboard = CommonUtil.getInstance().getDashboard();
     }
 
+    static int lcnt = 0;
     public void logTelemetry()
     {
         dashboard.displayPrintf(4,"Color Detected: %s", foundColor);
         dashboard.displayPrintf(5,"RedPct %4.2f", redPct);
         dashboard.displayPrintf(6,"BluPct %4.2f", bluPct);
+        dashboard.displayPrintf(7,"lcnt   %d", lcnt);
     }
 
+    static int dcnt = 0;
     public void logDebug()
     {
-        RobotLog.ii(TAG, "Color Detected %s redPct %4.2f bluPct %4.2f",
-                foundColor, redPct, bluPct);
+        RobotLog.ii(TAG, "Color Detected %s redPct %4.2f bluPct %4.2f %d",
+                foundColor, redPct, bluPct, dcnt++);
     }
 
     public void setImage( Mat img )

@@ -21,6 +21,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
             Servo    gripper    = null;
     private Servo    rgripper   = null;
             Servo    jflicker   = null;
+    private Servo    holder     = null;
 
     public  Servo    elevServo  = null;
 
@@ -46,6 +47,9 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     private static double RGRIPPER_OPEN_POS    = 0.5;
     private static double RGRIPPER_STOW_POS    = 0.25;
 
+    private static double HOLDER_STOW_POS      = 0.5;
+    private static double HOLDER_EXTD_POS      = 0.5;
+
     public static double GPITCH_UP_POS    = 0.16;
     public static double GPITCH_DOWN_POS  = 0.58;
     public static double GPITCH_CLEAR_POS = 0.3;
@@ -59,7 +63,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
            int    ELEV_COUNTS_PER_MOTOR_REV = 4;
            double ELEV_GEAR_ONE = 72;
-           double ELEV_WHEEL_DIAM = 1.5;
+           double ELEV_WHEEL_DIAM = 2.0625; //1.5;
            double ELEV_CPR = ELEV_COUNTS_PER_MOTOR_REV * ELEV_GEAR_ONE;
            double LIFT_SCALE = 1.0;
     public double ELEV_CPI = ELEV_CPR/(Math.PI * ELEV_WHEEL_DIAM)/LIFT_SCALE;
@@ -103,7 +107,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     }
 
     @Override
-    public void init(LinearOpMode op)
+    public void init(LinearOpMode op, boolean initDirSensor)
     {
         computeCPI();
 
@@ -111,8 +115,9 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         initDriveMotors();
         initCollectorLifter();
         initPushers();
-        initSensors();
+        initSensors(initDirSensor);
         initArm();
+        initHolder();
         initCapabilities();
     }
 
@@ -167,15 +172,15 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
             if(name.equals("GTO1"))
             {
-                GRIPPER_CLOSE_POS    = 0.86;
-                GRIPPER_PARTIAL_POS  = 0.78;
+                GRIPPER_CLOSE_POS    = 0.94;
+                GRIPPER_PARTIAL_POS  = 0.84;
                 GRIPPER_OPEN_POS     = 0.72;
-                GRIPPER_STOW_POS     = 0.56;
+                GRIPPER_STOW_POS     = 0.60;
 
-                RGRIPPER_CLOSE_POS   = 0.08;
-                RGRIPPER_PARTIAL_POS = 0.16;
+                RGRIPPER_CLOSE_POS   = 0.04;
+                RGRIPPER_PARTIAL_POS = 0.12;
                 RGRIPPER_OPEN_POS    = 0.22;
-                RGRIPPER_STOW_POS    = 0.4;
+                RGRIPPER_STOW_POS    = 0.35;
 
                 MIN_ELEV_CNT = (int)(-3.5 * ELEV_CPI);
                 MAX_ELEV_CNT = MIN_ELEV_CNT + (int)(19.5 * ELEV_CPI);
@@ -230,7 +235,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
             capMap.put("collector", true);
 
-            LIFT_AUTON_POS = MIN_ELEV_CNT + (int)(5.5 * ELEV_CPI) - MICRO_MIN;
+            LIFT_AUTON_POS = MIN_ELEV_CNT + (int)(4.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_ZERO_POS  = MIN_ELEV_CNT + (int)(0.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_DROP_POS  = MIN_ELEV_CNT + (int)(1.5 * ELEV_CPI) - MICRO_MIN;
             LIFT_TIER2_POS = MIN_ELEV_CNT + (int)(7.0 * ELEV_CPI) - MICRO_MIN;
@@ -282,8 +287,8 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
             if(name.equals("GTO1"))
             {
-                JFLICKER_UP_POS   = 0.71;
-                JFLICKER_DOWN_POS = 0.0;
+                JFLICKER_UP_POS   = 0.92;
+                JFLICKER_DOWN_POS = 0.17;
                 JFLICKER_STOW_POS = 1.0;
             }
             else if(name.equals("GTO2"))
@@ -301,6 +306,30 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         catch (Exception e)
         {
             RobotLog.ee(TAG, "ERROR get hardware map in initPushers\n" + e.toString());
+        }
+    }
+
+    private void initHolder()
+    {
+        RobotLog.dd(TAG, "GTO initPushers");
+        try
+        {
+            holder = hwMap.servo.get("holder");
+
+            if(name.equals("GTO1"))
+            {
+                HOLDER_EXTD_POS = 0.36;
+                HOLDER_STOW_POS = 0.74;
+            }
+
+            capMap.put("holder", true);
+
+            RobotLog.dd(TAG, "holder stow %.2f extend %.2f",
+                    HOLDER_STOW_POS, HOLDER_EXTD_POS);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ee(TAG, "ERROR get hardware map in initHolder\n" + e.toString());
         }
     }
 
@@ -345,6 +374,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
     }
 
+    @SuppressWarnings("unused")
     public void setElevDrop()
     {
         RobotLog.dd(TAG, "setElevDrop %d", LIFT_DROP_POS);
@@ -362,6 +392,23 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
     }
 
+    public void setElevToIdxPos(int idx)
+    {
+        RobotLog.dd(TAG, "Set Elev to IdxPos %d", idx);
+        idx = Math.max(0, idx);
+        idx = Math.min(liftPositions.size() - 1, idx);
+        int buffer = (int)(2.0 * ELEV_CPI);
+        int dstloc = liftPositions.get(idx) + buffer;
+        dstloc = Math.min(getMaxElev(), dstloc);
+        if(elevMotor != null)
+        {
+            elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            elevMotor.setTargetPosition(dstloc);
+            elevMotor.setPower(0.6);
+        }
+    }
+
+    @SuppressWarnings("unused")
     public void setElevTier2()
     {
         RobotLog.dd(TAG, "setElevTier2 %d", LIFT_TIER2_POS);
@@ -455,6 +502,16 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     {
         if(jflicker != null) jflicker.setPosition(JFLICKER_UP_POS);
     }
+
+    public void stowHolder ()
+    {
+        if(holder != null) holder.setPosition(HOLDER_STOW_POS);
+    }
+    public void deployHolder()
+    {
+        if(holder != null) holder.setPosition(HOLDER_EXTD_POS);
+    }
+
     public void closeGripper()
     {
         if(gripper != null)   gripper.setPosition(GRIPPER_CLOSE_POS);
@@ -501,7 +558,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
     public double getGpitchDownPos() {return GPITCH_DOWN_POS;}
 
     public int getMinElev() {return (int)(MIN_ELEV_CNT + 0.5 * ELEV_CPI);}
-    public int getMaxElev() {return (int)(MAX_ELEV_CNT);}
+    public int getMaxElev() {return MAX_ELEV_CNT;}
 
     public boolean isElevTouchPressed()
     {

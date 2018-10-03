@@ -63,8 +63,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       android:layout_height="wrap_content"
       android:textColor="?attr/textWhite"
       android:textAppearance="?android:attr/textAppearanceMedium"
-      android:padding="8dp"
+      android:padding="4dp"
       android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textNetworkConnectionStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/textWhite"
+        android:layout_below="@+id/textDeviceName"
+        android:layout_toEndOf="@id/robotIcon"
+        android:visibility="invisible"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/textRobotStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/textWhite"
+        android:layout_below="@+id/textNetworkConnectionStatus"
+        android:layout_toEndOf="@id/robotIcon"
+        android:visibility="invisible"
+        android:text="" />
 
     <ImageButton
       android:id="@+id/menu_buttons"
@@ -83,8 +103,58 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   </RelativeLayout>
   <!-- end of black bar -->
 
-  <include layout="@layout/header"
-           android:id="@+id/included_header"/>
+  <LinearLayout
+      android:id="@+id/backgroundLightHolder"
+      android:visibility="gone"
+      android:background="?attr/backgroundLight"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="horizontal"/>
+
+  <LinearLayout
+      android:id="@+id/backgroundMediumHolder"
+      android:visibility="gone"
+      android:background="?attr/backgroundMedium"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="horizontal"/>
+
+  <LinearLayout
+      android:id="@+id/backgroundDarkGrayHolder"
+      android:visibility="gone"
+      android:background="@color/background_dark_gray"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="horizontal"/>
+
+  <LinearLayout
+      android:id="@+id/idActiveConfigHeader"
+      android:paddingStart="8dp"
+      android:paddingEnd="8dp"
+      android:paddingTop="2dp"
+      android:paddingBottom="2dp"
+      android:background="?attr/backgroundDark"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/textOpMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="?attr/textWhite"
+        android:visibility="invisible"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/idActiveConfigName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/textWhite"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+  </LinearLayout>
 
   <RelativeLayout
     android:id="@+id/RelativeLayout"
@@ -96,34 +166,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin" >
 
-    <TextView
-      android:id="@+id/textNetworkConnectionStatus"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:visibility="invisible"
-      android:text="" />
-
-    <TextView
-      android:id="@+id/textRobotStatus"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_below="@+id/textNetworkConnectionStatus"
-      android:visibility="invisible"
-      android:text="" />
-
-    <TextView
-      android:id="@+id/textOpMode"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_below="@+id/textRobotStatus"
-      android:visibility="invisible"
-      android:text="" />
-
     <FrameLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_below="@+id/textOpMode"
-      android:layout_above="@+id/textGamepad1">
+      android:layout_height="wrap_content">
 
       <LinearLayout
           android:id="@+id/cameraMonitorViewId"
@@ -145,23 +190,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             android:visibility="invisible"
             android:textColor="?attr/textMediumDark" />
 
+      <TextView
+          android:id="@+id/textGamepad1"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_above="@+id/textGamepad2"
+          android:visibility="invisible"
+          android:text="" />
+
+      <TextView
+          android:id="@+id/textGamepad2"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignParentBottom="true"
+          android:visibility="invisible"
+          android:text="" />
+
     </FrameLayout>
-
-    <TextView
-      android:id="@+id/textGamepad1"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_above="@+id/textGamepad2"
-      android:visibility="invisible"
-      android:text="" />
-
-    <TextView
-      android:id="@+id/textGamepad2"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_alignParentBottom="true"
-      android:visibility="invisible"
-      android:text="" />
 
     <!-- invisible except when programming mode is activated from the DS -->
     <TextView

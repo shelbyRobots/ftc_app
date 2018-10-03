@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -19,7 +19,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
+import org.firstinspires.ftc.teamcode.util.Point2d;
 import org.firstinspires.ftc.teamcode.util.Units;
 
 import java.util.ArrayList;
@@ -86,23 +88,30 @@ public class ShelbyBot
 
     boolean colorEnabled = false;
 
+    private Field.Alliance alliance = Field.Alliance.RED;
+
     private int initHdg = 0;
     public static double autonEndHdg = 0.0;
     public double getAutonEndHdg() {return  autonEndHdg;}
     public void setAutonEndHdg(double hdg) {autonEndHdg = hdg;}
+    public static Point2d autonEndPos = new Point2d("AEND", 0.0, 0.0);
+    public Point2d getAutonEndPos() {return autonEndPos;}
+    public void setAutonEndPos(Point2d endPos) {autonEndPos = endPos;}
+    public Field.Alliance getAlliance() {return alliance;}
+    public void setAlliance(Field.Alliance alnc) {alliance = alnc;}
 
     //The values below are for the 6 wheel 2016-2017 drop center bot
     //with center wheels powered by Neverest 40 motors.
     //NOTE:  Notes reference center of bot on ground as bot coord frame origin.
     //However, it seems logical to use the center of the rear axis (pivot point)
-    public float BOT_WIDTH       = 16.8f; //Vehicle width at rear wheels
-    public float BOT_LENGTH      = 18.0f;
+    public float BOT_WIDTH; //Vehicle width at rear wheels
+    public float BOT_LENGTH;
 
-    protected double COUNTS_PER_MOTOR_REV = 28;
+    protected double COUNTS_PER_MOTOR_REV;
     protected double DRIVE_GEARS[];
 
     protected double WHEEL_DIAMETER_INCHES;
-    protected double TUNE = 1.00;
+    protected double TUNE;
     public double CPI;
 
     public static DcMotor.Direction  LEFT_DIR = DcMotor.Direction.FORWARD;
@@ -146,10 +155,11 @@ public class ShelbyBot
         capMap.put("pusher",     false);
         capMap.put("sensor",     false);
         capMap.put("arm",        false);
+        capMap.put("holder",     false);
     }
 
     /* Initialize standard Hardware interfaces */
-    public void init(LinearOpMode op)
+    public void init(LinearOpMode op, boolean initDirSensor)
     {
         RobotLog.dd(TAG, "ShelbyBot init");
         computeCPI();
@@ -161,6 +171,11 @@ public class ShelbyBot
         initPushers();
         initSensors();
         initCapabilities();
+    }
+
+    public void init(LinearOpMode op)
+    {
+        init(op, true);
     }
 
     public void init(LinearOpMode op, String name)
@@ -197,13 +212,13 @@ public class ShelbyBot
             if (leftMotor instanceof DcMotorEx)
             {
                 DcMotorEx lex = (DcMotorEx) leftMotor;
-                PIDCoefficients pid;
-                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
-                RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                        pid.p, pid.i, pid.d);
-                pid = lex.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-                RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f",
-                        pid.p, pid.i, pid.d);
+                PIDFCoefficients pid;
+                pid = lex.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+                RobotLog.dd(TAG, "RUN_TO_POS Motor PIDs. P:%.2f I:%.2f D:%.2f F:%.2f",
+                        pid.p, pid.i, pid.d, pid.f);
+                pid = lex.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                RobotLog.dd(TAG, "RUN_USING_ENC Motor PIDs. P:%.2f I:%.2f D:%.2f F:%.2f",
+                        pid.p, pid.i, pid.d, pid.f);
             }
 
             capMap.put("drivetrain", true);
@@ -287,7 +302,7 @@ public class ShelbyBot
         }
     }
 
-    protected void initSensors()
+    protected void initSensors(boolean initDirSensor)
     {
         RobotLog.dd(TAG, "ShelbyBot sensors");
         try  //I2C and DAIO
@@ -325,14 +340,20 @@ public class ShelbyBot
         }
     }
 
+    protected void initSensors()
+    {
+        initSensors(true);
+    }
+
     protected void initCapabilities()
     {
         for (Map.Entry mEnt : capMap.entrySet())
         {
-            System.out.println(mEnt.getKey() + " = " + mEnt.getValue());
+            RobotLog.dd(TAG, mEnt.getKey() + " = " + mEnt.getValue());
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean getCapability(String cap)
     {
         return capMap.get(cap);

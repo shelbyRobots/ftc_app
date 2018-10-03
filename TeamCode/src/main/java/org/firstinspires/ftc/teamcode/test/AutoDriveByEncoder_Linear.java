@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -44,7 +45,7 @@ import org.firstinspires.ftc.teamcode.util.CommonUtil;
 
 @SuppressWarnings("FieldCanBeLocal")
 @Autonomous(name="Auto Drive By Encoder", group="Test")
-//@Disabled
+@Disabled
 public class AutoDriveByEncoder_Linear extends InitLinearOpMode
 {
     private CommonUtil com = CommonUtil.getInstance();

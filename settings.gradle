@@ -1,7 +1,6 @@
+include ':Ftc3543Lib'
+include ':opencv'
+
 include ':FtcRobotController'
 include ':TeamCode'
 
-//include ':openCVLibrary310'
-
-include ':Ftc3543Lib'
-include ':openCVLibrary310'
