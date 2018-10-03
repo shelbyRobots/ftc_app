@@ -29,12 +29,18 @@
 
 package org.firstinspires.ftc.teamcode.opModes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.util.RobotLog;
+import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
+import com.vuforia.Vec2F;
+import com.vuforia.Vec4F;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraManager;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -45,6 +51,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +104,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  * is explained below.
  */
 
+@SuppressWarnings({"unused", "ConstantConditions"})
 @TeleOp(name="Concept: Vuforia Rover Nav", group ="Concept")
 //@Disabled
 public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
@@ -134,15 +142,22 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
 
     private OpenGLMatrix lastLocation = null;
-    private boolean targetVisible = false;
 
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
      * localization engine.
      */
-    VuforiaLocalizer vuforia;
+    @SuppressWarnings("JavaDoc")
+    private VuforiaLocalizer vuforia;
+    private static final String TAG = "SJH_Vuf";
+
+    private ManagedGamepad gpad1;
 
     @Override public void runOpMode() {
+
+        gpad1 = new ManagedGamepad(gamepad1);
+
+        boolean targetVisible;
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
@@ -159,17 +174,34 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
+        final boolean useFieldLocs = false;
+        final boolean useAltDat    = true;
         // Load the data sets that for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        int br = 0;
-        int rf = 1;
-        int fc = 2;
-        int bs = 3;
-        br = 3;
-        rf = 2;
-        fc = 1;
-        bs = 0;
-        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus_SJH");
+        int br;
+        int rf;
+        int fc;
+        int bs;
+
+        if(useAltDat)
+        {
+            br = 3;
+            rf = 2;
+            fc = 1;
+            bs = 0;
+        }
+        else
+        {
+            br = 0;
+            rf = 1;
+            fc = 2;
+            bs = 3;
+        }
+
+        String assetName;
+        if(useAltDat) assetName ="RoverRuckus_SJH";
+        else assetName = "RoverRuckus";
+        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset(assetName);
         VuforiaTrackable blueRover = targetsRoverRuckus.get(br);
         blueRover.setName("Blue-Rover");
         VuforiaTrackable redFootprint = targetsRoverRuckus.get(rf);
@@ -180,30 +212,28 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
         backSpace.setName("Back-Space");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targetsRoverRuckus);
 
-        /**
-         * In order for localization to work, we need to tell the system where each target is on the field, and
-         * where the phone resides on the robot.  These specifications are in the form of <em>transformation matrices.</em>
-         * Transformation matrices are a central, important concept in the math here involved in localization.
-         * See <a href="https://en.wikipedia.org/wiki/Transformation_matrix">Transformation Matrix</a>
-         * for detailed information. Commonly, you'll encounter transformation matrices as instances
-         * of the {@link OpenGLMatrix} class.
-         *
-         * If you are standing in the Red Alliance Station looking towards the center of the field,
-         *     - The X axis runs from your left to the right. (positive from the center to the right)
-         *     - The Y axis runs from the Red Alliance Station towards the other side of the field
-         *       where the Blue Alliance Station is. (Positive is from the center, towards the BlueAlliance station)
-         *     - The Z axis runs from the floor, upwards towards the ceiling.  (Positive is above the floor)
-         *
-         * This Rover Ruckus sample places a specific target in the middle of each perimeter wall.
-         *
-         * Before being transformed, each target image is conceptually located at the origin of the field's
-         *  coordinate system (the center of the field), facing up.
+        List<VuforiaTrackable> allTrackables = new ArrayList<>(targetsRoverRuckus);
+
+        /*
+          In order for localization to work, we need to tell the system where each target is on the field, and
+          where the phone resides on the robot.  These specifications are in the form of <em>transformation matrices.</em>
+          Transformation matrices are a central, important concept in the math here involved in localization.
+          See <a href="https://en.wikipedia.org/wiki/Transformation_matrix">Transformation Matrix</a>
+          for detailed information. Commonly, you'll encounter transformation matrices as instances
+          of the {@link OpenGLMatrix} class.
+
+          If you are standing in the Red Alliance Station looking towards the center of the field,
+              - The X axis runs from your left to the right. (positive from the center to the right)
+              - The Y axis runs from the Red Alliance Station towards the other side of the field
+                where the Blue Alliance Station is. (Positive is from the center, towards the BlueAlliance station)
+              - The Z axis runs from the floor, upwards towards the ceiling.  (Positive is above the floor)
+
+          This Rover Ruckus sample places a specific target in the middle of each perimeter wall.
+
+          Before being transformed, each target image is conceptually located at the origin of the field's
+           coordinate system (the center of the field), facing up.
          */
-
-        final boolean useFieldLocs = false;
 
         OpenGLMatrix blueRoverLocationOnField;
         OpenGLMatrix redFootprintLocationOnField;
@@ -211,52 +241,47 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
         OpenGLMatrix backSpaceLocationOnField;
 
         if(useFieldLocs) {
-            /**
-             * To place the BlueRover target in the middle of the blue perimeter wall:
-             * - First we rotate it 90 around the field's X axis to flip it upright.
-             * - Then, we translate it along the Y axis to the blue perimeter wall.
+            /*
+              To place the BlueRover target in the middle of the blue perimeter wall:
+              - First we rotate it 90 around the field's X axis to flip it upright.
+              - Then, we translate it along the Y axis to the blue perimeter wall.
              */
             blueRoverLocationOnField = OpenGLMatrix
                     .translation(0, mmFTCFieldWidth, mmTargetHeight)
                     .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0));
-            blueRover.setLocation(blueRoverLocationOnField);
 
-            /**
-             * To place the RedFootprint target in the middle of the red perimeter wall:
-             * - First we rotate it 90 around the field's X axis to flip it upright.
-             * - Second, we rotate it 180 around the field's Z axis so the image is flat against the red perimeter wall
-             *   and facing inwards to the center of the field.
-             * - Then, we translate it along the negative Y axis to the red perimeter wall.
+            /*
+              To place the RedFootprint target in the middle of the red perimeter wall:
+              - First we rotate it 90 around the field's X axis to flip it upright.
+              - Second, we rotate it 180 around the field's Z axis so the image is flat against the red perimeter wall
+                and facing inwards to the center of the field.
+              - Then, we translate it along the negative Y axis to the red perimeter wall.
              */
             redFootprintLocationOnField = OpenGLMatrix
                     .translation(0, -mmFTCFieldWidth, mmTargetHeight)
                     .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180));
-            redFootprint.setLocation(redFootprintLocationOnField);
 
-            /**
-             * To place the FrontCraters target in the middle of the front perimeter wall:
-             * - First we rotate it 90 around the field's X axis to flip it upright.
-             * - Second, we rotate it 90 around the field's Z axis so the image is flat against the front wall
-             *   and facing inwards to the center of the field.
-             * - Then, we translate it along the negative X axis to the front perimeter wall.
+            /*
+              To place the FrontCraters target in the middle of the front perimeter wall:
+              - First we rotate it 90 around the field's X axis to flip it upright.
+              - Second, we rotate it 90 around the field's Z axis so the image is flat against the front wall
+                and facing inwards to the center of the field.
+              - Then, we translate it along the negative X axis to the front perimeter wall.
              */
             frontCratersLocationOnField = OpenGLMatrix
                     .translation(-mmFTCFieldWidth, 0, mmTargetHeight)
                     .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90));
-            frontCraters.setLocation(frontCratersLocationOnField);
 
-            /**
-             * To place the BackSpace target in the middle of the back perimeter wall:
-             * - First we rotate it 90 around the field's X axis to flip it upright.
-             * - Second, we rotate it -90 around the field's Z axis so the image is flat against the back wall
-             *   and facing inwards to the center of the field.
-             * - Then, we translate it along the X axis to the back perimeter wall.
+            /*
+              To place the BackSpace target in the middle of the back perimeter wall:
+              - First we rotate it 90 around the field's X axis to flip it upright.
+              - Second, we rotate it -90 around the field's Z axis so the image is flat against the back wall
+                and facing inwards to the center of the field.
+              - Then, we translate it along the X axis to the back perimeter wall.
              */
             backSpaceLocationOnField = OpenGLMatrix
                     .translation(mmFTCFieldWidth, 0, mmTargetHeight)
                     .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90));
-            backSpace.setLocation(backSpaceLocationOnField);
-
         }
         else
         {
@@ -265,39 +290,51 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
             frontCratersLocationOnField = genMatrix(new float[] {0,0,0}, new float[]{90,0,0});
             backSpaceLocationOnField    = genMatrix(new float[] {0,0,0}, new float[]{90,0,0});
         }
-        /**
-         * Create a transformation matrix describing where the phone is on the robot.
-         *
-         * The coordinate frame for the robot looks the same as the field.
-         * The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
-         * Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
-         *
-         * SHELBY CHANGE:  TREAT THE ROBOT X OUT RIGHT, Y OUT FRONT
-         *
-         * The phone starts out lying flat, with the screen facing Up and with the physical top of the phone
-         * pointing to the LEFT side of the Robot.  It's very important when you test this code that the top of the
-         * camera is pointing to the left side of the  robot.  The rotation angles don't work if you flip the phone.
-         *
-         * If using the rear (High Res) camera:
-         * We need to rotate the camera around it's long axis to bring the rear camera forward.
-         * This requires a negative 90 degree rotation on the Y axis
-         *
-         * If using the Front (Low Res) camera
-         * We need to rotate the camera around it's long axis to bring the FRONT camera forward.
-         * This requires a Positive 90 degree rotation on the Y axis
-         *
-         * Next, translate the camera lens to where it is on the robot.
-         * In this example, it is centered (left to right), but 110 mm forward of the middle of the robot, and 200 mm above ground level.
+        blueRover.setLocation(blueRoverLocationOnField);
+        redFootprint.setLocation(redFootprintLocationOnField);
+        frontCraters.setLocation(frontCratersLocationOnField);
+        backSpace.setLocation(backSpaceLocationOnField);
+
+        /*
+          Create a transformation matrix describing where the phone is on the robot.
+
+          The coordinate frame for the robot looks the same as the field.
+          The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
+          Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
+
+          SHELBY CHANGE:  TREAT THE ROBOT X OUT RIGHT, Y OUT FRONT
+
+          The phone starts out lying flat, with the screen facing Up and with the physical top of the phone
+          pointing to the LEFT side of the Robot.  It's very important when you test this code that the top of the
+          camera is pointing to the left side of the  robot.  The rotation angles don't work if you flip the phone.
+
+          If using the rear (High Res) camera:
+          We need to rotate the camera around it's long axis to bring the rear camera forward.
+          This requires a negative 90 degree rotation on the Y axis
+
+          If using the Front (Low Res) camera
+          We need to rotate the camera around it's long axis to bring the FRONT camera forward.
+          This requires a Positive 90 degree rotation on the Y axis
+
+          Next, translate the camera lens to where it is on the robot.
+          In this example, it is centered (left to right), but 110 mm forward of the middle of the robot, and 200 mm above ground level.
          */
 
-        int CAMERA_FORWARD_DISPLACEMENT  = 110;   // eg: Camera is 110 mm in front of robot center
-        int CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
-        int CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
+        int CAMERA_FORWARD_DISPLACEMENT;
+        int CAMERA_VERTICAL_DISPLACEMENT;
+        int CAMERA_LEFT_DISPLACEMENT;
+        //noinspection PointlessBooleanExpression
         if(!useFieldLocs)
         {
             CAMERA_FORWARD_DISPLACEMENT  = 0;
             CAMERA_VERTICAL_DISPLACEMENT = 0;
             CAMERA_LEFT_DISPLACEMENT     = 0;
+        }
+        else
+        {
+            CAMERA_FORWARD_DISPLACEMENT  = 110;   // eg: Camera is 110 mm in front of robot center
+            CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
+            CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
         }
 
         OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
@@ -305,22 +342,80 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES,
                         CAMERA_CHOICE == FRONT ? 90 : -90, 90, 0));
 
-        /**  Let all the trackable listeners know where the phone is.  */
+        /*  Let all the trackable listeners know where the phone is.  */
         for (VuforiaTrackable trackable : allTrackables)
         {
             ((VuforiaTrackableDefaultListener)trackable.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
         }
 
-        /** Wait for the game to begin */
+        CameraCalibration camCal = vuforia.getCameraCalibration();
+        Vec4F distParam = camCal.getDistortionParameters();
+        Vec2F camFov    = camCal.getFieldOfViewRads();
+        Vec2F camFlen   = camCal.getFocalLength();
+        Vec2F camPpt    = camCal.getPrincipalPoint();
+        Vec2F camSize   = camCal.getSize();
+
+        RobotLog.dd(TAG, "DistortionParams %f %f %f %f",
+                distParam.getData()[0],
+                distParam.getData()[1],
+                distParam.getData()[2],
+                distParam.getData()[3]);
+        RobotLog.dd(TAG, "CamFOV %f %f", camFov.getData()[0], camFov.getData()[1]);
+        RobotLog.dd(TAG, "CamFlen %f %f", camFlen.getData()[0], camFlen.getData()[1]);
+        RobotLog.dd(TAG, "CamPpt %f %f", camPpt.getData()[0], camPpt.getData()[1]);
+        RobotLog.dd(TAG, "CamSize %f %f", camSize.getData()[0], camSize.getData()[1]);
+
+        /* Wait for the game to begin */
         telemetry.addData(">", "Press Play to start tracking");
+        telemetry.addData("A", "DistortionParams %f %f %f %f",
+                distParam.getData()[0],
+                distParam.getData()[1],
+                distParam.getData()[2],
+                distParam.getData()[3]);
+        telemetry.addData("B", "CamFOV %f %f", camFov.getData()[0], camFov.getData()[1]);
+        telemetry.addData("C", "CamFlen %f %f", camFlen.getData()[0], camFlen.getData()[1]);
+        telemetry.addData("D", "CamPpt %f %f", camPpt.getData()[0], camPpt.getData()[1]);
+        telemetry.addData("E","CamSize %f %f", camSize.getData()[0], camSize.getData()[1]);
+
+        telemetry.addData("F", "RedOnFld: " + format(redFootprintLocationOnField, EXTRINSIC, XYZ));
+
+        CameraManager cameraManager = ClassFactory.getInstance().getCameraManager();
+        CameraName cameraNameFront = cameraManager.nameFromCameraDirection(VuforiaLocalizer.CameraDirection.FRONT);
+        CameraName cameraNameBack = cameraManager.nameFromCameraDirection(VuforiaLocalizer.CameraDirection.BACK);
+        OpenGLMatrix camOnBot = ((VuforiaTrackableDefaultListener)allTrackables
+                .get(1).getListener()).getCameraLocationOnRobot(cameraNameBack);
+        telemetry.addData("G", "camOnBot: " + format(camOnBot, EXTRINSIC, XYZ));
         telemetry.update();
+
+        telemetry.addData("A", "DistortionParams %f %f %f %f",
+                distParam.getData()[0],
+                distParam.getData()[1],
+                distParam.getData()[2],
+                distParam.getData()[3]);
+        RobotLog.dd(TAG, "CamFOV %f %f", camFov.getData()[0], camFov.getData()[1]);
+        RobotLog.dd(TAG, "CamFlen %f %f", camFlen.getData()[0], camFlen.getData()[1]);
+        RobotLog.dd(TAG, "CamPpt %f %f", camPpt.getData()[0], camPpt.getData()[1]);
+        RobotLog.dd(TAG,"CamSize %f %f", camSize.getData()[0], camSize.getData()[1]);
+        RobotLog.dd(TAG, "RedOnFld: " + format(redFootprintLocationOnField, EXTRINSIC, XYZ));
+        RobotLog.dd(TAG, "camOnBot: " + format(camOnBot, EXTRINSIC, XYZ));
         CameraDevice.getInstance().setFlashTorchMode(true) ;
         waitForStart();
 
-        /** Start tracking the data sets we care about. */
+        /* Start tracking the data sets we care about. */
         targetsRoverRuckus.activate();
         OpenGLMatrix pose = null;
+        OpenGLMatrix rawPose = null;
+        boolean aPressed;
         while (opModeIsActive()) {
+
+            aPressed = false;
+            gpad1.update();
+
+            if(gpad1.just_pressed(ManagedGamepad.Button.A))
+            {
+                RobotLog.dd(TAG, "ButtonA pressed");
+                aPressed = true;
+            }
 
             // check all the trackable target to see which one (if any) is visible.
             targetVisible = false;
@@ -329,12 +424,18 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
                     telemetry.addData("Visible Target", trackable.getName());
                     targetVisible = true;
 
+                    if(aPressed)
+                    {
+                        RobotLog.dd(TAG, "Visible Target " + trackable.getName());
+                    }
+
                     // getUpdatedRobotLocation() will return null if no new information is available since
                     // the last time that call was made, or if the trackable is not currently visible.
                     OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
                     if (robotLocationTransform != null) {
                         lastLocation = robotLocationTransform;
                         pose = ((VuforiaTrackableDefaultListener)trackable.getListener()).getPose();
+                        rawPose = ((VuforiaTrackableDefaultListener)trackable.getListener()).getVuforiaCameraFromTarget();
                     }
                     break;
                 }
@@ -350,12 +451,21 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, INTRINSIC, ZYX, DEGREES);
                 telemetry.addData("Rot (deg)", "{Heading, Pitch, Roll} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
+                if(aPressed)
+                {
+                    RobotLog.dd(TAG,"Pos (in) {X, Y, Z} = %.1f, %.1f, %.1f",
+                            translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+                    RobotLog.dd(TAG,"Rot (deg) {Heading, Pitch, Roll} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                }
             }
             else {
                 telemetry.addData("Visible Target", "none");
             }
             if(pose != null)
             {
+                telemetry.addData("pose", format(pose, EXTRINSIC, XYZ));
+                telemetry.addData("rawpose", format(rawPose, EXTRINSIC, XYZ));
                 VectorF translation = pose.getTranslation();
                 telemetry.addData("Pose Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
                         translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
@@ -363,16 +473,27 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(pose, EXTRINSIC, ZYX, DEGREES);
                 telemetry.addData("Pose Rot (deg)", "{Heading, Pitch, Roll} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
+                if(aPressed)
+                {
+                    RobotLog.dd(TAG, "Pose Pos (in) {X, Y, Z} = %.1f, %.1f, %.1f",
+                            translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+                }
             }
             telemetry.update();
         }
     }
 
-    static OpenGLMatrix genMatrix(float[] pos, float[] rot) {
+    private static OpenGLMatrix genMatrix(float[] pos, float[] rot) {
         return OpenGLMatrix
                 .translation(pos[0], pos[1], pos[2])
                 .multiplied(Orientation.getRotationMatrix(
                         AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES,
                         rot[0], rot[1], rot[2]));
+    }
+
+    private String format(OpenGLMatrix transformationMatrix, AxesReference axRef, AxesOrder axOrd)
+    {
+        return transformationMatrix.formatAsTransform(axRef, axOrd, AngleUnit.DEGREES);
     }
 }

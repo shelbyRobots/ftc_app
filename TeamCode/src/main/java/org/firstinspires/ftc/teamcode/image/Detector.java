@@ -67,6 +67,7 @@ public abstract class Detector implements ImageProcessor
 
     public void setImage( Mat img )
     {
+        if(img == null) return;
         if(showImg == null) showImg = img.clone();
         else img.copyTo(showImg);
 

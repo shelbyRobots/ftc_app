@@ -141,7 +141,7 @@ public class ImageTracker
 
                 Bitmap fullPic = getImage();
 
-                if (challenge == VuforiaInitializer.Challenge.RR &&keyLoc == RelicRecoveryVuMark.UNKNOWN &&
+                if (challenge == VuforiaInitializer.Challenge.RR && keyLoc == RelicRecoveryVuMark.UNKNOWN &&
                     RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
                 {
                     keyLoc = RelicRecoveryVuMark.from(trackable);
@@ -166,8 +166,16 @@ public class ImageTracker
                         break;
                     }
                 }
-
-            } else
+                else if (challenge == VuforiaInitializer.Challenge.RoRu)
+                {
+                    rawPose = getImagePose(trackable, true);
+                    RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
+                    lastImage        = fullPic;
+                    lastCroppedImage = fullPic;
+                    //TODO: Figure out image crop
+                }
+            }
+            else
             {
                 currPos = null;
                 currOri = null;
@@ -181,14 +189,14 @@ public class ImageTracker
         return currPos;
     }
 
-    public double getSensedFldHeading()
+    public Double getSensedFldHeading()
     {
         return currYaw;
     }
 
     public String getLocString()
     {
-        String locStr = null;
+        String locStr = "Unknown sensed location";
         if (currPos != null && currYaw != null)
         {
             locStr = "";
