@@ -146,6 +146,21 @@ public class Drivetrain
         setEndValues("DRIVE_TRGT");
     }
 
+    public void driveToColor(double pwr, int thresh )
+    {
+        driveDistance(15, pwr, Direction.FORWARD);
+
+        int totalcolor=0;
+        while(op.opModeIsActive()    &&
+                !op.isStopRequested()  &&
+                totalcolor < thresh)
+        {
+            setCurValues();
+            totalcolor = curRed + curGrn + curBlu;
+        }
+        stopMotion();
+    }
+
     public void driveDistance(double dst, double pwr, Direction dir)
     {
         int counts = distanceToCounts(dst);
@@ -177,7 +192,7 @@ public class Drivetrain
     {
         trgtHdg = targetHdg;
 
-        RobotLog.ii(TAG, "Starting drive");
+        RobotLog.ii(TAG, "Starting drive %s", useCol);
         if(doStopAndReset) stopAndReset();
         logData(true, "LINDST");
 
@@ -198,8 +213,8 @@ public class Drivetrain
             dst += colOverDist;
         }
 
-        RobotLog.dd(TAG, "DriveDistanceLinear %4.2f %4.2f %4.2f %s %s %s %s",
-                dst, pwr, pwrIncr, dir, rampUp, rampDown, useCol);
+        RobotLog.dd(TAG, "DriveDistanceLinear %4.2f %4.2f %4.2f %4.2f %s %s %s %s",
+                dst, pwr, pwrIncr, targetHdg, dir, rampUp, rampDown, useCol);
 
         driveDistance(dst, startPwr, dir);
         int linLpos = tgtLpositions.get(0);
@@ -240,10 +255,13 @@ public class Drivetrain
                 if (Math.abs(remaining) < lowSlow) ppwr = Math.min(ppwr, rampSpdL);
             }
 
-            RobotLog.ii(TAG, "ppwr %4.2f curLpower %4.2f curRpower %4.2f %5.3f pwrIncr",
+            RobotLog.ii(TAG, "ppwr %4.2f curLpower %4.2f curRpower %4.2f pwrIncr %5.3f",
                     ppwr, curLpower, curRpower, pwrIncr);
+            RobotLog.ii(TAG, "curLpos0 %d curRpos0 %d tgtL0 %d tgtR0 %d",
+                    curLpositions.get(0), curRpositions.get(0),
+                    tgtLpositions.get(0), tgtRpositions.get(0));
 
-            int COLOR_THRESH = 30;
+            int COLOR_THRESH = 300;
             double lRem = countsToDistance(Math.abs(tgtLpositions.get(0) -
                                                             curLpositions.get(0)));
             double rRem = countsToDistance(Math.abs(tgtRpositions.get(0) -
@@ -254,14 +272,14 @@ public class Drivetrain
                 robot.turnColorOn();
             }
 
-            if(useCol && (curRed + curGrn + curBlu) > COLOR_THRESH)
+            if(useCol && (curRed > COLOR_THRESH || curBlu > COLOR_THRESH))
             {
                 stopMotion();
                 setEndValues("COLOR_FIND " + linLpos + " " + linRpos);
-                RobotLog.ii(TAG, "FOUND LINE");
+                RobotLog.ii(TAG, "FOUND LINE %d %d %d", curRed, curGrn, curBlu);
                 foundLine = true;
-                setPositions(tgtLpositions, curLpositions, -colGyroOffset);
-                setPositions(tgtRpositions, curRpositions, -colGyroOffset);
+                setPositions(tgtLpositions, curLpositions, -colSensOffset);
+                setPositions(tgtRpositions, curRpositions, -colSensOffset);
                 break;
             }
             else
@@ -282,12 +300,12 @@ public class Drivetrain
             frame++;
         }
 
+        boolean useOverKludge = false;
         int kludge = 160;
-        if(useCol && !foundLine)
+        //noinspection ConstantConditions
+        if(useCol && useOverKludge && !foundLine)
         {
             int overK = colOverCnt + kludge;
-            int tmpLpos = tgtLpositions.get(0) - overK;
-            int tmpRpos = tgtRpositions.get(0) - overK;
             setPositions(tgtLpositions, tgtLpositions, -overK);
             setPositions(tgtRpositions, tgtRpositions, -overK);
         }
@@ -1131,9 +1149,9 @@ public class Drivetrain
         this.stopIndividualMotorWhenNotBusy = stopIndvid;
     }
 
-    public void setColGyroOffset( int offset)
+    public void setColSensOffset(int offset)
     {
-        this.colGyroOffset = offset;
+        this.colSensOffset = offset;
     }
 
     public void setLFirst(boolean lFirst)
@@ -1165,8 +1183,8 @@ public class Drivetrain
             dl.addField(frame);
             if(robot.imu != null || robot.gyro != null) dl.addField(curHdg);
             else                   dl.addField("");
-            dl.addField(curLpositions.size() > 0 ? curLpositions.get(0) : 0);
-            dl.addField(curRpositions.size() > 0 ? curRpositions.get(0) : 0);
+            dl.addField(curLpositions.size() > 0 ? curLpositions.get(0) : -9999);
+            dl.addField(curRpositions.size() > 0 ? curRpositions.get(0) : -9999);
             dl.addField(curLpower);
             dl.addField(curRpower);
             dl.addField(curRed);
@@ -1277,7 +1295,7 @@ public class Drivetrain
     private static double DRV_TUNER = 1.00;
     private final static double TRN_TUNER = 1.0;
     private final static double TURN_TOLERANCE = 2.0;
-    private int colGyroOffset = 0;
+    private int colSensOffset = 0;
 
     private static double WHL_DIAMETER = 4.1875; //Diameter of the wheel (inches)
     private int encoder_CPR;
@@ -1376,7 +1394,7 @@ public class Drivetrain
     private boolean logData = true;
     private double logDataTimeout = 5;
     public ElapsedTime logDataTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    private double logTime = logDataTimer.seconds();
+    private double logTime = 0.01;
 
     private int curCntTgt = 0;
 

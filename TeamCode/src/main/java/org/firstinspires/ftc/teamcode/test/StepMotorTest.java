@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
  * CYCLE_MS sets the update period.
  */
 @Autonomous(name = "Concept: Step Motor Speed", group = "Test")
-@Disabled
+//@Disabled
 public class StepMotorTest extends InitLinearOpMode
 {
 

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -44,6 +45,9 @@ class ShelbyImuBot extends ShelbyBot
                 imuRunner = ImuRunner.getInstance(imu);
                 imuRunner.run();
             }
+
+            colorSensor = hwMap.get(ColorSensor.class, "color1");
+
             capMap.put("sensor", true);
         }
         catch(Exception e)

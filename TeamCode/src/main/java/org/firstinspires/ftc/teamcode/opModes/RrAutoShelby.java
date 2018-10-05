@@ -1121,7 +1121,7 @@ public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButton
                 }
             }
 
-            drvTrn.setColGyroOffset(colGyroOffset);
+            drvTrn.setColSensOffset(colGyroOffset);
             drvTrn.setInitValues();
             double pct = 0.90;
             double fullSegLen = seg.getLength();

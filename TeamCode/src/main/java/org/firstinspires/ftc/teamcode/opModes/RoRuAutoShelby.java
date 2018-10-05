@@ -99,18 +99,29 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         timer.reset();
         while(!isStarted())
         {
-            gpad1.update();
-            double shdg = robot.getGyroHdg();
-            double fhdg = robot.getGyroFhdg();
-            dashboard.displayPrintf(9, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
-            dashboard.displayPrintf(10, "GyroReady %s", gyroReady);
-            dashboard.displayPrintf(11, "RGyroReady %s", robot.gyroReady);
-            if(robot.leftMotor != null)
-                dashboard.displayPrintf(12, "LENC %d", robot.leftMotor.getCurrentPosition());
-            if(robot.leftMotor != null)
-                dashboard.displayPrintf(13, "RENC %d", robot.rightMotor.getCurrentPosition());
-            if(robot.elevMotor != null)
-                dashboard.displayPrintf(14, "ELEV %d", robot.elevMotor.getCurrentPosition());
+            if(initCycle % 10 == 0)
+            {
+                double shdg = robot.getGyroHdg();
+                double fhdg = robot.getGyroFhdg();
+                dashboard.displayPrintf(9, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
+                dashboard.displayPrintf(10, "GyroReady %s", gyroReady);
+                dashboard.displayPrintf(11, "RGyroReady %s", robot.gyroReady);
+                if (robot.leftMotor != null)
+                    dashboard.displayPrintf(12, "LENC %d", robot.leftMotor.getCurrentPosition());
+                if (robot.leftMotor != null)
+                    dashboard.displayPrintf(13, "RENC %d", robot.rightMotor.getCurrentPosition());
+                if (robot.elevMotor != null)
+                    dashboard.displayPrintf(14, "ELEV %d", robot.elevMotor.getCurrentPosition());
+
+                if (robot.colorSensor != null)
+                {
+                    int r = robot.colorSensor.red();
+                    int g = robot.colorSensor.green();
+                    int b = robot.colorSensor.blue();
+                    RobotLog.dd(TAG, "RGB = %d %d %d", r, g, b);
+                    dashboard.displayPrintf(15, "RGB %d %d %d", r, g, b);
+                }
+            }
 
             initCycle++;
 
@@ -194,7 +205,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
                 gyroSetToField = true;
                 break;
             }
-            if(gpad1.just_pressed(ManagedGamepad.Button.X))
+            if(gpad1.just_pressed(ManagedGamepad.Button.Y))
             {
                 break;
             }
@@ -545,138 +556,26 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         timer.reset();
 
-        boolean doCorrect = true;
-        boolean singleSeg = true;
+        if(seg.getTgtType() == Segment.TargetType.COLOR)
+        {
+            RobotLog.dd(TAG, "colorSensor is %s", robot.colorSensor == null ? "null" : "good");
+        }
+
         if(robot.colorSensor != null && seg.getTgtType() == Segment.TargetType.COLOR)
         {
+            RobotLog.dd(TAG,"Doing color seg");
             colSegNum++;
-            int colGyroOffset;
-            if(alliance == Field.Alliance.RED)
-            {
-                if(colSegNum == 1)
-                {
-                    colGyroOffset = 60;
-                }
-                else
-                {
-                    colGyroOffset = 80;
-                }
-            }
-            else
-            {
-                if(colSegNum == 1)
-                {
-                    colGyroOffset = 120;
-                }
-                else
-                {
-                    colGyroOffset = 120;
-                }
-            }
-
-            drvTrn.setColGyroOffset(colGyroOffset);
+            int colSensOffset = drvTrn.distanceToCounts(3.0);
+            drvTrn.setColSensOffset(colSensOffset);
             drvTrn.setInitValues();
-            double pct = 0.90;
+
             double fullSegLen = seg.getLength();
-            List<Integer> colSegLbegs = new ArrayList<>(robot.liftPositions.size());
-            List<Integer> colSegRbegs = new ArrayList<>(robot.liftPositions.size());
-            drvTrn.setPositions(colSegLbegs, drvTrn.curLpositions, 0);
-            drvTrn.setPositions(colSegRbegs, drvTrn.curRpositions, 0);
 
-            List<Integer> colSegLends = new ArrayList<>(robot.liftPositions.size());
-            List<Integer> colSegRends = new ArrayList<>(robot.liftPositions.size());
-            int fullSegLenCnts = drvTrn.distanceToCounts(fullSegLen);
-            drvTrn.setPositions(colSegLends, colSegLbegs, fullSegLenCnts);
-            drvTrn.setPositions(colSegRends, colSegRbegs, fullSegLenCnts);
-
-            List<Integer> linLpositions = new ArrayList<>(robot.liftPositions.size());
-            List<Integer> linRpositions = new ArrayList<>(robot.liftPositions.size());
-            drvTrn.setPositions(linLpositions, colSegLends, 0);
-            drvTrn.setPositions(linRpositions, colSegRends, 0);
-
-            Point2d cept = new Point2d(pct * (ept.getX() - spt.getX()) + spt.getX(),
-                                       pct * (ept.getY() - spt.getY()) + spt.getY());
-
-            double colDist = cept.distance(ept);
-            double ovrDist = 2.0;
-            int colCnts = drvTrn.distanceToCounts(colDist);
-            int ovrCnts = drvTrn.distanceToCounts(ovrDist);
-
-            //noinspection ConstantConditions
-            if(singleSeg)
-            {
-                drvTrn.driveDistanceLinear(fullSegLen, speed, ddir, fhd, true);
-            }
-            else
-            {
-                drvTrn.driveToPointLinear(cept, speed, ddir, fhd);
-                //drvTrn.driveToTarget(0.2, 20);
-                robot.turnColorOn();
-
-                sleep(10);
-
-                double colSpd = 0.10;
-                RobotLog.ii(TAG, "Color Driving to pt %s at speed %4.2f", ept, colSpd);
-                String colDistStr = String.format(Locale.US, "%4.2f %s",
-                        colDist,
-                        cept.toString());
-                drvTrn.logData(true, "FIND_LINE CDIST: " + colDistStr);
-
-                drvTrn.driveDistance(colDist+ovrDist, colSpd, Drivetrain.Direction.FORWARD);
-
-                while(opModeIsActive() && !isStopRequested())
-                {
-                    drvTrn.setCurValues();
-                    drvTrn.logData();
-
-                    int lTrav = Math.abs(drvTrn.curLpositions.get(0) -
-                                         drvTrn.begLpositions.get(0));
-                    int rTrav = Math.abs(drvTrn.curRpositions.get(0) -
-                                         drvTrn.begRpositions.get(0));
-
-                    int totColor = drvTrn.curRed + drvTrn.curGrn + drvTrn.curBlu;
-
-                    if (totColor > COLOR_THRESH)
-                    {
-                        drvTrn.setPositions(linLpositions, drvTrn.curLpositions, 0);
-                        drvTrn.setPositions(linRpositions, drvTrn.curRpositions, 0);
-                        colGyroOffset = 50;
-                        if(snm.equals("BECN2"))
-                        {
-                            drvTrn.setPositions(linLpositions, linLpositions, -colGyroOffset);
-                            drvTrn.setPositions(linRpositions, linRpositions, -colGyroOffset);
-                        }
-                        drvTrn.stopMotion();
-                        drvTrn.setEndValues("COLOR_FIND " + linLpositions.get(0) + " " +
-                                                            linRpositions.get(0));
-                        RobotLog.ii(TAG, "FOUND LINE");
-                        drvTrn.setPositions(drvTrn.tgtLpositions, linLpositions, 0);
-                        drvTrn.setPositions(drvTrn.tgtRpositions, linRpositions, 0);
-                        drvTrn.logOverrun(0.1);
-                        break;
-                    }
-
-                    if(lTrav > (colCnts + ovrCnts) ||
-                       rTrav > (colCnts + ovrCnts))
-                    {
-                        drvTrn.stopMotion();
-                        drvTrn.setEndValues("COLOR_MISS - go to" + linLpositions.get(0) + " " +
-                                                    linRpositions.get(0));
-                        RobotLog.ii(TAG, "REACHED OVERRUN PT - Backing up a bit");
-                        drvTrn.setPositions(drvTrn.tgtLpositions, linLpositions, 0);
-                        drvTrn.setPositions(drvTrn.tgtRpositions, linRpositions, 0);
-                        drvTrn.logOverrun(0.1);
-                        break;
-                    }
-
-                    drvTrn.makeGyroCorrections(colSpd, fhd, Drivetrain.Direction.FORWARD);
-
-                    drvTrn.frame++;
-                    robot.waitForTick(10);
-                }
-            }
-
-            robot.turnColorOff();
+            RobotLog.dd(TAG, "SBH calling driveDistanceLinear %4.2f %4.2f %s %4.2f %s",
+            fullSegLen, speed, ddir, fhd, "true");
+            drvTrn.driveDistanceLinear(fullSegLen, speed, ddir, fhd, true);
+            //TODO: set next seg start to color end point
+            //Possibly do Vuf scan here to get localization
         }
         else
         {

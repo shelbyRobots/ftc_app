@@ -32,6 +32,7 @@ public class RoRuRoute extends Route
         Segment.Action push    = Segment.Action.PUSH;
         Segment.Action park    = Segment.Action.PARK;
         Segment.TargetType encType = Segment.TargetType.ENCODER;
+        Segment.TargetType colType = Segment.TargetType.COLOR;
 
         double fakeDist = 0.05;
         if(alliance == Field.Alliance.BLUE) fakeDist *= -1;
@@ -44,7 +45,7 @@ public class RoRuRoute extends Route
 
         if(startPos == StartPos.START_1) {
             points.add(RoRuField.RLLP);
-            addPoint(points, fwd, 0.45, 1.00, encType, align, RoRuField.RLTP);
+            addPoint(points, fwd, 0.25, 1.00, colType, align, RoRuField.RLTP);
             addPoint(points, fwd, 0.35, 1.00, encType, scan,  RoRuField.RLTP);
             addPoint(points, fwd, 0.45, 1.00, encType, push,  RoRuField.RLM2);
             addPoint(points, rev, 0.40, 1.00, encType, none,  RoRuField.RLR1);

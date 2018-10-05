@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
  * CYCLE_MS sets the update period.
  */
 @Autonomous(name = "Concept: Jump Servo Position", group = "Test")
-@Disabled
+//@Disabled
 public class JumpServoTest extends InitLinearOpMode
 {
     private static final int     MICRO_MIN = 600;

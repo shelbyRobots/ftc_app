@@ -33,14 +33,14 @@ public class RoRuField extends Field
     //Red Route > Left
     static final Point2d RLLP = new Point2d("RLLP", -8.25,  -8.25);
     static final Point2d RLTP = new Point2d("RLTP", -16.0,  -16.0);
-    static final Point2d RLM1 = new Point2d("RLM1", -48.0,  -24.0);
+    static final Point2d RLM1 = new Point2d("RLM1", -45.0,  -21.0);
     static final Point2d RLM2 = new Point2d("RLM2", -33.0,  -33.0);
-    static final Point2d RLM3 = new Point2d("RLM3", -24.0,  -48.0);
+    static final Point2d RLM3 = new Point2d("RLM3", -21.0,  -45.0);
     static final Point2d RLR1 = new Point2d("RLR1", -24.0,  -24.0);
     static final Point2d RLR2 = new Point2d("RLR2",  -3.0,  -55.0);
     static final Point2d RLDT = new Point2d("RLDT",   0.0,  -56.0);
     static final Point2d RLDP = new Point2d("RLDP",  42.0,  -56.0);
-    static final Point2d RLPP = new Point2d("RLPP", -20.0,  -56.0);
+    static final Point2d RLPP = new Point2d("RLPP", -16.0,  -58.0);
 
 //    static final Point2d BLLP = new Point2d("BLLP",   8.25,  8.25);
 //    static final Point2d BLTP = new Point2d("BLTP",  16.0,  16.0);

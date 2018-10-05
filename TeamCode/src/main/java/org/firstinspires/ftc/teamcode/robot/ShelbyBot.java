@@ -5,6 +5,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
@@ -62,7 +63,8 @@ public class ShelbyBot
     public int numRmotors = 0;
 
     public ModernRoboticsI2cGyro        gyro        = null;
-    public ModernRoboticsI2cColorSensor colorSensor = null;
+    //public ModernRoboticsI2cColorSensor colorSensor = null;
+    public ColorSensor colorSensor = null;
     public DeviceInterfaceModule        dim         = null;
 
     protected CommonUtil com = CommonUtil.getInstance();
@@ -311,6 +313,7 @@ public class ShelbyBot
 
             gyro = (ModernRoboticsI2cGyro) hwMap.gyroSensor.get("gyro");
             colorSensor = (ModernRoboticsI2cColorSensor) hwMap.colorSensor.get("color");
+
             capMap.put("sensor", true);
         }
         catch (Exception e)

@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Autonomous(name = "Concept: Ramp Motor Speed", group = "Test")
-@Disabled
+//@Disabled
 public class RampMotorTest extends LinearOpMode {
 
     private static final double INCREMENT   = 0.05;     // amount to ramp motor each CYCLE_MS cycle
