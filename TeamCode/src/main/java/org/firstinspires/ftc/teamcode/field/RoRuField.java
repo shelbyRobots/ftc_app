@@ -1,11 +1,8 @@
 package org.firstinspires.ftc.teamcode.field;
 
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.teamcode.image.MineralLocationDetector;
+import org.firstinspires.ftc.teamcode.image.MineralDetector;
 import org.firstinspires.ftc.teamcode.util.Point2d;
-
-import static org.firstinspires.ftc.teamcode.field.Route.StartPos.START_1;
-import static org.firstinspires.ftc.teamcode.field.Route.StartPos.START_2;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class RoRuField extends Field
@@ -71,7 +68,7 @@ public class RoRuField extends Field
 
     public static Point2d getMineralPt(Alliance alnc,
                                        PositionOption startPos,
-                                       MineralLocationDetector.Position minPos)
+                                       MineralDetector.Position minPos)
     {
         Route.StartPos spos = Route.StartPos.START_1;
         if(startPos instanceof Route.StartPos) spos = (Route.StartPos) startPos;
@@ -85,7 +82,7 @@ public class RoRuField extends Field
                             case LEFT:    minPt = RLM3; break;
                             case RIGHT:   minPt = RLM1; break;
                             case CENTER:  minPt = RLM2; break;
-                            case UNKNOWN: minPt = RLM2; break;
+                            case NONE: minPt = RLM2; break;
                         }
                         break;
                     }
@@ -94,7 +91,7 @@ public class RoRuField extends Field
                             case LEFT:    minPt = RRM3; break;
                             case RIGHT:   minPt = RRM1; break;
                             case CENTER:  minPt = RRM2; break;
-                            case UNKNOWN: minPt = RRM2; break;
+                            case NONE: minPt = RRM2; break;
                         }
                         break;
                     }
@@ -108,7 +105,7 @@ public class RoRuField extends Field
                             case LEFT:    minPt = BLM3; break;
                             case RIGHT:   minPt = BLM1; break;
                             case CENTER:  minPt = BLM2; break;
-                            case UNKNOWN: minPt = BLM2; break;
+                            case NONE: minPt = BLM2; break;
                         }
                         break;
                     }
@@ -117,7 +114,7 @@ public class RoRuField extends Field
                             case LEFT:    minPt = BRM3; break;
                             case RIGHT:   minPt = BRM1; break;
                             case CENTER:  minPt = BRM2; break;
-                            case UNKNOWN: minPt = BRM2; break;
+                            case NONE: minPt = BRM2; break;
                         }
                         break;
                     }

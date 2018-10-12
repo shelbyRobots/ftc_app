@@ -26,15 +26,13 @@ import hallib.HalDashboard;
  * Created by crazy on 9/20/2018.
  */
 
+@SuppressWarnings("unused")
 public class MineralDetector extends Detector {
-        private static final double THRESHOLD = 0.4;
-        private static final int BINS = 8;
-        private static final float MIN_VALUE = 0.0f;
-        private static final float MAX_VALUE = 255.0f;
-        public static MineralDetector.Position foundPosition = MineralDetector.Position.NONE;
-
-        private double redPct = 0.0;
-        private double bluPct = 0.0;
+//        private static final double THRESHOLD = 0.4;
+//        private static final int BINS = 8;
+//        private static final float MIN_VALUE = 0.0f;
+//        private static final float MAX_VALUE = 255.0f;
+        private static MineralDetector.Position foundPosition = MineralDetector.Position.NONE;
 
         private HalDashboard dashboard;
         private static final String TAG = "SJH_MCD";
@@ -50,15 +48,12 @@ public class MineralDetector extends Detector {
 
     public void logTelemetry()
     {
-        dashboard.displayPrintf(4,"Color Detected: %s", foundPosition);
-        dashboard.displayPrintf(5,"RedPct %4.2f", redPct);
-        dashboard.displayPrintf(6,"BluPct %4.2f", bluPct);
+        dashboard.displayPrintf(4,"Mineral Location Detected: %s", foundPosition);
     }
 
     public void logDebug()
     {
-        RobotLog.ii(TAG, "Color Detected %s redPct %4.2f bluPct %4.2f",
-                foundPosition, redPct, bluPct);
+        RobotLog.ii(TAG, "Mineral Location Detected %s", foundPosition);
     }
 
     public void setImage( Mat img )
@@ -67,12 +62,64 @@ public class MineralDetector extends Detector {
         extract();
     }
 
-    public MineralDetector.Position getMajorColor()
+    public MineralDetector.Position getMineralPos()
     {
         return foundPosition;
     }
 
-    private void extract() {
+    private void extract()
+    {
+        RobotLog.dd(TAG, "MineralDetector.extract()");
+        GripPipeline gpl = new GripPipeline();
+        gpl.process(showImg);
+
+        saveImage(showImg);
+        saveImage(gpl.roiMat());
+        saveImage(gpl.resizeImageOutput());
+        saveImage(gpl.blurOutput());
+        saveImage(gpl.hsvThresholdOutput());
+
+        ArrayList<MatOfPoint> cntrs = gpl.convexHullsOutput();
+
+        Iterator<MatOfPoint> each = cntrs.iterator();
+
+        Rect bounded_box;
+        int found_x_ptr = 0;
+        foundPosition = Position.LEFT;
+
+        if(cntrs.size() == 0)
+        {
+            RobotLog.dd(TAG, "No Countours.  Assuming left is gold");
+            return;
+        }
+        else if(cntrs.size() > 1)
+        {
+            RobotLog.ee(TAG, "Too Many Countours.  I don't know which is gold");
+            foundPosition = Position.CENTER;
+            return;
+        }
+
+        for (MatOfPoint pts : cntrs)
+        {
+            MatOfPoint contour = each.next();
+            bounded_box = Imgproc.boundingRect(contour);
+            found_x_ptr = (bounded_box.width/2 + bounded_box.x);
+        }
+
+        int midX = showImg.width()/2;
+
+        if (found_x_ptr < midX)
+        {
+            foundPosition = MineralDetector.Position.CENTER;
+            //Yay it in deh center!!!!!!!!!!
+        } else
+        {
+            foundPosition = MineralDetector.Position.RIGHT;
+            //Yay it in deh right!!!!!!!!!!!
+        }
+    }
+
+    private void extract_old() {
         Mat hsvImage = new Mat(showImg.width(), showImg.height(), showImg.type());
         Mat fltImage = new Mat();
         Mat yellow_areas = new Mat();
@@ -80,13 +127,14 @@ public class MineralDetector extends Detector {
 
         Imgproc.cvtColor(showImg, hsvImage, Imgproc.COLOR_RGB2HSV);
 /// Apply mask
-        Core.inRange(hsvImage, new Scalar(0, 128, 73), new Scalar(44, 255, 255),yellow_areas);
+        Core.inRange(hsvImage, new Scalar(0, 128, 73), new Scalar(44, 255, 255), yellow_areas);
 // find contuors
         // merge nearby and find min rectangle
         Mat hchy = new Mat();
         List<MatOfPoint> contours = new ArrayList<>();
 
-        Imgproc.findContours(hsvImage, contours, hchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(yellow_areas, contours, hchy,
+                Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         Iterator<MatOfPoint> each = contours.iterator();
         double maxArea = 0;
@@ -96,7 +144,6 @@ public class MineralDetector extends Detector {
             if (area > maxArea)
                 maxArea = area;
         }
-
 
         each = contours.iterator();
         Rect bounded_box;
@@ -124,27 +171,5 @@ public class MineralDetector extends Detector {
             foundPosition = Position.LEFT;
             //dang it. It in left...
         }
-    }
-
-
-    Mat cvImage;
-    public void hightlightCorners(Bitmap fullImag, List<Point2d> pts)
-    {
-        int cvt = CvType.CV_8UC1;
-        int inHeight = fullImag.getHeight();
-        int inWidth = fullImag.getWidth();
-
-        if(cvImage == null) cvImage = new Mat(inHeight, inWidth, cvt);
-
-        Utils.bitmapToMat(fullImag, cvImage);
-
-        for(Point2d pt : pts)
-        {
-            Point p = new Point(pt.getX(), pt.getY());
-            Imgproc.circle(cvImage, p, 5, new Scalar(1, 0, 0));
-            RobotLog.dd(TAG, "Corner at %4.2f %4.2f", p.x, p.y);
-        }
-
-        saveImage(cvImage);
     }
 }

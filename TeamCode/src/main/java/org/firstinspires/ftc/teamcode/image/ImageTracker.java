@@ -113,6 +113,13 @@ public class ImageTracker
         return rawPose;
     }
 
+    public void updateImages()
+    {
+        Bitmap fullPic = getImage();
+        lastImage      = fullPic;
+        lastCroppedImage = fullPic;
+    }
+
     //public OpenGLMatrix getRobotLocation()
     public void updateRobotLocationInfo()
     {
@@ -122,6 +129,7 @@ public class ImageTracker
           visible.
           getRobotLocation() will return null if the trackable is not currently visible.
          */
+
         OpenGLMatrix robotLocationTransform;
         for (VuforiaTrackable trackable : trackables)
         {
@@ -139,7 +147,7 @@ public class ImageTracker
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
                 currYaw = (double) currOri.firstAngle;
 
-                Bitmap fullPic = getImage();
+                updateImages();
 
                 if (challenge == VuforiaInitializer.Challenge.RR && keyLoc == RelicRecoveryVuMark.UNKNOWN &&
                     RelicRecoveryVuMark.from(trackable) != RelicRecoveryVuMark.UNKNOWN)
@@ -153,12 +161,10 @@ public class ImageTracker
                     List<Point2d>  trackablePixCorners =
                             getTrackableCornersInCamera(rawPose);
 
-                    lastImage        = fullPic;
-
                     List<Point2d> jewelBoxPixCorners =
                             getCropCornersInCamera(rawPose);
                     if(jewelBoxPixCorners == null) continue;
-                    lastCroppedImage = getCroppedImage(jewelBoxPixCorners, fullPic);
+                    lastCroppedImage = getCroppedImage(jewelBoxPixCorners, lastImage);
 
                     if (breakOnVumarkFound)
                     {
@@ -170,9 +176,6 @@ public class ImageTracker
                 {
                     rawPose = getImagePose(trackable, true);
                     RobotLog.dd(TAG, "Rawpose: " + format(rawPose));
-                    lastImage        = fullPic;
-                    lastCroppedImage = fullPic;
-                    //TODO: Figure out image crop
                 }
             }
             else

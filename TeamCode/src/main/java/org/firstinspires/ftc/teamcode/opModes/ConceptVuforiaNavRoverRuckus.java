@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
@@ -55,6 +54,7 @@ import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
@@ -151,11 +151,10 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private static final String TAG = "SJH_Vuf";
 
-    private ManagedGamepad gpad1;
-
+    @SuppressWarnings("UnusedAssignment")
     @Override public void runOpMode() {
 
-        gpad1 = new ManagedGamepad(gamepad1);
+        ManagedGamepad gpad1 = new ManagedGamepad(gamepad1);
 
         boolean targetVisible;
         /*
@@ -175,7 +174,7 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
         final boolean useFieldLocs = false;
-        final boolean useAltDat    = true;
+        final boolean useAltDat    = false;
         // Load the data sets that for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
         int br;
@@ -403,11 +402,13 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
 
         /* Start tracking the data sets we care about. */
         targetsRoverRuckus.activate();
-        OpenGLMatrix pose = null;
-        OpenGLMatrix rawPose = null;
-        boolean aPressed;
-        while (opModeIsActive()) {
 
+        boolean aPressed;
+        String lastTarget = "none";
+        while (opModeIsActive())
+        {
+            OpenGLMatrix pose = null;
+            OpenGLMatrix rawPose = null;
             aPressed = false;
             gpad1.update();
 
@@ -420,14 +421,19 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
             // check all the trackable target to see which one (if any) is visible.
             targetVisible = false;
             for (VuforiaTrackable trackable : allTrackables) {
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                    telemetry.addData("Visible Target", trackable.getName());
+                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible())
+                {
+                    String tgtCap = "Visible Target:";
+                    String tgtStr = trackable.getName();
+
+                    telemetry.addData(tgtCap, tgtStr);
+                    if(!lastTarget.equals(tgtStr)) tgtCap = "New " + tgtStr;
+
+                    RobotLog.dd(TAG, tgtCap + tgtStr);
+
                     targetVisible = true;
 
-                    if(aPressed)
-                    {
-                        RobotLog.dd(TAG, "Visible Target " + trackable.getName());
-                    }
+                    lastTarget = trackable.getName();
 
                     // getUpdatedRobotLocation() will return null if no new information is available since
                     // the last time that call was made, or if the trackable is not currently visible.
@@ -442,45 +448,66 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
             }
 
             // Provide feedback as to where the robot is located (if we know).
-            if (targetVisible) {
+            if (targetVisible)
+            {
                 // express position (translation) of robot in inches.
                 VectorF translation = lastLocation.getTranslation();
-                telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-                // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, INTRINSIC, ZYX, DEGREES);
-                telemetry.addData("Rot (deg)", "{Heading, Pitch, Roll} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
 
-                if(aPressed)
+                String posCap = "Pos (in)";
+                String rotCap = "Rot (deg)";
+
+                String posStr = String.format(Locale.US,
+                        "{X, Y, Z} = %.1f, %.1f, %.1f",
+                        translation.get(0) / mmPerInch,
+                        translation.get(1) / mmPerInch,
+                        translation.get(2) / mmPerInch);
+
+                String rotStr = String.format(Locale.US,
+                        "{Heading, Pitch, Roll} = %.0f, %.0f, %.0f",
+                        rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
+                telemetry.addData(posCap, posStr);
+                telemetry.addData(rotCap, rotStr);
+
+                RobotLog.dd(TAG,posCap + posStr);
+                RobotLog.dd(TAG,rotCap + rotStr);
+
+                if(pose != null)
                 {
-                    RobotLog.dd(TAG,"Pos (in) {X, Y, Z} = %.1f, %.1f, %.1f",
-                            translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-                    RobotLog.dd(TAG,"Rot (deg) {Heading, Pitch, Roll} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                    telemetry.addData("pose",    format(pose, EXTRINSIC, XYZ));
+                    telemetry.addData("rawpose", format(rawPose, EXTRINSIC, XYZ));
+
+                    VectorF poseTrans = pose.getTranslation();
+                    Orientation poseRot = Orientation.getOrientation(pose, EXTRINSIC, ZYX, DEGREES);
+
+                    String posePosCap = "Pose Pos (in)";
+                    String poseRotCap = "Pose Rot (deg)";
+
+                    String posePosStr = String.format(Locale.US,
+                            "{X, Y, Z} = %.1f, %.1f, %.1f",
+                            poseTrans.get(0) / mmPerInch,
+                            poseTrans.get(1) / mmPerInch,
+                            poseTrans.get(2) / mmPerInch);
+                    String poseRotStr = String.format(Locale.US,
+                            "{Heading, Pitch, Roll} = %.0f, %.0f, %.0f",
+                            poseRot.firstAngle,
+                            poseRot.secondAngle,
+                            poseRot.thirdAngle);
+
+                    telemetry.addData(posePosCap, posePosStr);
+                    telemetry.addData(poseRotCap, poseRotStr);
+
+                    RobotLog.dd(TAG, posePosCap + posePosStr);
+                    RobotLog.dd(TAG, poseRotCap + poseRotStr);
                 }
             }
-            else {
+            else
+            {
                 telemetry.addData("Visible Target", "none");
             }
-            if(pose != null)
-            {
-                telemetry.addData("pose", format(pose, EXTRINSIC, XYZ));
-                telemetry.addData("rawpose", format(rawPose, EXTRINSIC, XYZ));
-                VectorF translation = pose.getTranslation();
-                telemetry.addData("Pose Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-                // express the rotation of the robot in degrees.
-                Orientation rotation = Orientation.getOrientation(pose, EXTRINSIC, ZYX, DEGREES);
-                telemetry.addData("Pose Rot (deg)", "{Heading, Pitch, Roll} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
-                if(aPressed)
-                {
-                    RobotLog.dd(TAG, "Pose Pos (in) {X, Y, Z} = %.1f, %.1f, %.1f",
-                            translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-                }
-            }
             telemetry.update();
+            sleep(100);
         }
     }
 

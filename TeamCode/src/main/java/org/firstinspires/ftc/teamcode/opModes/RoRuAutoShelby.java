@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.field.RoRuRoute;
 import org.firstinspires.ftc.teamcode.field.Route;
 import org.firstinspires.ftc.teamcode.image.Detector;
 import org.firstinspires.ftc.teamcode.image.ImageTracker;
-import org.firstinspires.ftc.teamcode.image.MineralLocationDetector;
+import org.firstinspires.ftc.teamcode.image.MineralDetector;
 import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
@@ -234,7 +234,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         dashboard.displayPrintf(1, "DrvTrn Inited");
 
-        det = new MineralLocationDetector();
+        det = new MineralDetector();
         RobotLog.dd(TAG, "Setting up vuforia");
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RoRu);
 
@@ -425,13 +425,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             switch (act)
             {
                 case SCAN_IMAGE:
-                    //TODO: change key to LCR
-                    if(key == RelicRecoveryVuMark.UNKNOWN )
-                    {
-                        doScan(i);
-                        sleep(200);
-                        //TODO: set end of curseg+1 and start of curseg+2 based on LCR
-                    }
+                    doScan(i);
                     break;
 
                 case SET_ALIGN:
@@ -503,7 +497,6 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private void doScan(int segIdx)
     {
-        //TODO:  Turn to right slightly to get two right minerals in pic
         double hdgAdj = 15.0;
         double newHdg = robot.getGyroFhdg() - hdgAdj;
         doGyroTurn(newHdg, "scanAdj");
@@ -574,7 +567,6 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             RobotLog.dd(TAG, "SBH calling driveDistanceLinear %4.2f %4.2f %s %4.2f %s",
             fullSegLen, speed, ddir, fhd, "true");
             drvTrn.driveDistanceLinear(fullSegLen, speed, ddir, fhd, true);
-            //TODO: set next seg start to color end point
             //Possibly do Vuf scan here to get localization
         }
         else
@@ -640,44 +632,43 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
                 fHdg, timer.time(), cHdg);
     }
 
-    private MineralLocationDetector.Position getMineralPos()
+    private MineralDetector.Position getMineralPos()
     {
-        if(opModeIsActive()  && mineralPos != MineralLocationDetector.Position.UNKNOWN)
+        if(opModeIsActive()  && mineralPos != MineralDetector.Position.NONE)
             return mineralPos;
 
         tracker.setActive(true);
-        mineralPos = MineralLocationDetector.Position.UNKNOWN;
+        mineralPos = MineralDetector.Position.NONE;
         RobotLog.dd(TAG, "Set qsize to get frames");
         tracker.setFrameQueueSize(1);
         RobotLog.dd(TAG, "Start LD sensing");
         det.startSensing();
 
-        MineralLocationDetector.Position minPos = MineralLocationDetector.Position.UNKNOWN;
+        MineralDetector.Position minPos = MineralDetector.Position.NONE;
 
         double mineralTimeout = 1.0;
         ElapsedTime mtimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         while(opModeIsActive()                                   &&
-              minPos == MineralLocationDetector.Position.UNKNOWN &&
+              minPos == MineralDetector.Position.NONE &&
               mtimer.seconds() < mineralTimeout)
         {
-            Bitmap rgbImage;
-            rgbImage = tracker.getLastCroppedImage();
+            tracker.updateImages();
+            Bitmap rgbImage = tracker.getLastImage();
 
-            boolean tempTest = true;
+            boolean tempTest = false;
             if(rgbImage == null)
             {
                 RobotLog.dd(TAG, "getMineralPos - image from tracker is null");
+                //noinspection ConstantConditions
                 if(!tempTest) continue;
             }
             det.setBitmap(rgbImage);
             det.logDebug();
             det.logTelemetry();
-            if(det instanceof MineralLocationDetector)
-                minPos = ((MineralLocationDetector) det).getMineralPos();
+            if(det instanceof MineralDetector)
+                minPos = ((MineralDetector) det).getMineralPos();
 
-            if(tempTest) break;
-
-            if(minPos == MineralLocationDetector.Position.UNKNOWN)
+            if(minPos == MineralDetector.Position.NONE)
                 sleep(100);
         }
 
@@ -787,7 +778,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private Detector det;
     private static ImageTracker tracker;
     private RelicRecoveryVuMark key = RelicRecoveryVuMark.UNKNOWN;
-    private MineralLocationDetector.Position mineralPos = MineralLocationDetector.Position.UNKNOWN;
+    private MineralDetector.Position mineralPos = MineralDetector.Position.NONE;
 
     private static Point2d curPos;
     private static double  curHdg;
