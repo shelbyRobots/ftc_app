@@ -37,10 +37,10 @@ public class GripPipeline {
 
 	public void process(Mat source0)
     {
-    	RobotLog.dd(TAG, "Processing image WXH= ", source0.rows(), source0.cols());
+    	RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.rows(), source0.cols());
         roiMat = new Mat(source0, new Rect(0, source0.height()/2,
                                            source0.width()/2, source0.height()/2));
-		RobotLog.dd(TAG, " roiMat image WXH= ", roiMat.rows(), roiMat.cols());
+		RobotLog.dd(TAG, " roiMat image WXH= %dx%d", roiMat.rows(), roiMat.cols());
 
         int resizeImageHeight = 240;
         int resizeImageWidth = resizeImageHeight*(roiMat.width()/roiMat.height());
@@ -112,7 +112,7 @@ public class GripPipeline {
 	private void resizeImage(Mat input, double width, double height,
 		int interpolation, Mat output)
 	{
-		RobotLog.dd(TAG, " resizeImage image inWXH outWXH= ", input.rows(),
+		RobotLog.dd(TAG, " resizeImage image inWXH= %dx%d outWXH= %dx%d ", input.rows(),
 				input.cols(), output.rows(), output.cols());
 		Imgproc.resize(input, output, new Size(width, height), 0.0, 0.0, interpolation);
 	}
@@ -153,7 +153,7 @@ public class GripPipeline {
 		int radius = (int)(doubleRadius + 0.5);
 		int kernelSize;
 
-		RobotLog.dd(TAG, " blur image inWXH outWXH= ", input.rows(),
+		RobotLog.dd(TAG, " blur image inWXH= %dx%d outWXH= %dx%d", input.rows(),
 				input.cols(), output.rows(), output.cols());
 
 		switch(type){
@@ -177,7 +177,7 @@ public class GripPipeline {
 
 	private void hsvThreshold(Mat input, double[] hue, double[] sat, double[] val,
 	    Mat out) {
-		RobotLog.dd(TAG, " blur image inWXH", input.rows(),
+		RobotLog.dd(TAG, " blur image inWXH = %dx%d", input.rows(),
 				input.cols());
 		Imgproc.cvtColor(input, out, Imgproc.COLOR_BGR2HSV);
 		Core.inRange(out, new Scalar(hue[0], sat[0], val[0]),

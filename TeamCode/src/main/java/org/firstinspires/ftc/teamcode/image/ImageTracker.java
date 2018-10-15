@@ -115,6 +115,7 @@ public class ImageTracker
 
     public void updateImages()
     {
+        RobotLog.dd(TAG, "ImageTracker.updateImages");
         Bitmap fullPic = getImage();
         lastImage      = fullPic;
         lastCroppedImage = fullPic;
@@ -250,6 +251,7 @@ public class ImageTracker
         }
 
         long numImages = frame.getNumImages();
+        RobotLog.dd(TAG, "Got %d images", numImages);
 
         Image imgdata = null;
         for (int i = 0; i < numImages; i++)
@@ -257,6 +259,7 @@ public class ImageTracker
             int format = frame.getImage(i).getFormat();
             if (format == PIXEL_FORMAT.RGB565)
             {
+                RobotLog.dd(TAG, "Image is RGB");
                 imgdata = frame.getImage(i);
                 break;
             }
@@ -274,6 +277,8 @@ public class ImageTracker
         if (rgbImage == null) rgbImage = Bitmap.createBitmap(imgW, imgH, imgT);
 
         rgbImage.copyPixelsFromBuffer(imgdata.getPixels());
+
+        RobotLog.dd(TAG, "Got Image WxH %dx%d", imgW, imgH);
 
         frame.close();
 

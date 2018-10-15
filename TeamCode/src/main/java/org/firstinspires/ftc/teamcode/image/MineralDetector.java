@@ -1,17 +1,11 @@
 package org.firstinspires.ftc.teamcode.image;
 
-import android.graphics.Bitmap;
-
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
-import org.firstinspires.ftc.teamcode.util.Point2d;
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -71,9 +65,11 @@ public class MineralDetector extends Detector {
     {
         RobotLog.dd(TAG, "MineralDetector.extract()");
         GripPipeline gpl = new GripPipeline();
-        gpl.process(showImg);
 
         saveImage(showImg);
+
+        gpl.process(showImg);
+
         saveImage(gpl.roiMat());
         saveImage(gpl.resizeImageOutput());
         saveImage(gpl.blurOutput());

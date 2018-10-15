@@ -34,7 +34,7 @@ public class RoRuField extends Field
     static final Point2d RLM2 = new Point2d("RLM2", -33.0,  -33.0);
     static final Point2d RLM3 = new Point2d("RLM3", -21.0,  -45.0);
     static final Point2d RLR1 = new Point2d("RLR1", -24.0,  -24.0);
-    static final Point2d RLR2 = new Point2d("RLR2",  -3.0,  -55.0);
+    static final Point2d RLR2 = new Point2d("RLR2",  -3.0,  -56.0);
     static final Point2d RLDT = new Point2d("RLDT",   0.0,  -56.0);
     static final Point2d RLDP = new Point2d("RLDP",  42.0,  -56.0);
     static final Point2d RLPP = new Point2d("RLPP", -16.0,  -58.0);
@@ -50,12 +50,14 @@ public class RoRuField extends Field
 
     static final Point2d RRLP = new Point2d("RRLP",   8.25, -8.25);
     static final Point2d RRTP = new Point2d("RRTP",  16.0, -16.0);
-    static final Point2d RRM3 = new Point2d("RRM3",  48.0, -24.0);
+    static final Point2d RRM3 = new Point2d("RRM3",  45.0, -21.0);
     static final Point2d RRM2 = new Point2d("RRM2",  33.0, -33.0);
-    static final Point2d RRM1 = new Point2d("RRM1",  24.0, -48.0);
-    static final Point2d RRDT = new Point2d("RRDT",  56.0,   0.0);
-    static final Point2d RRDP = new Point2d("RRDP",  56.0, -42.0);
-    static final Point2d RRPP = new Point2d("RRPP",  56.0,  20.0);
+    static final Point2d RRM1 = new Point2d("RRM1",  21.0, -45.0);
+    static final Point2d RRR1 = new Point2d("RRR1",  24.0,  -24.0);
+    static final Point2d RRR2 = new Point2d("RRR2",  56.0,   3.0);
+    static final Point2d RRDT = new Point2d("RRDT",  55.0,   0.0);
+    static final Point2d RRDP = new Point2d("RRDP",  57.0, -42.0);
+    static final Point2d RRPP = new Point2d("RRPP",  57.0,  17.0);
 
 //    static final Point2d BRLP = new Point2d("BRLP",  -8.25,  8.25);
 //    static final Point2d BRTP = new Point2d("BRTP", -16.0,  16.0);

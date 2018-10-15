@@ -504,7 +504,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         if(useLight)
             CameraDevice.getInstance().setFlashTorchMode(true) ;
 
-        mineralPos =  getMineralPos();
+        //mineralPos =  getMineralPos();
+        mineralPos = MineralDetector.Position.CENTER;
         RobotLog.dd(TAG, "doScan mineralPos = %s", mineralPos);
 
         if(useLight)

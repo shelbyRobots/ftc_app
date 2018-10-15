@@ -47,7 +47,6 @@ public class CommonUtil
 
     private boolean useVuforia = false;
     private boolean vuforiaUseScreen = true;
-    private boolean vuforiaInitialized = false;
     private VuforiaInitializer vufInit;
     private static VuforiaLocalizer vuforia = null;
 
@@ -131,6 +130,9 @@ public class CommonUtil
 
     private void initVuforia()
     {
+        RobotLog.dd(TAG, "initVuforia: " +
+                " useVuforia: " + useVuforia);
+
         if(!useVuforia) return;
 
         if(cfgLayout)
@@ -138,15 +140,8 @@ public class CommonUtil
             setupImageLayout(topLayoutViewId, cameraViewId);
         }
 
-//        if(vuforiaInitialized && vuforia !=null)
-//        {
-//            return;
-//        }
-
         vufInit = new VuforiaInitializer();
         vuforia = vufInit.getLocalizer(vuforiaUseScreen);
-
-        vuforiaInitialized = true;
     }
 
     private void initOpenCV()
