@@ -146,7 +146,7 @@ public class ImageTracker
                                       xyz[1] / Units.MM_PER_INCH);
                 currOri = Orientation.getOrientation(robotLocationTransform,
                         AxesReference.EXTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
-                currYaw = (double) currOri.firstAngle;
+                currYaw = Double.valueOf(currOri.firstAngle);
 
                 updateImages();
 
@@ -196,6 +196,11 @@ public class ImageTracker
     public Double getSensedFldHeading()
     {
         return currYaw;
+    }
+
+    public String getLastVisName()
+    {
+        return lastVisName;
     }
 
     public String getLocString()

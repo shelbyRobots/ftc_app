@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.image.ImageTracker;
 import org.firstinspires.ftc.teamcode.image.MineralDetector;
 import org.firstinspires.ftc.teamcode.image.VuforiaInitializer;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
+import org.firstinspires.ftc.teamcode.robot.RoRuBot;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.robot.TilerunnerMecanumBot;
@@ -61,6 +62,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         do_main_loop();
     }
 
+    @SuppressWarnings("RedundantThrows")
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -134,7 +136,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private void stopMode()
     {
         if(drvTrn != null) drvTrn.cleanup();
-        det.cleanupCamera();
+        if(tracker != null) {
+            tracker.setFrameQueueSize(0);
+            tracker.setActive(false);
+        }
+        if(det != null) det.cleanupCamera();
     }
 
     private void setup()
@@ -176,7 +182,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
         else
         {
-            robot = new TilerunnerGtoBot();
+            robot = new RoRuBot();
         }
 
         dashboard.displayPrintf(1, "Prefs Done");
@@ -435,7 +441,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
                 case PUSH:
                 {
-                    //TODO: If we have a grabber, grab block, else just push with chassis
+                    //If we have a grabber, grab block, else just push with chassis
                     break;
                 }
 
@@ -481,22 +487,30 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         tracker.setActive(true);
         Point2d sensedPos = null;
         Double  sensedHdg = null;
+        String sensedImg = null;
         ElapsedTime imgTimer = new ElapsedTime();
 
-        while(imgTimer.seconds() < 1.0 && (sensedPos == null || sensedHdg == null))
+        RobotLog.dd(TAG, "doFindLoc");
+
+        while(opModeIsActive()         &&
+              imgTimer.seconds() < 1.0 &&
+              sensedPos == null)
         {
+            tracker.updateRobotLocationInfo();
             sensedPos = tracker.getSensedPosition();
             sensedHdg = tracker.getSensedFldHeading();
+            sensedImg = tracker.getLastVisName();
         }
 
-        if(sensedPos != null) RobotLog.dd(TAG, "SENSED POS " + sensedPos);
-        if(sensedHdg != null) RobotLog.dd(TAG, "SENSED HDG " + sensedHdg);
-        //Repeat until timeout or pos sensed
+        if(sensedPos != null) RobotLog.dd(TAG, "SENSED POS " + sensedImg + " " + sensedPos);
+        if(sensedPos != null) RobotLog.dd(TAG, "SENSED HDG " + sensedImg + " " + sensedHdg);
+
         tracker.setActive(false);
     }
 
     private void doScan(int segIdx)
     {
+        RobotLog.dd(TAG, "doScan");
         double hdgAdj = 15.0;
         double newHdg = robot.getGyroFhdg() - hdgAdj;
         doGyroTurn(newHdg, "scanAdj");
@@ -504,8 +518,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         if(useLight)
             CameraDevice.getInstance().setFlashTorchMode(true) ;
 
-        //mineralPos =  getMineralPos();
-        mineralPos = MineralDetector.Position.CENTER;
+        mineralPos =  getMineralPos();
+        //mineralPos = MineralDetector.Position.CENTER;
         RobotLog.dd(TAG, "doScan mineralPos = %s", mineralPos);
 
         if(useLight)
@@ -635,7 +649,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private MineralDetector.Position getMineralPos()
     {
-        if(opModeIsActive()  && mineralPos != MineralDetector.Position.NONE)
+        if(!opModeIsActive() || mineralPos != MineralDetector.Position.NONE)
             return mineralPos;
 
         tracker.setActive(true);

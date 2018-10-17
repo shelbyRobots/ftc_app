@@ -64,7 +64,8 @@ public class MineralDetector extends Detector {
     private void extract()
     {
         RobotLog.dd(TAG, "MineralDetector.extract()");
-        GripPipeline gpl = new GripPipeline();
+        //GripPipeline gpl = new GripPipeline();
+        GripPipelineLonger gpl = new GripPipelineLonger();
 
         saveImage(showImg);
 
@@ -72,7 +73,9 @@ public class MineralDetector extends Detector {
 
         saveImage(gpl.roiMat());
         saveImage(gpl.resizeImageOutput());
-        saveImage(gpl.blurOutput());
+        //saveImage(gpl.blurOutput());
+        saveImage(gpl.cvErodeOutput());
+        saveImage(gpl.cvDilateOutput());
         saveImage(gpl.hsvThresholdOutput());
 
         ArrayList<MatOfPoint> cntrs = gpl.convexHullsOutput();

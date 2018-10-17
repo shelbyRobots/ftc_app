@@ -16,8 +16,6 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencv.core.CvType.CV_8UC1;
-
 @SuppressWarnings("unused")
 public class GripPipeline {
 
@@ -26,7 +24,7 @@ public class GripPipeline {
 	private Mat resizeImageOutput;
 	private Mat roiMat;
 	private Mat blurOutput;
-	private Mat hsvThresholdOutput;
+	private Mat hsvThresholdOutput = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<>();
 	private ArrayList<MatOfPoint> convexHullsOutput = new ArrayList<>();
@@ -37,13 +35,13 @@ public class GripPipeline {
 
 	public void process(Mat source0)
     {
-    	RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.rows(), source0.cols());
-        roiMat = new Mat(source0, new Rect(0, source0.height()/2,
-                                           source0.width()/2, source0.height()/2));
-		RobotLog.dd(TAG, " roiMat image WXH= %dx%d", roiMat.rows(), roiMat.cols());
+    	RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.cols(), source0.rows());
+        roiMat = new Mat(source0, new Rect(0, source0.height()/3,
+                                           source0.width(), source0.height()/3));
+		RobotLog.dd(TAG, " roiMat image WXH= %dx%d", roiMat.cols(), roiMat.rows());
 
-        int resizeImageHeight = 240;
-        int resizeImageWidth = resizeImageHeight*(roiMat.width()/roiMat.height());
+        int resizeImageWidth = 512;
+        int resizeImageHeight = (int)(resizeImageWidth*((double)roiMat.height()/roiMat.width()));
 
         if(resizeImageOutput == null)
             resizeImageOutput = new Mat(resizeImageHeight, resizeImageWidth, source0.type());
@@ -64,11 +62,11 @@ public class GripPipeline {
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
 		double[] hsvThresholdHue =        {  0.0,  44.0};
-		double[] hsvThresholdSaturation = {128.0, 255.0};
-		double[] hsvThresholdValue =      { 73.0, 255.0};
-		if(hsvThresholdOutput == null)
-		    hsvThresholdOutput = new Mat(hsvThresholdInput.rows(),
-                                         hsvThresholdInput.cols(), CV_8UC1);
+		double[] hsvThresholdSaturation = {165.0, 255.0};
+		double[] hsvThresholdValue =      { 24.0, 255.0};
+//		if(hsvThresholdOutput == null)
+//		    hsvThresholdOutput = new Mat(hsvThresholdInput.rows(),
+//                                         hsvThresholdInput.cols(), CV_8UC1);
 		hsvThreshold(hsvThresholdInput,
                      hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue,
                      hsvThresholdOutput);
@@ -112,8 +110,8 @@ public class GripPipeline {
 	private void resizeImage(Mat input, double width, double height,
 		int interpolation, Mat output)
 	{
-		RobotLog.dd(TAG, " resizeImage image inWXH= %dx%d outWXH= %dx%d ", input.rows(),
-				input.cols(), output.rows(), output.cols());
+		RobotLog.dd(TAG, " resizeImage image inWXH= %dx%d outWXH= %dx%d ", input.cols(),
+				input.rows(), output.cols(), output.rows());
 		Imgproc.resize(input, output, new Size(width, height), 0.0, 0.0, interpolation);
 	}
 
@@ -153,8 +151,8 @@ public class GripPipeline {
 		int radius = (int)(doubleRadius + 0.5);
 		int kernelSize;
 
-		RobotLog.dd(TAG, " blur image inWXH= %dx%d outWXH= %dx%d", input.rows(),
-				input.cols(), output.rows(), output.cols());
+		RobotLog.dd(TAG, " blur image inWXH= %dx%d outWXH= %dx%d", input.cols(),
+				input.rows(), output.cols(), output.rows());
 
 		switch(type){
 			case BOX:
@@ -177,9 +175,9 @@ public class GripPipeline {
 
 	private void hsvThreshold(Mat input, double[] hue, double[] sat, double[] val,
 	    Mat out) {
-		RobotLog.dd(TAG, " blur image inWXH = %dx%d", input.rows(),
-				input.cols());
-		Imgproc.cvtColor(input, out, Imgproc.COLOR_BGR2HSV);
+		RobotLog.dd(TAG, " blur image inWXH = %dx%d", input.cols(),
+				input.rows());
+		Imgproc.cvtColor(input, out, Imgproc.COLOR_RGB2HSV);
 		Core.inRange(out, new Scalar(hue[0], sat[0], val[0]),
 			new Scalar(hue[1], sat[1], val[1]), out);
 	}

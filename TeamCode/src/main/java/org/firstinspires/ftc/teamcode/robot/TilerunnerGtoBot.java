@@ -85,6 +85,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         super();
 
         COUNTS_PER_MOTOR_REV = 28;
+        //TODO: Check this - Orbital 20 is actually 19.2:1 gear ratio
         DRIVE_GEARS = new double[]{20.0, 1.0};
 
         WHEEL_DIAMETER_INCHES = 4.0;
@@ -309,9 +310,9 @@ public class TilerunnerGtoBot extends ShelbyImuBot
         }
     }
 
-    private void initHolder()
+    protected void initHolder()
     {
-        RobotLog.dd(TAG, "GTO initPushers");
+        RobotLog.dd(TAG, "GTO initHolder");
         try
         {
             holder = hwMap.servo.get("holder");

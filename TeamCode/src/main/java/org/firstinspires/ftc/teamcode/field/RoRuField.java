@@ -138,10 +138,10 @@ public class RoRuField extends Field
             };
 
     private static final float[] TRACKABLE_POS[] = {
-            scaleArr(new float[]{N_WALL_Y, 0.0f,     IMAGE_Z}, scale),
-            scaleArr(new float[]{S_WALL_Y, 0.0f,     IMAGE_Z}, scale),
-            scaleArr(new float[]{0.0f,     E_WALL_X, IMAGE_Z}, scale),
-            scaleArr(new float[]{0.0f,     W_WALL_X, IMAGE_Z}, scale)
+            scaleArr(new float[]{0.0f,     N_WALL_Y,     IMAGE_Z}, scale),
+            scaleArr(new float[]{0.0f,     S_WALL_Y,     IMAGE_Z}, scale),
+            scaleArr(new float[]{E_WALL_X, 0.0f,         IMAGE_Z}, scale),
+            scaleArr(new float[]{W_WALL_X, 0.0f,         IMAGE_Z}, scale)
             };
 
     private static final OpenGLMatrix[] LOCATIONS_ON_FIELD =
