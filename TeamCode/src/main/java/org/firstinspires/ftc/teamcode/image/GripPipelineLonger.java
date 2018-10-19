@@ -39,17 +39,13 @@ public class GripPipelineLonger
 	private ArrayList<MatOfPoint> convexHullsOutput = new ArrayList<>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<>();
 
-	static {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-	}
-
 	/**
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
 	 */
 	public void process(Mat source0) {
 
 		RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.cols(), source0.rows());
-		roiMat = new Mat(source0, new Rect(0, source0.height()/3,
+		roiMat = new Mat(source0, new Rect(0, (int)(0.4 * source0.height()),
 				source0.width(), source0.height()/3));
 		RobotLog.dd(TAG, " roiMat image WXH= %dx%d", roiMat.cols(), roiMat.rows());
 
@@ -69,19 +65,20 @@ public class GripPipelineLonger
         double blurRadius = 4.0;
         if(blurOutput == null)
             blurOutput = new Mat(blurInput.rows(), blurInput.cols(), blurInput.type());
+
         blur(blurInput, blurType, blurRadius, blurOutput);
 
         // Step HSV_Threshold0:
         Mat hsvThresholdInput = blurOutput;
         double[] hsvThresholdHue = {8, 44};
-        double[] hsvThresholdSaturation = {121.0, 235.0};
+        double[] hsvThresholdSaturation = {121.0, 255.0};
         double[] hsvThresholdValue = {148.0, 255.0};
         hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_erode0:
 		Mat cvErodeSrc = hsvThresholdOutput;
 		Mat cvErodeKernel = new Mat();
-		Point cvErodeAnchor = new Point(-1, -1);
+		Point cvErodeAnchor = new Point(0, 0);
 		double cvErodeIterations = 1.0;
 		int cvErodeBordertype = Core.BORDER_CONSTANT;
 		Scalar cvErodeBordervalue = new Scalar(-1);
@@ -97,7 +94,7 @@ public class GripPipelineLonger
 		cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
 
 		// Step Find_Contours0:
-		Mat findContoursInput = cvDilateOutput;
+        Mat findContoursInput = cvDilateOutput;
 		boolean findContoursExternalOnly = false;
 		//noinspection ConstantConditions
 		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
@@ -130,6 +127,7 @@ public class GripPipelineLonger
 
 	public Mat roiMat()                                 { return roiMat; }
 	public Mat resizeImageOutput()                      { return resizeImageOutput; }
+    public Mat blurOutput()                             { return blurOutput; }
 	public Mat cvErodeOutput()                          { return cvErodeOutput; }
 	public Mat cvDilateOutput()                         { return cvDilateOutput; }
 	public Mat hsvThresholdOutput()                     { return hsvThresholdOutput; }
@@ -260,7 +258,7 @@ public class GripPipelineLonger
 	 */
 	private void hsvThreshold(Mat input, double[] hue, double[] sat, double[] val,
 	    Mat out) {
-		Imgproc.cvtColor(input, out, Imgproc.COLOR_BGR2HSV);
+		Imgproc.cvtColor(input, out, Imgproc.COLOR_RGB2HSV);
 		Core.inRange(out, new Scalar(hue[0], sat[0], val[0]),
 			new Scalar(hue[1], sat[1], val[1]), out);
 	}

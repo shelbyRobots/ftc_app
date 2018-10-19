@@ -54,7 +54,7 @@ public class GripPipeline {
 		// Step Blur0:
 		Mat blurInput = resizeImageOutput;
 		BlurType blurType = BlurType.get("Gaussian Blur");
-		double blurRadius = 9.9;
+		double blurRadius = 4.0;
 		if(blurOutput == null)
 		    blurOutput = new Mat(blurInput.rows(), blurInput.cols(), blurInput.type());
 		blur(blurInput, blurType, blurRadius, blurOutput);

@@ -73,10 +73,10 @@ public class MineralDetector extends Detector {
 
         saveImage(gpl.roiMat());
         saveImage(gpl.resizeImageOutput());
-        //saveImage(gpl.blurOutput());
+        saveImage(gpl.blurOutput());
+        saveImage(gpl.hsvThresholdOutput());
         saveImage(gpl.cvErodeOutput());
         saveImage(gpl.cvDilateOutput());
-        saveImage(gpl.hsvThresholdOutput());
 
         ArrayList<MatOfPoint> cntrs = gpl.convexHullsOutput();
 
@@ -105,7 +105,9 @@ public class MineralDetector extends Detector {
             found_x_ptr = (bounded_box.width/2 + bounded_box.x);
         }
 
-        int midX = showImg.width()/2;
+        RobotLog.dd(TAG, "Center of Gold = " + found_x_ptr);
+
+        int midX = gpl.cvDilateOutput().width()/2;
 
         if (found_x_ptr < midX)
         {
