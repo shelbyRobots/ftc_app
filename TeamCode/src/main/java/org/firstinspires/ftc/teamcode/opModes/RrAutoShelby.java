@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.vuforia.CameraDevice;
@@ -53,7 +54,7 @@ import ftclib.FtcValueMenu;
 
 @SuppressWarnings({"unused", "ForLoopReplaceableByForEach"})
 @Autonomous(name="RrAutoShelby", group="Auton")
-//@Disabled
+@Disabled
 public class RrAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButtons
 {
     public RrAutoShelby()

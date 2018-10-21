@@ -824,7 +824,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private int colSegNum = 0;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private boolean useLight = true;
+    private boolean useLight = false;
 
     @SuppressWarnings("FieldCanBeLocal")
     private boolean doMore = true;

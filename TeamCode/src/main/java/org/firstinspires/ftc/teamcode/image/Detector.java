@@ -45,7 +45,7 @@ public abstract class Detector implements ImageProcessor
 
         Calendar cal = Calendar.getInstance();
         int dom = cal.get(Calendar.DATE);
-        int mon = cal.get(Calendar.MONTH);
+        int mon = cal.get(Calendar.MONTH) + 1;
         int yr  = cal.get(Calendar.YEAR);
         int hr  = cal.get(Calendar.HOUR_OF_DAY);
         int min = cal.get(Calendar.MINUTE);
@@ -106,8 +106,13 @@ public abstract class Detector implements ImageProcessor
 
     public void saveImage(Mat img)
     {
+        saveImage(img, TAG);
+    }
+
+    public void saveImage(Mat img, String imgTag)
+    {
         if(img == null) return;
-        String fileName = TAG + "_" + imgNum++ + "_" + dateStr + ".bmp";
+        String fileName = imgTag + "_" + imgNum++ + "_" + dateStr + ".bmp";
 
         Bitmap bmp = null;
         try

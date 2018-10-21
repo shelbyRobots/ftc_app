@@ -15,6 +15,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,11 +40,8 @@ public class GripPipelineLonger
 	private ArrayList<MatOfPoint> convexHullsOutput = new ArrayList<>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<>();
 
-	/**
-	 * This is the primary method that runs the entire pipeline and updates the outputs.
-	 */
-	public void process(Mat source0) {
-
+	public void sizeSource(Mat source0)
+	{
 		RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.cols(), source0.rows());
 		roiMat = new Mat(source0, new Rect(0, (int)(0.4 * source0.height()),
 				source0.width(), source0.height()/3));
@@ -59,8 +57,15 @@ public class GripPipelineLonger
 
 		resizeImage(roiMat, resizeImageWidth, resizeImageHeight,
 				resizeImageInterpolation, resizeImageOutput);
+	}
 
-        Mat blurInput = resizeImageOutput;
+	/**
+	 * This is the primary method that runs the entire pipeline and updates the outputs.
+	 */
+	public void processGold(Mat goldSource)
+	{
+		@SuppressWarnings("UnnecessaryLocalVariable")
+        Mat blurInput = goldSource;
         BlurType blurType = BlurType.get("Gaussian Blur");
         double blurRadius = 4.0;
         if(blurOutput == null)
@@ -105,7 +110,7 @@ public class GripPipelineLonger
 
 		// Step Filter_Contours0:
 		ArrayList<MatOfPoint> filterContoursContours = convexHullsOutput;
-		double filterContoursMinArea = 400.0;
+		double filterContoursMinArea = 500.0;
 		double filterContoursMinPerimeter = 0.0;
 		double filterContoursMinWidth = 20.0;
 		double filterContoursMaxWidth = 100.0;
@@ -124,6 +129,89 @@ public class GripPipelineLonger
                 filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices,
                 filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
 	}
+
+    public void processPit(Mat pitSource)
+	{
+        @SuppressWarnings("UnnecessaryLocalVariable")
+		Mat blurInput = pitSource;
+        BlurType blurType = BlurType.get("Gaussian Blur");
+        double blurRadius = 4.0;
+        if(blurOutput == null)
+            blurOutput = new Mat(blurInput.rows(), blurInput.cols(), blurInput.type());
+
+        blur(blurInput, blurType, blurRadius, blurOutput);
+
+        // Step HSV_Threshold0:
+        Mat hsvThresholdInput = blurOutput;
+        double[] hsvThresholdHue = {12, 48};
+        double[] hsvThresholdSaturation = {0.0, 44.0};
+        double[] hsvThresholdValue = {34.0, 105.0};
+        hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
+
+        // Step CV_erode0:
+        Mat cvErodeSrc = hsvThresholdOutput;
+        Mat cvErodeKernel = new Mat();
+        Point cvErodeAnchor = new Point(0, 0);
+        double cvErodeIterations = 1.0;
+        int cvErodeBordertype = Core.BORDER_CONSTANT;
+        Scalar cvErodeBordervalue = new Scalar(-1);
+        cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, cvErodeOutput);
+
+        // Step CV_dilate0:
+        Mat cvDilateSrc = cvErodeOutput;
+        Mat cvDilateKernel = new Mat();
+        Point cvDilateAnchor = new Point(-1, -1);
+        double cvDilateIterations = 1.0;
+        int cvDilateBordertype = Core.BORDER_CONSTANT;
+        Scalar cvDilateBordervalue = new Scalar(-1);
+        cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
+
+        // Step Find_Contours0:
+        Mat findContoursInput = cvDilateOutput;
+        boolean findContoursExternalOnly = false;
+        //noinspection ConstantConditions
+        findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
+
+        // Step Convex_Hulls0:
+        ArrayList<MatOfPoint> convexHullsContours = findContoursOutput;
+        convexHulls(convexHullsContours, convexHullsOutput);
+
+        // Step Filter_Contours0:
+        ArrayList<MatOfPoint> filterContoursContours = convexHullsOutput;
+        double filterContoursMinArea = 1000.0;
+        double filterContoursMinPerimeter = 0.0;
+        double filterContoursMinWidth = 75.0;
+        double filterContoursMaxWidth = 512.0;
+        double filterContoursMinHeight = 20.0;
+        double filterContoursMaxHeight = 200.0;
+        double[] filterContoursSolidity = {0, 100};
+        double filterContoursMaxVertices = 200.0;
+        double filterContoursMinVertices = 0.0;
+        double filterContoursMinRatio = 0;
+        double filterContoursMaxRatio = 100;
+        filterContours(filterContoursContours,
+                filterContoursMinArea,
+                filterContoursMinPerimeter,
+                filterContoursMinWidth, filterContoursMaxWidth,
+                filterContoursMinHeight, filterContoursMaxHeight,
+                filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices,
+                filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
+    }
+
+    public Rect findMask(ArrayList<MatOfPoint> contours)
+    {
+        Rect mask = new Rect(0,0,512,1);
+        Iterator<MatOfPoint> each = contours.iterator();
+        Rect bounded_box;
+        int sumtop = 0;
+        while (each.hasNext()) {
+            MatOfPoint wrapper = each.next();
+            bounded_box = Imgproc.boundingRect(wrapper);
+            sumtop += bounded_box.y;
+        }
+        mask.height = sumtop / contours.size();
+        return mask;
+    }
 
 	public Mat roiMat()                                 { return roiMat; }
 	public Mat resizeImageOutput()                      { return resizeImageOutput; }

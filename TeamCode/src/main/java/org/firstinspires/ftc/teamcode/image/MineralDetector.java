@@ -67,18 +67,30 @@ public class MineralDetector extends Detector {
         //GripPipeline gpl = new GripPipeline();
         GripPipelineLonger gpl = new GripPipelineLonger();
 
-        saveImage(showImg);
+        saveImage(showImg, "source");
 
-        gpl.process(showImg);
+        gpl.sizeSource(showImg);
+        Mat sizedImage = gpl.resizeImageOutput();
+        saveImage(sizedImage, "sized");
 
-        saveImage(gpl.roiMat());
-        saveImage(gpl.resizeImageOutput());
-        saveImage(gpl.blurOutput());
-        saveImage(gpl.hsvThresholdOutput());
-        saveImage(gpl.cvErodeOutput());
-        saveImage(gpl.cvDilateOutput());
+        gpl.processPit(sizedImage);
+
+        saveImage(gpl.blurOutput(), "pitBlur");
+        saveImage(gpl.hsvThresholdOutput(), "pitThresh");
 
         ArrayList<MatOfPoint> cntrs = gpl.convexHullsOutput();
+
+        Rect mask = gpl.findMask(cntrs);
+        Imgproc.rectangle(sizedImage, mask.tl(), mask.br(), new Scalar(0,0,0), -1);
+
+        saveImage(sizedImage, "maskedSrc");
+
+        gpl.processGold(sizedImage);
+
+        saveImage(gpl.blurOutput(), "minBlur");
+        saveImage(gpl.hsvThresholdOutput(), "minThresh");
+
+        cntrs = gpl.convexHullsOutput();
 
         Iterator<MatOfPoint> each = cntrs.iterator();
 
