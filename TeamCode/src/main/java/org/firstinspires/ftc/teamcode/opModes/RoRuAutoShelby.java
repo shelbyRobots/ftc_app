@@ -183,6 +183,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         else
         {
             robot = new RoRuBot();
+            roRuBot = (RoRuBot)robot;
         }
 
         dashboard.displayPrintf(1, "Prefs Done");
@@ -278,8 +279,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         RobotLog.ii(TAG, "IHDG %4.2f", initHdg);
 
-        //TODO: Setup for latch
-        //Extend then retract lift
+        if(roRuBot != null)
+        {
+            roRuBot.setHolderPos(true);
+            roRuBot.stowMarker();
+        }
 
         det.setTelemetry(telemetry);
     }
@@ -318,7 +322,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         doLower();
         doRelease();
-        doFindLoc();
+        //doFindLoc();
 
         boolean SkipNextSegment = false;
         boolean breakOut = false;
@@ -430,14 +434,17 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
             switch (act)
             {
-                case SCAN_IMAGE:
-                    doScan(i);
-                    break;
-
                 case SET_ALIGN:
                 {
                     break;
                 }
+
+                case SCAN_IMAGE:
+                {
+                    doScan(i);
+                    break;
+                }
+
 
                 case PUSH:
                 {
@@ -447,13 +454,13 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
                 case DROP:
                 {
-                    //TODO:  Release marker when mechanism available
+                    doDrop(i);
                     break;
                 }
 
                 case PARK:
                 {
-                    //TODO: Extend arm into crater
+                    doPark();
                     break;
                 }
             }
@@ -472,7 +479,17 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private void doLower()
     {
-        //Lower the bot to the ground
+        RobotLog.dd(TAG, "Lowering bot");
+
+        if(roRuBot != null)
+        {
+            roRuBot.setHolderPos(false);
+        }
+        else
+        {
+            RobotLog.dd(TAG, "No RoRuRobot - delaying instead of lowering for now");
+            sleep(2000); //Remove this - giving 2s for drop for timing
+        }
     }
 
     private void doRelease()
@@ -526,13 +543,51 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             CameraDevice.getInstance().setFlashTorchMode(false);
 
         RobotLog.dd(TAG, "Getting mineralPt for %s %s %s", alliance, startPos, mineralPos);
-        Point2d tgtMinPt = RoRuField.getMineralPt(alliance, startPos, mineralPos);
-        RobotLog.dd(TAG, "MineralPt = %s", tgtMinPt);
+        PositionOption otherPos = Route.StartPos.START_2;
+        if(startPos == Route.StartPos.START_2) otherPos = Route.StartPos.START_1;
+        tgtMinPt1 = RoRuField.getMineralPt(alliance, startPos, mineralPos);
+        tgtMinPt2 = RoRuField.getMineralPt(alliance, otherPos, mineralPos);
+        RobotLog.dd(TAG, "MineralPt = %s", tgtMinPt1);
 
         Segment sMin = pathSegs.get(segIdx+1);
         Segment sRev = pathSegs.get(segIdx+2);
-        sMin.setEndPt(tgtMinPt);
-        sRev.setStrtPt(tgtMinPt);
+        sMin.setEndPt(tgtMinPt1);
+        sRev.setStrtPt(tgtMinPt1);
+    }
+
+    private void doDrop(int segIdx)
+    {
+        RobotLog.dd(TAG, "Dropping marker");
+        //drop marker
+
+        if(roRuBot != null)
+        {
+            roRuBot.dropMarker();
+        }
+        else
+        {
+            RobotLog.dd(TAG, "No RoRuRobot - can't drop");
+        }
+
+        if(startPos == Route.StartPos.START_2) {
+            Segment sMin = pathSegs.get(segIdx + 1);
+            Segment sRev = pathSegs.get(segIdx + 2);
+            sMin.setEndPt(tgtMinPt2);
+            sRev.setStrtPt(tgtMinPt2);
+        }
+    }
+
+    private void doPark()
+    {
+        RobotLog.dd(TAG, "Parking bot");
+        if(roRuBot != null)
+        {
+            roRuBot.parkMarker();
+        }
+        else
+        {
+            RobotLog.dd(TAG, "No RoRuRobot - can't extend park");
+        }
     }
 
     private void doMove(Segment seg)
@@ -786,6 +841,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private List<Segment> pathSegs = new ArrayList<>();
 
     private TilerunnerGtoBot   robot;
+    private RoRuBot roRuBot = null;
+
+    private Point2d tgtMinPt1;
+    private Point2d tgtMinPt2;
+
     private ElapsedTime timer = new ElapsedTime();
     private ElapsedTime startTimer = new ElapsedTime();
     private Drivetrain drvTrn = new Drivetrain();

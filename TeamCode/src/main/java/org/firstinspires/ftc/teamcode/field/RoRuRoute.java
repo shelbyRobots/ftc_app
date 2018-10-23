@@ -50,7 +50,11 @@ public class RoRuRoute extends Route
             addPoint(points, fwd, 0.45, 1.00, encType, push,  RoRuField.RLM2);
             addPoint(points, rev, 0.40, 1.00, encType, none,  RoRuField.RLR1);
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLR2);
+            addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLDT);
             addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RLDP);
+            addPoint(points, rev, 0.70, 1.00, encType, push,  RoRuField.RLM2);
+            addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RLDP);
+            addPoint(points, rev, 0.60, 1.00, encType, none,  RoRuField.RLDT);
             addPoint(points, rev, 0.60, 1.00, encType, park,  RoRuField.RLPP);
         }
         else if(startPos == StartPos.START_2)
@@ -61,7 +65,9 @@ public class RoRuRoute extends Route
             addPoint(points, fwd, 0.45, 1.00, encType, push,  RoRuField.RRM2);
             addPoint(points, rev, 0.40, 1.00, encType, none,  RoRuField.RRR1);
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RRR2);
+            addPoint(points, fwd, 0.70, 1.00, encType, none,  RoRuField.RRDT);
             addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RRDP);
+            addPoint(points, rev, 0.70, 1.00, encType, none,  RoRuField.RRDT);
             addPoint(points, rev, 0.60, 1.00, encType, park,  RoRuField.RRPP);
         }
 
