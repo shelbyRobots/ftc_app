@@ -527,6 +527,12 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private void doScan(int segIdx)
     {
+        if(ctrScan)
+        {
+            doScanForward(segIdx);
+            return;
+        }
+
         RobotLog.dd(TAG, "doScan");
         double hdgAdj = 15.0;
         double newHdg = robot.getGyroFhdg() - hdgAdj;
@@ -542,6 +548,46 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         if(useLight)
             CameraDevice.getInstance().setFlashTorchMode(false);
 
+        setMineralPoint(segIdx);
+    }
+
+    private void doScanForward(int segIdx)
+    {
+        double curHdg = robot.getGyroFhdg();
+
+        double dhdgs[] = { 0.0, -35.2, 35.2};
+        MineralDetector.Position pos[] =
+                {
+                        MineralDetector.Position.CENTER,
+                        MineralDetector.Position.RIGHT,
+                        MineralDetector.Position.LEFT
+                };
+
+        if(useLight)
+            CameraDevice.getInstance().setFlashTorchMode(true) ;
+
+        for(int i=0; i < 3; ++i)
+        {
+            dhdgs[i]+=curHdg;
+            RobotLog.dd(TAG, "doScanForward " + pos[i]);
+            if (i != 0) doGyroTurn(dhdgs[i], "scanAdj");
+
+            if(getMineralPos() == MineralDetector.Position.AHEAD)
+            {
+                mineralPos = pos[i];
+                RobotLog.dd(TAG, "doScanForward mineralPos = %s", mineralPos);
+                break;
+            }
+        }
+
+        if(useLight)
+            CameraDevice.getInstance().setFlashTorchMode(false);
+
+        setMineralPoint(segIdx);
+    }
+
+    private void setMineralPoint(int segIdx)
+    {
         RobotLog.dd(TAG, "Getting mineralPt for %s %s %s", alliance, startPos, mineralPos);
         PositionOption otherPos = Route.StartPos.START_2;
         if(startPos == Route.StartPos.START_2) otherPos = Route.StartPos.START_1;
@@ -569,7 +615,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             RobotLog.dd(TAG, "No RoRuRobot - can't drop");
         }
 
-        if(startPos == Route.StartPos.START_2) {
+        if(startPos == Route.StartPos.START_1)
+        {
             Segment sMin = pathSegs.get(segIdx + 1);
             Segment sRev = pathSegs.get(segIdx + 2);
             sMin.setEndPt(tgtMinPt2);
@@ -716,6 +763,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         MineralDetector.Position minPos = MineralDetector.Position.NONE;
 
+        if(det instanceof MineralDetector)
+        {
+            ((MineralDetector) det).setCenterScan(ctrScan);
+        }
+
         double mineralTimeout = 1.0;
         ElapsedTime mtimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         while(opModeIsActive()                                   &&
@@ -843,8 +895,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private TilerunnerGtoBot   robot;
     private RoRuBot roRuBot = null;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private Point2d tgtMinPt1;
     private Point2d tgtMinPt2;
+
+    private boolean ctrScan = false;
 
     private ElapsedTime timer = new ElapsedTime();
     private ElapsedTime startTimer = new ElapsedTime();

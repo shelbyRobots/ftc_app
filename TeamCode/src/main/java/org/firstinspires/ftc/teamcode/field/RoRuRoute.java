@@ -53,7 +53,7 @@ public class RoRuRoute extends Route
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLDT);
             addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RLDP);
             addPoint(points, rev, 0.70, 1.00, encType, push,  RoRuField.RLM2);
-            addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RLDP);
+            addPoint(points, fwd, 0.70, 1.00, encType, none,  RoRuField.RLDP);
             addPoint(points, rev, 0.60, 1.00, encType, none,  RoRuField.RLDT);
             addPoint(points, rev, 0.60, 1.00, encType, park,  RoRuField.RLPP);
         }
@@ -63,11 +63,8 @@ public class RoRuRoute extends Route
             addPoint(points, fwd, 0.25, 1.00, colType, align, RoRuField.RRTP);
             addPoint(points, fwd, 0.35, 1.00, encType, scan,  RoRuField.RRTP);
             addPoint(points, fwd, 0.45, 1.00, encType, push,  RoRuField.RRM2);
-            addPoint(points, rev, 0.40, 1.00, encType, none,  RoRuField.RRR1);
-            addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RRR2);
-            addPoint(points, fwd, 0.70, 1.00, encType, none,  RoRuField.RRDT);
             addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RRDP);
-            addPoint(points, rev, 0.70, 1.00, encType, none,  RoRuField.RRDT);
+            addPoint(points, rev, 0.40, 1.00, encType, none,  RoRuField.RRR1);
             addPoint(points, rev, 0.60, 1.00, encType, park,  RoRuField.RRPP);
         }
 

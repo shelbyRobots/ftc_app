@@ -44,25 +44,26 @@ public class RoRuField extends Field
     static final Point2d RLPG = new Point2d("RLPG",  33.0,  -33.0); //prntr gold
     static final Point2d RLPP = new Point2d("RLPP", -17.0,  -59.0);
 
-    static final Point2d BLM1 = new Point2d("BLM1",  48.0,  24.0);
+    static final Point2d BLM1 = new Point2d("BLM1",  45.0,  21.0);
     static final Point2d BLM2 = new Point2d("BLM2",  33.0,  33.0);
-    static final Point2d BLM3 = new Point2d("BLM3",  24.0,  48.0);
+    static final Point2d BLM3 = new Point2d("BLM3",  21.0,  45.0);
 
-    static final Point2d RRLP = new Point2d("RRLP",   8.25, -8.25);
+    static final Point2d RRLP = new Point2d("RRLP",   9.0,  -9.0);
     static final Point2d RRTP = new Point2d("RRTP",  16.0, -16.0);
     // RLM3 46, -24; RRM2 36, -36; RRM1 25, -46
-    static final Point2d RRM3 = new Point2d("RRM3",  45.0, -21.0);
-    static final Point2d RRM2 = new Point2d("RRM2",  33.0, -33.0);
-    static final Point2d RRM1 = new Point2d("RRM1",  21.0, -45.0);
-    static final Point2d RRR1 = new Point2d("RRR1",  17.0, -17.0);
-    static final Point2d RRR2 = new Point2d("RRR2",  57.0,  -7.0);
-    static final Point2d RRDT = new Point2d("RRDT",  59.0, -24.0);
-    static final Point2d RRDP = new Point2d("RRDP",  59.0, -42.0);
-    static final Point2d RRPP = new Point2d("RRPP",  59.0,  17.0);
+    static final Point2d RRM1 = new Point2d("RRM1",  25.0, -57.0);
+    static final Point2d RRM2 = new Point2d("RRM2",  41.0, -41.0);
+    static final Point2d RRM3 = new Point2d("RRM3",  57.0, -25.0);
 
-    static final Point2d BRM3 = new Point2d("BRM3", -48.0,  24.0);
+    static final Point2d RRR1 = new Point2d("RRR1",  60.0, -24.0);
+    //static final Point2d RRR2 = new Point2d("RRR2",  57.0,  -7.0);
+    //static final Point2d RRDT = new Point2d("RRDT",  59.0, -24.0);
+    static final Point2d RRDP = new Point2d("RRDP",  57.0, -57.0);
+    static final Point2d RRPP = new Point2d("RRPP",  60.0,  16.0);
+
+    static final Point2d BRM3 = new Point2d("BRM3", -45.0,  21.0);
     static final Point2d BRM2 = new Point2d("BRM2", -33.0,  33.0);
-    static final Point2d BRM1 = new Point2d("BRM1", -24.0,  48.0);
+    static final Point2d BRM1 = new Point2d("BRM1", -21.0,  45.0);
 
     public static Point2d getMineralPt(Alliance alnc,
                                        PositionOption startPos,

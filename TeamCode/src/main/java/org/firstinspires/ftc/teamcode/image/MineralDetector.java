@@ -32,7 +32,7 @@ public class MineralDetector extends Detector {
         private static final String TAG = "SJH_MCD";
 
         public enum Position {
-            CENTER, RIGHT, LEFT, NONE
+            CENTER, RIGHT, LEFT, NONE, AHEAD
         }
 
     public MineralDetector()
@@ -61,9 +61,12 @@ public class MineralDetector extends Detector {
         return foundPosition;
     }
 
+    private boolean ctrScan = false;
+    public  void setCenterScan(boolean ctrScan) { this.ctrScan = ctrScan; }
+
     private void extract()
     {
-        RobotLog.dd(TAG, "MineralDetector.extract()");
+        RobotLog.dd(TAG, "MineralDetector.extractDoubleMineral()");
         //GripPipeline gpl = new GripPipeline();
         GripPipelineLonger gpl = new GripPipelineLonger();
 
@@ -83,6 +86,14 @@ public class MineralDetector extends Detector {
         Rect mask = gpl.findMask(cntrs);
         Imgproc.rectangle(sizedImage, mask.tl(), mask.br(), new Scalar(0,0,0), -1);
 
+        if(ctrScan)
+        {
+            Rect lMask = gpl.leftMask();
+            Rect rMask = gpl.rightMask();
+            Imgproc.rectangle(sizedImage, lMask.tl(), lMask.br(), new Scalar(0,0,0), -1);
+            Imgproc.rectangle(sizedImage, rMask.tl(), rMask.br(), new Scalar(0,0,0), -1);
+        }
+
         saveImage(sizedImage, "maskedSrc");
 
         gpl.processGold(sizedImage);
@@ -98,16 +109,34 @@ public class MineralDetector extends Detector {
         int found_x_ptr = 0;
         foundPosition = Position.LEFT;
 
-        if(cntrs.size() == 0)
+        if(ctrScan)
         {
-            RobotLog.dd(TAG, "No Countours.  Assuming left is gold");
+            if(cntrs.size() == 0)
+            {
+                foundPosition = Position.NONE;
+                RobotLog.dd(TAG, "No Countours in center scan.");
+            }
+            else
+            {
+                foundPosition = Position.AHEAD;
+                RobotLog.dd(TAG, "In ctrScan mode and %d countours found", cntrs.size());
+            }
             return;
         }
-        else if(cntrs.size() > 1)
+        else
         {
-            RobotLog.ee(TAG, "Too Many Countours.  I don't know which is gold");
-            foundPosition = Position.CENTER;
-            return;
+            if (cntrs.size() == 0)
+            {
+                foundPosition = Position.LEFT;
+                RobotLog.dd(TAG, "No Countours.  Assuming left is gold");
+                return;
+            }
+            else if (cntrs.size() > 1)
+            {
+                RobotLog.ee(TAG, "Too Many Countours.  I don't know which is gold");
+                foundPosition = Position.CENTER;
+                return;
+            }
         }
 
         for (MatOfPoint pts : cntrs)
@@ -125,7 +154,8 @@ public class MineralDetector extends Detector {
         {
             foundPosition = MineralDetector.Position.CENTER;
             //Yay it in deh center!!!!!!!!!!
-        } else
+        }
+        else
         {
             foundPosition = MineralDetector.Position.RIGHT;
             //Yay it in deh right!!!!!!!!!!!

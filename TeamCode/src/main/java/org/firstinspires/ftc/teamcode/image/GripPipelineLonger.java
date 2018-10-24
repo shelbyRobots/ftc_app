@@ -213,6 +213,35 @@ public class GripPipelineLonger
         return mask;
     }
 
+    public Rect leftMask()
+	{
+        double xMaskPct = 0.4;
+	    int height = 200;
+	    int width  = 512;
+
+	    if(resizeImageOutput != null)
+        {
+            height = resizeImageOutput.height();
+            width  = (int)(resizeImageOutput.width() * xMaskPct);
+        }
+		return new Rect(0, 0, width, height);
+	}
+
+    public Rect rightMask()
+    {
+        double xMaskPct = 0.4;
+        int height = 200;
+        int width  = 512;
+        int x = width - (int)(xMaskPct * width);
+
+        if(resizeImageOutput != null)
+        {
+            height = resizeImageOutput.height();
+            width  = (int)(resizeImageOutput.width() * xMaskPct);
+        }
+        return new Rect(x, 0, width, height);
+    }
+
 	public Mat roiMat()                                 { return roiMat; }
 	public Mat resizeImageOutput()                      { return resizeImageOutput; }
     public Mat blurOutput()                             { return blurOutput; }
