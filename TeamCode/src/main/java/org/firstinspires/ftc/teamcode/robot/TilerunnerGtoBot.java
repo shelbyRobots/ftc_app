@@ -86,7 +86,7 @@ public class TilerunnerGtoBot extends ShelbyImuBot
 
         COUNTS_PER_MOTOR_REV = 28;
         //TODO: Check this - Orbital 20 is actually 19.2:1 gear ratio
-        DRIVE_GEARS = new double[]{20.0, 1.0};
+        DRIVE_GEARS = new double[]{19.2, 1.0};
 
         WHEEL_DIAMETER_INCHES = 4.0;
         TUNE = 1.00;

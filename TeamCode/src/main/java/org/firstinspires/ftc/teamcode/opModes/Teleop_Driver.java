@@ -11,8 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.field.Field;
 import org.firstinspires.ftc.teamcode.field.RrField;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
+import org.firstinspires.ftc.teamcode.robot.RoRuBot;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
-import org.firstinspires.ftc.teamcode.robot.TilerunnerGtoBot;
 import org.firstinspires.ftc.teamcode.util.Input_Shaper;
 import org.firstinspires.ftc.teamcode.util.ManagedGamepad;
 import org.firstinspires.ftc.teamcode.util.Point2d;
@@ -55,6 +55,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void initPostStart()
     {
+        robot.putHolderAtStow();
         robot.closeGripper();
         robot.stowHolder();
 
@@ -105,6 +106,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void controlElevator()
     {
+        if(robot.elevMotor == null && robot.elevServo == null) return;
+
         double elev               = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
 
         boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
@@ -618,6 +621,23 @@ public class Teleop_Driver extends InitLinearOpMode
         }
     }
 
+    private void controlHolder() {
+
+        boolean lowerHolder     = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+        boolean raiseHolder         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+
+        if(lowerHolder)
+        {
+            //setting to false lowers holder which raises the bot
+            robot.putHolderAtStow();
+        }
+        else if (raiseHolder)
+        {
+            //setting to true raises holder
+            robot.putHolderAtLatch();
+        }
+    }
+
     private void processControllerInputs()
     {
         boolean shiftControls = gpad2.pressed(ManagedGamepad.Button.R_TRIGGER);
@@ -628,6 +648,7 @@ public class Teleop_Driver extends InitLinearOpMode
             controlPitch();
             controlGrippers();
             controlPusher();
+            controlHolder();
         }
         else
         {
@@ -825,7 +846,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private DcMotorEx lex = null;
     private DcMotorEx rex = null;
 
-    private TilerunnerGtoBot robot = new TilerunnerGtoBot();
+    private RoRuBot robot = new RoRuBot();
     private Drivetrain dtrn = new Drivetrain();
     private Input_Shaper ishaper = new Input_Shaper();
 

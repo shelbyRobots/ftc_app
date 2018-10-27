@@ -130,6 +130,73 @@ public class GripPipelineLonger
                 filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
 	}
 
+	public void processSilver(Mat goldSource)
+	{
+		@SuppressWarnings("UnnecessaryLocalVariable")
+		Mat blurInput = goldSource;
+		BlurType blurType = BlurType.get("Gaussian Blur");
+		double blurRadius = 4.0;
+		if(blurOutput == null)
+			blurOutput = new Mat(blurInput.rows(), blurInput.cols(), blurInput.type());
+
+		blur(blurInput, blurType, blurRadius, blurOutput);
+
+		// Step HSV_Threshold0:
+		Mat hsvThresholdInput = blurOutput;
+		double[] hsvThresholdHue = {0.0, 55.0};
+		double[] hsvThresholdSaturation = {0.0, 78.0};
+		double[] hsvThresholdValue = {168.0, 255.0};
+		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
+
+		// Step CV_erode0:
+		Mat cvErodeSrc = hsvThresholdOutput;
+		Mat cvErodeKernel = new Mat();
+		Point cvErodeAnchor = new Point(0, 0);
+		double cvErodeIterations = 1.0;
+		int cvErodeBordertype = Core.BORDER_CONSTANT;
+		Scalar cvErodeBordervalue = new Scalar(-1);
+		cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, cvErodeOutput);
+
+		// Step CV_dilate0:
+		Mat cvDilateSrc = cvErodeOutput;
+		Mat cvDilateKernel = new Mat();
+		Point cvDilateAnchor = new Point(-1, -1);
+		double cvDilateIterations = 1.0;
+		int cvDilateBordertype = Core.BORDER_CONSTANT;
+		Scalar cvDilateBordervalue = new Scalar(-1);
+		cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
+
+		// Step Find_Contours0:
+		Mat findContoursInput = cvDilateOutput;
+		boolean findContoursExternalOnly = false;
+		//noinspection ConstantConditions
+		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
+
+		// Step Convex_Hulls0:
+		ArrayList<MatOfPoint> convexHullsContours = findContoursOutput;
+		convexHulls(convexHullsContours, convexHullsOutput);
+
+		// Step Filter_Contours0:
+		ArrayList<MatOfPoint> filterContoursContours = convexHullsOutput;
+		double filterContoursMinArea = 500.0;
+		double filterContoursMinPerimeter = 0.0;
+		double filterContoursMinWidth = 20.0;
+		double filterContoursMaxWidth = 100.0;
+		double filterContoursMinHeight = 20.0;
+		double filterContoursMaxHeight = 100.0;
+		double[] filterContoursSolidity = {0, 100};
+		double filterContoursMaxVertices = 200.0;
+		double filterContoursMinVertices = 0.0;
+		double filterContoursMinRatio = 0.5;
+		double filterContoursMaxRatio = 1.7;
+		filterContours(filterContoursContours,
+				filterContoursMinArea,
+				filterContoursMinPerimeter,
+				filterContoursMinWidth, filterContoursMaxWidth,
+				filterContoursMinHeight, filterContoursMaxHeight,
+				filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices,
+				filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
+	}
     public void processPit(Mat pitSource)
 	{
         @SuppressWarnings("UnnecessaryLocalVariable")
@@ -204,6 +271,7 @@ public class GripPipelineLonger
         Iterator<MatOfPoint> each = contours.iterator();
         Rect bounded_box;
         int sumtop = 0;
+        if(contours.size() == 0) return mask;
         while (each.hasNext()) {
             MatOfPoint wrapper = each.next();
             bounded_box = Imgproc.boundingRect(wrapper);
@@ -215,7 +283,7 @@ public class GripPipelineLonger
 
     public Rect leftMask()
 	{
-        double xMaskPct = 0.4;
+        double xMaskPct = 0.35;
 	    int height = 200;
 	    int width  = 512;
 
@@ -229,7 +297,7 @@ public class GripPipelineLonger
 
     public Rect rightMask()
     {
-        double xMaskPct = 0.4;
+        double xMaskPct = 0.35;
         int height = 200;
         int width  = 512;
         int x = width - (int)(xMaskPct * width);

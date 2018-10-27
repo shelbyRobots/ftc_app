@@ -32,7 +32,7 @@ public class MineralDetector extends Detector {
         private static final String TAG = "SJH_MCD";
 
         public enum Position {
-            CENTER, RIGHT, LEFT, NONE, AHEAD
+            CENTER, RIGHT, LEFT, NONE, GOLDAHEAD, SILVERAHEAD
         }
 
     public MineralDetector()
@@ -63,6 +63,9 @@ public class MineralDetector extends Detector {
 
     private boolean ctrScan = false;
     public  void setCenterScan(boolean ctrScan) { this.ctrScan = ctrScan; }
+    private boolean pitScan = false;
+    public  void setPitScan(boolean pitScan) { this.pitScan = pitScan; }
+
 
     private void extract()
     {
@@ -70,68 +73,101 @@ public class MineralDetector extends Detector {
         //GripPipeline gpl = new GripPipeline();
         GripPipelineLonger gpl = new GripPipelineLonger();
 
-        saveImage(showImg, "source");
+//        RobotLog.dd(TAG, "Saving source image");
+//        saveImage(showImg, "source");
 
         gpl.sizeSource(showImg);
         Mat sizedImage = gpl.resizeImageOutput();
+        RobotLog.dd(TAG, "Saving resize image");
         saveImage(sizedImage, "sized");
 
-        gpl.processPit(sizedImage);
+        ArrayList<MatOfPoint> pitcntrs;
+        ArrayList<MatOfPoint> goldcntrs;
+        ArrayList<MatOfPoint> silvercntrs;
 
-        saveImage(gpl.blurOutput(), "pitBlur");
-        saveImage(gpl.hsvThresholdOutput(), "pitThresh");
 
-        ArrayList<MatOfPoint> cntrs = gpl.convexHullsOutput();
+        if (pitScan)
+        {
+            gpl.processPit(sizedImage);
 
-        Rect mask = gpl.findMask(cntrs);
-        Imgproc.rectangle(sizedImage, mask.tl(), mask.br(), new Scalar(0,0,0), -1);
+//            RobotLog.dd(TAG, "Saving pitBlur image");
+//            saveImage(gpl.blurOutput(), "pitBlur");
+            RobotLog.dd(TAG, "Saving pitThres image");
+            saveImage(gpl.hsvThresholdOutput(), "pitThresh");
+
+            pitcntrs = gpl.convexHullsOutput();
+
+            RobotLog.dd(TAG, "Finding pit mask");
+            Rect mask = gpl.findMask(pitcntrs);
+            Imgproc.rectangle(sizedImage, mask.tl(), mask.br(), new Scalar(0, 0, 0), -1);
+        }
 
         if(ctrScan)
         {
+            RobotLog.dd(TAG, "Finding ctr masks");
             Rect lMask = gpl.leftMask();
             Rect rMask = gpl.rightMask();
             Imgproc.rectangle(sizedImage, lMask.tl(), lMask.br(), new Scalar(0,0,0), -1);
             Imgproc.rectangle(sizedImage, rMask.tl(), rMask.br(), new Scalar(0,0,0), -1);
         }
 
+        RobotLog.dd(TAG, "Saving masked image");
         saveImage(sizedImage, "maskedSrc");
 
+        RobotLog.dd(TAG, "Digging for gold");
         gpl.processGold(sizedImage);
 
-        saveImage(gpl.blurOutput(), "minBlur");
+//        RobotLog.dd(TAG, "Saving minBlur image");
+//        saveImage(gpl.blurOutput(), "minBlur");
+        RobotLog.dd(TAG, "Saving minThresh image");
         saveImage(gpl.hsvThresholdOutput(), "minThresh");
 
-        cntrs = gpl.convexHullsOutput();
+        goldcntrs = gpl.convexHullsOutput();
 
-        Iterator<MatOfPoint> each = cntrs.iterator();
+        Iterator<MatOfPoint> each = goldcntrs.iterator();
+
+
 
         Rect bounded_box;
         int found_x_ptr = 0;
         foundPosition = Position.LEFT;
 
+        RobotLog.dd(TAG, "Processing contours");
         if(ctrScan)
         {
-            if(cntrs.size() == 0)
+            if(goldcntrs.size() == 0)
             {
-                foundPosition = Position.NONE;
-                RobotLog.dd(TAG, "No Countours in center scan.");
+                gpl.processSilver(sizedImage);
+                silvercntrs = gpl.convexHullsOutput();
+
+                if(silvercntrs.size() == 0)
+                {
+                    foundPosition = Position.NONE;
+                    RobotLog.dd(TAG, "No Countours in center scan.");
+                }
+                else
+                {
+                    foundPosition = Position.SILVERAHEAD;
+                    RobotLog.dd(TAG, "Found silver");
+                }
+
             }
             else
             {
-                foundPosition = Position.AHEAD;
-                RobotLog.dd(TAG, "In ctrScan mode and %d countours found", cntrs.size());
+                foundPosition = Position.GOLDAHEAD;
+                RobotLog.dd(TAG, "In ctrScan mode and %d countours found", goldcntrs.size());
             }
             return;
         }
         else
         {
-            if (cntrs.size() == 0)
+            if (goldcntrs.size() == 0)
             {
                 foundPosition = Position.LEFT;
                 RobotLog.dd(TAG, "No Countours.  Assuming left is gold");
                 return;
             }
-            else if (cntrs.size() > 1)
+            else if (goldcntrs.size() > 1)
             {
                 RobotLog.ee(TAG, "Too Many Countours.  I don't know which is gold");
                 foundPosition = Position.CENTER;
@@ -139,7 +175,7 @@ public class MineralDetector extends Detector {
             }
         }
 
-        for (MatOfPoint pts : cntrs)
+        for (MatOfPoint pts : goldcntrs)
         {
             MatOfPoint contour = each.next();
             bounded_box = Imgproc.boundingRect(contour);
