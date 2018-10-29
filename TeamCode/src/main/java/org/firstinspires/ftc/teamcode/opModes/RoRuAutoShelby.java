@@ -123,6 +123,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
                     RobotLog.dd(TAG, "RGB = %d %d %d", r, g, b);
                     dashboard.displayPrintf(15, "RGB %d %d %d", r, g, b);
                 }
+
+                dashboard.displayPrintf(7, "lift pos %d", roRuBot.getLiftyPos());
             }
 
             initCycle++;
@@ -281,8 +283,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         if(roRuBot != null)
         {
+            RobotLog.dd(TAG, "Stow Liftyboi");
             roRuBot.putHolderAtStow();
+            RobotLog.dd(TAG, "Stow Marker");
             roRuBot.stowMarker();
+            roRuBot.stowParker();
         }
 
         if (startPos == Route.StartPos.START_1)
@@ -338,7 +343,6 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         //robot.resetGyro();
 
         doLower();
-        doRelease();
         //doFindLoc();
 
         boolean SkipNextSegment = false;
@@ -507,12 +511,9 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             RobotLog.dd(TAG, "No RoRuRobot - delaying instead of lowering for now");
             sleep(1); //Remove this - giving 2s for drop for timing
         }
+        sleep(500);
     }
 
-    private void doRelease()
-    {
-        //Release from the latch
-    }
 
     private void doFindLoc()
     {
@@ -544,6 +545,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private void doScan(int segIdx)
     {
+        roRuBot.threadedHolderStow();
+
         if(ctrScan)
         {
             RobotLog.dd(TAG, "doScanForward");
@@ -622,7 +625,6 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private void doDrop(int segIdx)
     {
         RobotLog.dd(TAG, "Dropping marker");
-        //drop marker
 
         if(roRuBot != null)
         {
@@ -653,7 +655,16 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
         else
         {
-            RobotLog.dd(TAG, "No RoRuRobot - can't extend park");
+            RobotLog.dd(TAG, "No RoRuRobot - can't extend marker");
+        }
+
+        if(roRuBot != null)
+        {
+            roRuBot.deployParker();
+        }
+        else
+        {
+            RobotLog.dd(TAG, "No RoRuRobot - can't extend parker");
         }
     }
 

@@ -28,7 +28,7 @@ public class RoRuField extends Field
     private static final int RGHT  = 2;
 
     //Red Route > Left
-    static final Point2d RLLP = new Point2d("RLLP", -8.25,  -8.25);
+    static final Point2d RLLP = new Point2d("RLLP", -12.5,  -12.5);
     static final Point2d RLTP = new Point2d("RLTP", -16.0,  -16.0);
     //includes offset for veh center. actual
     // RLM1 -46, -24; RLM2 -36, -36; RLM3 -25, -46
@@ -48,7 +48,7 @@ public class RoRuField extends Field
     static final Point2d BLM2 = new Point2d("BLM2",  33.0,  33.0);
     static final Point2d BLM3 = new Point2d("BLM3",  21.0,  45.0);
 
-    static final Point2d RRLP = new Point2d("RRLP",   9.0,  -9.0);
+    static final Point2d RRLP = new Point2d("RRLP",  12.5, -12.5);
     static final Point2d RRTP = new Point2d("RRTP",  16.0, -16.0);
     // RLM3 46, -24; RRM2 36, -36; RRM1 25, -46
     static final Point2d RRM1 = new Point2d("RRM1",  25.0, -57.0);
@@ -59,7 +59,7 @@ public class RoRuField extends Field
     //static final Point2d RRR2 = new Point2d("RRR2",  57.0,  -7.0);
     //static final Point2d RRDT = new Point2d("RRDT",  59.0, -24.0);
     static final Point2d RRDP = new Point2d("RRDP",  56.0, -56.0);
-    static final Point2d RRPP = new Point2d("RRPP",  60.0,  16.0);
+    static final Point2d RRPP = new Point2d("RRPP",  60.0,  17.0);
 
     static final Point2d BRM3 = new Point2d("BRM3", -45.0,  21.0);
     static final Point2d BRM2 = new Point2d("BRM2", -33.0,  33.0);

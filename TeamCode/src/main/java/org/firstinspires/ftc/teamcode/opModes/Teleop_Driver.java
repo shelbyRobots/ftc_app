@@ -55,276 +55,10 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void initPostStart()
     {
-        robot.putHolderAtStow();
-        robot.closeGripper();
+        robot.threadputHolderAtPrelatch();
         robot.stowHolder();
-
-        if(robot.relClamp != null)
-        {
-            RobotLog.dd(TAG, "Setting RelClamp to 1.0 at start");
-            robot.relClamp.setPosition(1.0);
-        }
-
-        if(robot.gpitch != null)
-        {
-            //robot.gpitch.setPosition(robot.GPITCH_UP_POS);
-            robot.retractGpitch();
-            pActive = true;
-            currentPitchState = PitchState.PITCH_UP;
-        }
-
-//        if(robot.elevMotor != null)
-//        {
-//            robot.initElevZero();
-//        }
-
-        robot.setElevZero();
-    }
-
-    private void controlGrippers()
-    {
-        boolean gripper_open_par  = gpad2.pressed(ManagedGamepad.Button.A);
-        boolean gripper_open      = gpad2.pressed(ManagedGamepad.Button.B);
-
-        // Gripper (a: Somewhat Open, b: all the way open, neither: closed)
-        if (gripper_open)
-        {
-            //robot.gripper.setPosition(robot.GRIPPER_OPEN_POS);
-            robot.openGripper();
-        }
-        else if (gripper_open_par)
-        {
-            //robot.gripper.setPosition(robot.GRIPPER_PARTIAL_POS);
-            robot.partialGripper();
-        }
-        else
-        {
-            //robot.gripper.setPosition(robot.GRIPPER_CLOSE_POS);
-            robot.closeGripper();
-        }
-    }
-
-    private void controlElevator()
-    {
-        if(robot.elevMotor == null && robot.elevServo == null) return;
-
-        double elev               = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
-
-        boolean lowerElev         = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-        boolean raiseElev         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
-        boolean holdElev          = gpad2.just_pressed(ManagedGamepad.Button.L_BUMP);
-        boolean decrElev          = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
-        boolean incrElev          = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
-        boolean overrideElev      = gpad2.pressed(ManagedGamepad.Button.R_BUMP);
-
-        int curElevPos = 0;
-
-        elev  = ishaper.shape(elev);
-
-        if(robot.elevMotor != null)
-        {
-            curElevPos = robot.elevMotor.getCurrentPosition();
-        }
-        else if(robot.elevServo != null)
-        {
-            double sPos = robot.elevServo.getPosition();
-            curElevPos = (int)(sPos * robot.MICRO_RNG + robot.MICRO_MIN);
-        }
-
-        if(Math.abs(elev) > 0.001)
-        {
-            eActive = false;
-        }
-
-        if(!eActive && robot.elevMotor != null)
-        {
-            robot.elevMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            int minElev = robot.getMinElev();
-            int maxElev = robot.getMaxElev();
-            if(!overrideElev)
-            {
-                if (curElevPos < minElev && elev < 0.0)
-                    elev = 0.0;
-                if (curElevPos > maxElev && elev > 0.0)
-                    elev = 0.0;
-            }
-            robot.elevMotor.setPower(elev);
-        }
-
-        int nextDown = 0;
-        int nextUp   = 1;
-        int ethresh  = (int)(1.5 * robot.ELEV_CPI);
-
-        for(int eIdx = 0; eIdx < robot.liftPositions.size() - 1; eIdx++)
-        {
-            if(raiseElev && curElevPos + ethresh >=
-                                    robot.liftPositions.get(eIdx) + robot.MICRO_MIN)
-            {
-                nextUp = eIdx + 1;
-            }
-        }
-
-        for(int eIdx = robot.liftPositions.size() - 1; eIdx > 0; eIdx--)
-        {
-            if(lowerElev && curElevPos - ethresh <=
-                                    robot.liftPositions.get(eIdx) + robot.MICRO_MIN)
-            {
-                nextDown = eIdx - 1;
-            }
-        }
-
-//            RobotLog.dd(TAG,"UP_DOWN cur %d dwn %d %d up %d %d",
-//                    curElevPos,
-//                    nextDown, robot.liftPositions.get(nextDown),
-//                    nextUp, robot.liftPositions.get(nextUp));
-
-        nextDown = Math.max(0, nextDown);
-        nextUp   = Math.min(robot.liftPositions.size() - 1, nextUp);
-
-        if(lowerElev)
-        {
-            int dPos = robot.liftPositions.get(nextDown);
-            RobotLog.dd(TAG, "LowerElev. curPos=%d nextDown=%d dPos=%d",
-                    curElevPos, nextDown, dPos);
-            if(robot.elevMotor != null)
-            {
-                robot.elevMotor.setTargetPosition(dPos);
-                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.75;
-                robot.elevMotor.setPower(elev);
-                eActive = true;
-            }
-            else if(robot.elevServo != null)
-            {
-                double nrmPos = (dPos * 1.0)/robot.MICRO_RNG;
-                RobotLog.dd(TAG, "LowerElev. dPos=%d nrmPos=%.2f", dPos, nrmPos);
-                robot.elevServo.setPosition(nrmPos);
-            }
-        }
-        else if(raiseElev)
-        {
-            int uPos = robot.liftPositions.get(nextUp);
-            RobotLog.dd(TAG, "RaiseElev. curPos=%d nextUp=%d uPos=%d",
-                    curElevPos, nextUp, uPos);
-            if(robot.elevMotor != null)
-            {
-                robot.elevMotor.setTargetPosition(uPos);
-                robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elev = 0.75;
-                robot.elevMotor.setPower(elev);
-                eActive = true;
-            }
-            else if(robot.elevServo != null)
-            {
-                double nrmPos = (uPos * 1.0)/robot.MICRO_RNG;
-                RobotLog.dd(TAG, "RaiseElev. uPos=%d nrmPos=%.2f", uPos, nrmPos);
-                robot.elevServo.setPosition(nrmPos);
-            }
-        }
-        else if (holdElev && robot.elevMotor != null)
-        {
-            int curPos = robot.elevMotor.getCurrentPosition();
-            robot.elevMotor.setTargetPosition(curPos);
-            robot.elevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            elev = 0.65;
-            robot.elevMotor.setPower(elev);
-            eActive = true;
-        }
-        else if (decrElev && robot.elevServo != null)
-        {
-            int dPos = curElevPos - (int)(1.0 * robot.ELEV_CPI) - robot.MICRO_MIN;
-            int limit = robot.liftPositions.get(0);
-            RobotLog.dd(TAG, "DecrElev. dPos=%d limit=%d", dPos, limit);
-            dPos = Math.max(limit, dPos);
-            double nrmPos = dPos * 1.0/robot.MICRO_RNG;
-            RobotLog.dd(TAG, "DecrElev. dPos=%d nrmPos=%.2f", dPos, nrmPos);
-            robot.elevServo.setPosition(nrmPos);
-        }
-        else if (incrElev && robot.elevServo != null)
-        {
-            int uPos = curElevPos + (int)(1.0 * robot.ELEV_CPI)  - robot.MICRO_MIN;
-            int limit = robot.liftPositions.get(robot.liftPositions.size() - 1);
-            RobotLog.dd(TAG, "IncrElev. uPos=%d limit=%d", uPos, limit);
-            uPos = Math.min(limit, uPos);
-            double nrmPos = uPos * 1.0/robot.MICRO_RNG;
-            RobotLog.dd(TAG, "IncrElev. uPos=%d nrmPos=%.2f", uPos, nrmPos);
-            robot.elevServo.setPosition(nrmPos);
-        }
-    }
-
-    private void controlPitch()
-    {
-        if(robot.gpitch == null)
-        {
-            return;
-        }
-        boolean toggle_gpitch = gpad2.just_pressed(ManagedGamepad.Button.X);
-        double pitch          = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
-
-        // Pitch (Gripper angle servo) (x: toggles between closed and open position)
-
-        double locMin = robot.getGpitchMin();
-        double locMax = robot.getGpitchMax();
-
-        double dp = robot.getGpitchDownPos();
-        double up = robot.getGpitchUpPos();
-
-        if(dp > up)
-        {
-            locMin = robot.getGpitchMax();
-            locMax = robot.getGpitchMin();
-        }
-
-        double outPitch = dp;
-
-        double thresh = 0.001;
-
-        if(pitch > thresh)  outPitch = locMax;
-        else if(pitch < -thresh) outPitch = locMin;
-
-        if (toggle_gpitch)
-        {
-            if (currentPitchState == PitchState.PITCH_UP)
-            {
-                currentPitchState = PitchState.PITCH_DOWN;
-                robot.retractGpitch();
-            }
-            else if (currentPitchState == PitchState.PITCH_DOWN)
-            {
-                currentPitchState = PitchState.PITCH_UP;
-                robot.deployGpitch();
-            }
-            pActive = true;
-        }
-
-        if (Math.abs(pitch) > 0.001)
-        {
-            pActive = false;
-        }
-
-        if(!pActive && robot.gpitch != null)
-        {
-            robot.gpitch.setPosition(outPitch);
-        }
-    }
-
-    private void controlPusher()
-    {
-        boolean toggle_jflicker   = gpad2.just_pressed(ManagedGamepad.Button.Y);
-        // Jewel Flicker (y: toggles between up and down positions)
-        if (toggle_jflicker)
-        {
-            if (currentFlickerState == FlickerState.DOWN)
-            {
-                currentFlickerState = FlickerState.UP;
-                robot.deployFlicker();
-            }
-            else if (currentFlickerState == FlickerState.UP)
-            {
-                currentFlickerState = FlickerState.DOWN;
-                robot.stowFlicker();
-            }
-        }
+        robot.stowMarker();
+        robot.stowParker();
     }
 
     private void controlArm()
@@ -623,8 +357,11 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void controlHolder() {
 
-        boolean lowerHolder     = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-        boolean raiseHolder         = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+        boolean lowerHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+        boolean raiseHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+        boolean lowerOne         = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
+        boolean raiseOne         = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
+        double moveDist          = 1.0;
 
         if(lowerHolder)
         {
@@ -636,6 +373,16 @@ public class Teleop_Driver extends InitLinearOpMode
             //setting to true raises holder
             robot.putHolderAtLatch();
         }
+        else if(lowerOne)
+        {
+            //Lowers holder by one unit
+            robot.moveHolder(-moveDist);
+        }
+        else if (raiseOne)
+        {
+            //Raises holder by one unit
+            robot.moveHolder(moveDist);
+        }
     }
 
     private void processControllerInputs()
@@ -644,10 +391,6 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(!shiftControls)
         {
-            controlElevator();
-            controlPitch();
-            controlGrippers();
-            controlPusher();
             controlHolder();
         }
         else

@@ -130,10 +130,10 @@ public class GripPipelineLonger
                 filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
 	}
 
-	public void processSilver(Mat goldSource)
+	public void processSilver(Mat silverSource)
 	{
 		@SuppressWarnings("UnnecessaryLocalVariable")
-		Mat blurInput = goldSource;
+		Mat blurInput = silverSource;
 		BlurType blurType = BlurType.get("Gaussian Blur");
 		double blurRadius = 4.0;
 		if(blurOutput == null)
@@ -210,9 +210,9 @@ public class GripPipelineLonger
 
         // Step HSV_Threshold0:
         Mat hsvThresholdInput = blurOutput;
-        double[] hsvThresholdHue = {12, 48};
-        double[] hsvThresholdSaturation = {0.0, 44.0};
-        double[] hsvThresholdValue = {34.0, 105.0};
+        double[] hsvThresholdHue =        {100, 130}; //{12, 48};
+        double[] hsvThresholdSaturation = { 34,  98}; //{0.0, 44.0};
+        double[] hsvThresholdValue =      { 82, 155}; //{34.0, 105.0};
         hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
         // Step CV_erode0:
@@ -309,6 +309,25 @@ public class GripPipelineLonger
         }
         return new Rect(x, 0, width, height);
     }
+
+	public Rect centerMask()
+	{
+		double xMaskPct = 0.15;
+		int height = 200;
+		int width  = 512;
+		int imgWidth = 512;
+
+		int xStart = width/2;
+
+		if(resizeImageOutput != null)
+		{
+			height = resizeImageOutput.height();
+			width  = (int)(resizeImageOutput.width() * xMaskPct);
+			xStart = (imgWidth - width) / 2;
+		}
+
+		return new Rect(xStart, 0, width, height);
+	}
 
 	public Mat roiMat()                                 { return roiMat; }
 	public Mat resizeImageOutput()                      { return resizeImageOutput; }

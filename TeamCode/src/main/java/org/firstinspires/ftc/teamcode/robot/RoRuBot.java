@@ -34,12 +34,14 @@ public class RoRuBot extends TilerunnerGtoBot {
     private final double HANGER_LEAD = HANGER_PITCH * HANGER_STARTS; //8 mm/rev
     private final double HANGER_CPMM = HANGER_EXT_GEAR * HANGER_CPOR / HANGER_LEAD;
     private final double HANGER_CPI = HANGER_CPMM * 25.4;
-    private final double HANGER_DIST = 7.5;
-    private final double RELEASE_DIST = 7.5;
+    private final double HANGER_DIST = 6.0;
+    private final double PRELATCH_DIST = 4.5;
+    private final double RELEASE_DIST = 8.5;
     private final int HANGER_CNTS = (int) (HANGER_CPI * HANGER_DIST);
     private final int RELEASE_CNTS = (int) (HANGER_CPI * RELEASE_DIST);
+    private final int PRELATCH_CNTS = (int) (HANGER_CPI * PRELATCH_DIST);
     @SuppressWarnings("FieldCanBeLocal")
-    private final int HANGER_THRESH = (int) (0.25 * HANGER_CPI);
+    private final int HANGER_THRESH = (int) (0.1 * HANGER_CPI);
 
     //With motor forward, +ve speed = lower (retract), -ve speed - raise (extend)
 
@@ -51,15 +53,23 @@ public class RoRuBot extends TilerunnerGtoBot {
     @SuppressWarnings("FieldCanBeLocal")
     private final int ENC_COUNTS_HANGER_RELEASE = -RELEASE_CNTS;
     @SuppressWarnings("FieldCanBeLocal")
+    private final int ENC_COUNTS_HANGER_PRELATCH = -PRELATCH_CNTS;
+    @SuppressWarnings("FieldCanBeLocal")
     private final int ENC_COUNTS_HANGER_BOT = 0;
 
     private Servo _markerServo;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerStow = 0.5;
+    private final double _markerStow = 0.78;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerDrop = 0.75;
+    private final double _markerDrop = 0.24;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerPark = 0.25;
+    private final double _markerPark = 0.24;
+
+    private Servo _parkerServo;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final double _parkerStow = 0.00;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final double _parkerPark = 1.00;
 
     public RoRuBot() {
         super();
@@ -82,6 +92,7 @@ public class RoRuBot extends TilerunnerGtoBot {
         initHolder();
         initCapabilities();
         initMarker();
+        initParker();
     }
 
     @Override
@@ -106,13 +117,11 @@ public class RoRuBot extends TilerunnerGtoBot {
             _liftyBoi.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             _liftyBoi.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             _liftyBoi.setPower(0.0f);
+            _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            capMap.put("holder", true);
         } catch (Exception e) {
             RobotLog.ee(TAG, "ERROR get hardware map in initHolder\n" + e.toString());
         }
-
-        capMap.put("holder", true);
-
-
     }
 
     @Override
@@ -123,11 +132,43 @@ public class RoRuBot extends TilerunnerGtoBot {
     private void initMarker() {
         try {
             _markerServo = hwMap.servo.get("marker");
-            capMap.put("holder", true);
             _markerServo.setPosition(_markerStow);
+            capMap.put("holder", true);
         } catch (Exception e) {
             RobotLog.ee(TAG, "ERROR get hardware map in initMarker\n" + e.toString());
         }
+    }
+
+    private void initParker() {
+        try {
+            _parkerServo = hwMap.servo.get("parker");
+            _parkerServo.setPosition(_parkerStow);
+            capMap.put("holder", true);
+        } catch (Exception e) {
+            RobotLog.ee(TAG, "ERROR get hardware map in initParker\n" + e.toString());
+        }
+    }
+
+    public int getLiftyPos()
+    {
+        int pos = -9999;
+        if(_liftyBoi != null) pos = _liftyBoi.getCurrentPosition();
+        return pos;
+    }
+
+    public void threadedHolderStow()
+    {
+        class HolderRunnable implements Runnable
+        {
+            public void run()
+            {
+                putHolderAtStow();
+            }
+        }
+
+        HolderRunnable mr = new HolderRunnable();
+        Thread holderThread = new Thread(mr, "holderThread");
+        holderThread.start();
     }
 
     public void moveHolder(double inches)
@@ -156,6 +197,28 @@ public class RoRuBot extends TilerunnerGtoBot {
         setHolderPos(ENC_COUNTS_HANGER_RELEASE);
     }
 
+    public void putHolderAtPrelatch()
+    {
+        //This puts the holder just below the latch
+        setHolderPos(ENC_COUNTS_HANGER_PRELATCH);
+    }
+
+    public void threadputHolderAtPrelatch()
+    {
+        class HolderRunnable implements Runnable
+        {
+            public void run()
+            {
+                putHolderAtPrelatch();
+            }
+        }
+
+        HolderRunnable mr = new HolderRunnable();
+        Thread holderThread = new Thread(mr, "holderThread");
+        holderThread.start();
+    }
+
+    @SuppressWarnings("unused")
     public void setHolderPos(boolean raiseBot)
     {
         int targetPos;
@@ -190,7 +253,7 @@ public class RoRuBot extends TilerunnerGtoBot {
         _liftyBoi.setPower(holderSpd);
 
         ElapsedTime liftTimer = new ElapsedTime();
-        double liftTimeLimit = 0.0;
+        double liftTimeLimit = 5.0;
         while(op.opModeIsActive() && liftTimer.seconds() < liftTimeLimit)
         {
             RobotLog.dd(TAG, "In lift.  targetpos=" + targetPos + " curPos=" + _liftyBoi.getCurrentPosition());
@@ -222,5 +285,17 @@ public class RoRuBot extends TilerunnerGtoBot {
     {
         if(_markerServo != null)
             _markerServo.setPosition(_markerStow);
+    }
+
+    public void deployParker()
+    {
+        if(_parkerServo == null) return;
+        _parkerServo.setPosition(_parkerPark);
+    }
+
+    public void stowParker()
+    {
+        if(_parkerServo == null) return;
+        _parkerServo.setPosition(_parkerStow);
     }
 }

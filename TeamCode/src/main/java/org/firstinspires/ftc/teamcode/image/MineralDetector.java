@@ -98,8 +98,10 @@ public class MineralDetector extends Detector {
             pitcntrs = gpl.convexHullsOutput();
 
             RobotLog.dd(TAG, "Finding pit mask");
-            Rect mask = gpl.findMask(pitcntrs);
-            Imgproc.rectangle(sizedImage, mask.tl(), mask.br(), new Scalar(0, 0, 0), -1);
+            Rect pitMask = gpl.findMask(pitcntrs);
+            Rect ctrMask = gpl.centerMask();
+            Imgproc.rectangle(sizedImage, pitMask.tl(), pitMask.br(), new Scalar(0, 0, 0), -1);
+            Imgproc.rectangle(sizedImage, ctrMask.tl(), ctrMask.br(), new Scalar(0, 0, 0), -1);
         }
 
         if(ctrScan)
@@ -195,60 +197,6 @@ public class MineralDetector extends Detector {
         {
             foundPosition = MineralDetector.Position.RIGHT;
             //Yay it in deh right!!!!!!!!!!!
-        }
-    }
-
-    private void extract_old() {
-        Mat hsvImage = new Mat(showImg.width(), showImg.height(), showImg.type());
-        Mat fltImage = new Mat();
-        Mat yellow_areas = new Mat();
-
-
-        Imgproc.cvtColor(showImg, hsvImage, Imgproc.COLOR_RGB2HSV);
-/// Apply mask
-        Core.inRange(hsvImage, new Scalar(0, 128, 73), new Scalar(44, 255, 255), yellow_areas);
-// find contuors
-        // merge nearby and find min rectangle
-        Mat hchy = new Mat();
-        List<MatOfPoint> contours = new ArrayList<>();
-
-        Imgproc.findContours(yellow_areas, contours, hchy,
-                Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        Iterator<MatOfPoint> each = contours.iterator();
-        double maxArea = 0;
-        while (each.hasNext()) {
-            MatOfPoint wrapper = each.next();
-            double area = Imgproc.contourArea(wrapper);
-            if (area > maxArea)
-                maxArea = area;
-        }
-
-        each = contours.iterator();
-        Rect bounded_box;
-        int found_x_ptr = 0;
-        while (each.hasNext()) {
-
-            MatOfPoint contour = each.next();
-
-            bounded_box = Imgproc.boundingRect(contour);
-
-            if (bounded_box.height > 200 && bounded_box.height < 500 &&
-                    bounded_box.width > 200 && bounded_box.width < 500) {
-
-                found_x_ptr = (bounded_box.width/2 + bounded_box.x);
-
-            }
-        }
-        if (found_x_ptr < 1632) {
-            foundPosition = MineralDetector.Position.CENTER;
-            //Yay it in deh center!!!!!!!!!!
-        } else if (found_x_ptr > 1632) {
-            foundPosition = MineralDetector.Position.RIGHT;
-            //Yay it in deh right!!!!!!!!!!!
-        } else {
-            foundPosition = Position.LEFT;
-            //dang it. It in left...
         }
     }
 }
