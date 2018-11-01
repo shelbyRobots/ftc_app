@@ -156,7 +156,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         ElapsedTime mTimer = new ElapsedTime();
         boolean doMen = false;
-        while(mTimer.seconds() < 3.0)
+        while(mTimer.seconds() < 5.0)
         {
             gpad1.update();
             if(gpad1.just_pressed(ManagedGamepad.Button.A))
@@ -206,7 +206,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         ElapsedTime gyroTimer = new ElapsedTime();
         boolean gyroSetToField = false;
         boolean botInit = false;
-        while(gyroTimer.seconds() < 15.0)
+        while(gyroTimer.seconds() < 10.0)
         {
             gpad1.update();
             if(gpad1.just_pressed(ManagedGamepad.Button.X))
@@ -221,6 +221,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
 
         dashboard.displayPrintf(0, "GYRO CALIBRATING DO NOT TOUCH OR START");
+        RoRuBot.curOpModeType = ShelbyBot.OpModeType.AUTO;
         robot.init(this, robotName);
 
         if (robot.imu != null || robot.gyro  != null)
@@ -283,6 +284,18 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         if(roRuBot != null)
         {
+//            ElapsedTime liftAdjTimer = new ElapsedTime();
+//            while(liftAdjTimer.seconds() < 10.0)
+//            {
+//                gpad2.update();
+//                if(gpad2.just_pressed(ManagedGamepad.Button.D_UP)) roRuBot.moveHolder(1.0);
+//                if(gpad2.just_pressed(ManagedGamepad.Button.D_DOWN)) roRuBot.moveHolder(-1.0);
+//                if(gpad2.just_pressed(ManagedGamepad.Button.A)) break;
+//                dashboard.displayPrintf(9, "LIFTYBOI ADJUST");
+//            }
+
+            roRuBot.zeroHolder();
+
             RobotLog.dd(TAG, "Stow Liftyboi");
             roRuBot.putHolderAtStow();
             RobotLog.dd(TAG, "Stow Marker");
@@ -545,8 +558,6 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private void doScan(int segIdx)
     {
-        roRuBot.threadedHolderStow();
-
         if(ctrScan)
         {
             RobotLog.dd(TAG, "doScanForward");
@@ -624,6 +635,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
     private void doDrop(int segIdx)
     {
+        roRuBot.threadedHolderStow();
         RobotLog.dd(TAG, "Dropping marker");
 
         if(roRuBot != null)

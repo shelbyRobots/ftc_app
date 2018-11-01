@@ -16,6 +16,8 @@ public class RoRuBot extends TilerunnerGtoBot {
     //5202 series yellow jacket motor w/ 5.2:1 gear box has 145.6 cpr of output shaft
     //  1150 rpm (19.17 rps) no load speed
     //
+    // Replaced with 13.7:1 gear box motor with 383.6 cpr
+    //
     //lift is made with 1:1 gear between motor output shaft and lead screw
     //
     //gobilda lead screw has 7.9in range, 2mm pitch, and 4 start
@@ -26,8 +28,8 @@ public class RoRuBot extends TilerunnerGtoBot {
     //25.125rev * 145.6 cpr = 3658 counts
 
     private final double HANGER_CPER = 28; //quad encoder cnts/encoder rev
-    private final double HANGER_INT_GEAR = 5.2;
-    private final double HANGER_CPOR = HANGER_CPER * HANGER_INT_GEAR; //145.6 cnts/outShaftRev
+    private final double HANGER_INT_GEAR = 13.7;  // 5.2;
+    private final double HANGER_CPOR = HANGER_CPER * HANGER_INT_GEAR; //383.6 //145.6 cnts/outShaftRev
     private final double HANGER_EXT_GEAR = 1.0;
     private final double HANGER_PITCH = 2.0; //2.0mm/pitch
     private final int HANGER_STARTS = 4; //pitch/rev
@@ -49,11 +51,11 @@ public class RoRuBot extends TilerunnerGtoBot {
     //TOP is with lifter extended (bot down).
     //BOT is with lifter retracted (bot raised).
     @SuppressWarnings("FieldCanBeLocal")
-    private final int ENC_COUNTS_HANGER_TOP = -HANGER_CNTS;
+    private final int ENC_COUNTS_HANGER_TOP = HANGER_CNTS;
     @SuppressWarnings("FieldCanBeLocal")
-    private final int ENC_COUNTS_HANGER_RELEASE = -RELEASE_CNTS;
+    private final int ENC_COUNTS_HANGER_RELEASE = RELEASE_CNTS;
     @SuppressWarnings("FieldCanBeLocal")
-    private final int ENC_COUNTS_HANGER_PRELATCH = -PRELATCH_CNTS;
+    private final int ENC_COUNTS_HANGER_PRELATCH = PRELATCH_CNTS;
     @SuppressWarnings("FieldCanBeLocal")
     private final int ENC_COUNTS_HANGER_BOT = 0;
 
@@ -61,15 +63,23 @@ public class RoRuBot extends TilerunnerGtoBot {
     @SuppressWarnings("FieldCanBeLocal")
     private final double _markerStow = 0.78;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerDrop = 0.24;
+    private final double _markerDrop = 0.98;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerPark = 0.24;
+    private final double _markerPark = 0.78;
 
     private Servo _parkerServo;
     @SuppressWarnings("FieldCanBeLocal")
     private final double _parkerStow = 0.00;
     @SuppressWarnings("FieldCanBeLocal")
     private final double _parkerPark = 1.00;
+
+    private static final int ARMP_COUNTS_PER_MOTOR_REV = 28;
+    private static final int ARMP_GEAR_ONE = 188;
+    private static final double ARMP_GEAR_TWO = 1;
+    private static final double ARMP_CPR = ARMP_COUNTS_PER_MOTOR_REV * ARMP_GEAR_ONE * ARMP_GEAR_TWO;
+    public static final double ARM_CPD = ARMP_CPR/360.0;
+    public  DcMotor  armPitch   = null;
+    public  DcMotor  armExtend   = null;
 
     public RoRuBot() {
         super();
@@ -90,9 +100,9 @@ public class RoRuBot extends TilerunnerGtoBot {
         initSensors(initDirSensor);
         initArm();
         initHolder();
-        initCapabilities();
         initMarker();
         initParker();
+        initCapabilities();
     }
 
     @Override
@@ -105,6 +115,17 @@ public class RoRuBot extends TilerunnerGtoBot {
 
     @Override
     public void initArm() {
+        RobotLog.dd(TAG, "GTO initArm");
+        try
+        {
+            armExtend = hwMap.dcMotor.get("armExtend");
+            armPitch  = hwMap.dcMotor.get("armPitch");
+            capMap.put("arm", true);
+        }
+        catch(Exception e)
+        {
+            RobotLog.ee(TAG, "ERROR get hardware map in initArm\n" + e.toString());
+        }
     }
 
     @Override
@@ -113,7 +134,7 @@ public class RoRuBot extends TilerunnerGtoBot {
         try {
             _liftyBoi = hwMap.dcMotor.get("liftyboi");
 
-            _liftyBoi.setDirection(DcMotorSimple.Direction.FORWARD);
+            _liftyBoi.setDirection(DcMotorSimple.Direction.REVERSE);
             _liftyBoi.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             _liftyBoi.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             _liftyBoi.setPower(0.0f);
@@ -132,7 +153,7 @@ public class RoRuBot extends TilerunnerGtoBot {
     private void initMarker() {
         try {
             _markerServo = hwMap.servo.get("marker");
-            _markerServo.setPosition(_markerStow);
+//            _markerServo.setPosition(_markerStow);
             capMap.put("holder", true);
         } catch (Exception e) {
             RobotLog.ee(TAG, "ERROR get hardware map in initMarker\n" + e.toString());
@@ -142,7 +163,7 @@ public class RoRuBot extends TilerunnerGtoBot {
     private void initParker() {
         try {
             _parkerServo = hwMap.servo.get("parker");
-            _parkerServo.setPosition(_parkerStow);
+//            _parkerServo.setPosition(_parkerStow);
             capMap.put("holder", true);
         } catch (Exception e) {
             RobotLog.ee(TAG, "ERROR get hardware map in initParker\n" + e.toString());
@@ -174,8 +195,13 @@ public class RoRuBot extends TilerunnerGtoBot {
     public void moveHolder(double inches)
     {
         int curPos = _liftyBoi.getCurrentPosition();
-        int cnts = (int) (-inches*HANGER_CPI);
+        int cnts = (int) (inches*HANGER_CPI);
         setHolderPos(curPos + cnts);
+    }
+
+    public void zeroHolder()
+    {
+        _liftyBoi.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void putHolderAtLatch()
@@ -247,7 +273,7 @@ public class RoRuBot extends TilerunnerGtoBot {
 
         _liftyBoi.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        double holderSpd = 0.5;
+        double holderSpd = 0.9;
 
         _liftyBoi.setTargetPosition(targetPos);
         _liftyBoi.setPower(holderSpd);
@@ -263,16 +289,37 @@ public class RoRuBot extends TilerunnerGtoBot {
                 break;
             }
         }
-        _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //_liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void setHolderSpeed(double spd)
+    {
+        if(Math.abs(spd) < 0.1)
+        {
+            spd = 0.0;
+            _liftyBoi.setTargetPosition(_liftyBoi.getCurrentPosition());
+            _liftyBoi.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        else
+        {
+            if (spd >= 0.1 && _liftyBoi.getCurrentPosition() < (ENC_COUNTS_HANGER_RELEASE - HANGER_THRESH))
+            {
+                _liftyBoi.setPower(spd);
+                _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            else if (spd <= -0.1 && _liftyBoi.getCurrentPosition() > (ENC_COUNTS_HANGER_BOT + HANGER_THRESH))
+            {
+                _liftyBoi.setPower(spd);
+                _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            else _liftyBoi.setPower(0.0);
+        }
     }
 
     public void dropMarker()
     {
         if(_markerServo == null) return;
         _markerServo.setPosition(_markerDrop);
-        int dropTimeout = 500; //500ms = 0.5s
-        op.sleep(dropTimeout);
-        _markerServo.setPosition(_markerStow);
     }
 
     public void parkMarker()

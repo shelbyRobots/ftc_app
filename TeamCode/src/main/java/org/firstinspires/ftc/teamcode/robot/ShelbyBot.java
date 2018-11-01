@@ -46,6 +46,11 @@ import java.util.Map;
 public class ShelbyBot
 {
     protected LinearOpMode op = null;
+
+    public enum OpModeType {TELE, AUTO, UNKNOWN}
+
+    public static OpModeType curOpModeType = OpModeType.UNKNOWN;
+
     /* Public OpMode members. */
     public DcMotor  leftMotor   = null;
     public DcMotor  rightMotor  = null;

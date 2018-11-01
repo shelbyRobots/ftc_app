@@ -278,8 +278,15 @@ public class Drivetrain
                 setEndValues("COLOR_FIND " + linLpos + " " + linRpos);
                 RobotLog.ii(TAG, "FOUND LINE %d %d %d", curRed, curGrn, curBlu);
                 foundLine = true;
+                //RobotLog.ii(TAG, "colseg tgtLRpos: %d %d",
+                //        tgtLpositions.get(0), tgtRpositions.get(0));
+                //RobotLog.ii(TAG, "colseg curLRpos: %d %d",
+                //        curLpositions.get(0), curRpositions.get(0));
+                //RobotLog.ii(TAG, "colseg colSensOff: %d", colSensOffset);
                 setPositions(tgtLpositions, curLpositions, -colSensOffset);
                 setPositions(tgtRpositions, curRpositions, -colSensOffset);
+                //RobotLog.ii(TAG, "TRYING TO DRIVE COLOFFSET");
+                //driveDistanceLinear(colSensOffset/CPI, pwr, dir, targetHdg, false);
                 break;
             }
             else

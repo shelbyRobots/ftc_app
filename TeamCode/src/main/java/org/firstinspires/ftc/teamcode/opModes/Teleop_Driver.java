@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -26,6 +25,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private void initPreStart()
     {
         robot.setName(pmgr.getBotName());
+        robot.curOpModeType = ShelbyBot.OpModeType.TELE;
 
         /* Initialize the hardware variables. */
         RobotLog.dd(TAG, "Initialize robot");
@@ -36,11 +36,12 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.numRmotors  > 0)
         {
             RobotLog.dd(TAG, "Initialize drivetrain");
+            robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
             dtrn.init(robot);
 
             dtrn.setRampUp(false);
             dtrn.setRampDown(false);
-            robot.setDriveDir(ShelbyBot.DriveDir.INTAKE);
+
             RobotLog.dd(TAG, "Start Aend fHdg %.2f", robot.getAutonEndHdg());
             //RobotLog.dd(TAG, "Start Hdg %.2f", robot.get);
             RobotLog.dd(TAG, "Start Pos %s", robot.getAutonEndPos().toString());
@@ -65,70 +66,36 @@ public class Teleop_Driver extends InitLinearOpMode
     {
         if(!robot.getCapability("arm")) return;
 
-        double  rslide      = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+        double  aslide      = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
         boolean pitchUp     =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
         boolean pitchDown   =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-        boolean openRgrip   =  gpad2.pressed(ManagedGamepad.Button.L_BUMP);
 
-        rslide = ishaper.shape(rslide);
+        aslide = ishaper.shape(aslide);
 
         int pitchDir = 1;
         if(pitchDown) pitchDir = -1;
 
-        int CNT_PER_MOTOR_REV = 28;
-        int GEAR_1 = 40;
-        double GEAR_2 = 40.0/120.0;
-
-        if((pitchDown || pitchUp) && robot.relPitch != null)
+        if((pitchDown || pitchUp) && robot.armPitch != null)
         {
-            int curPos = robot.relPitch.getCurrentPosition();
-            double CNT_PER_PITCH_REV =
-                    CNT_PER_MOTOR_REV * GEAR_1 * GEAR_2;
+            int curPos = robot.armPitch.getCurrentPosition();
 
-            double CNT_PER_PITCH_DEG = CNT_PER_PITCH_REV / 360.0;
+            double CNT_PER_PITCH_DEG = RoRuBot.ARM_CPD;
 
-            int DEG_PER_STEP = 20;
+            int DEG_PER_STEP = 10;
 
             int pitchInc = (int)(DEG_PER_STEP * CNT_PER_PITCH_DEG);
             int newPos = prevRpitch + pitchDir * pitchInc;
-            RobotLog.dd(TAG, "Moving Relic Pitch from %d to %d. CPD=%.2f",
+            RobotLog.dd(TAG, "Moving Arm Pitch from %d to %d. CPD=%.2f",
                     curPos, newPos, CNT_PER_PITCH_DEG);
-            robot.relPitch.setTargetPosition(newPos);
-            robot.relPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.relPitch.setPower(0.7);
+            robot.armPitch.setTargetPosition(newPos);
+            robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.armPitch.setPower(0.7);
             prevRpitch += pitchDir * pitchInc;
         }
 
-        if(robot.relClamp != null)
+        if(robot.armExtend != null)
         {
-            double clampPos;
-            if(openRgrip)
-            {
-                clampPos = relClampOpenPos;
-            }
-            else
-            {
-                clampPos = relClampClosedPos;
-            }
-
-            RobotLog.dd(TAG, "Setting RelClamp to %.2f", clampPos);
-            robot.relClamp.setPosition(clampPos);
-        }
-
-
-        if(robot.relExtend != null)
-        {
-            double rslideSpd = Math.abs(rslide);
-
-            if(rslide >= 0.0)
-            {
-                robot.relExtend.setDirection(DcMotorSimple.Direction.FORWARD);
-            }
-            else
-            {
-                robot.relExtend.setDirection(DcMotorSimple.Direction.REVERSE);
-            }
-            robot.relExtend.setPower(rslideSpd);
+            robot.armExtend.setPower(aslide);
         }
     }
 
@@ -153,20 +120,20 @@ public class Teleop_Driver extends InitLinearOpMode
         double raw_right    = -gpad1.value(ManagedGamepad.AnalogInput.R_STICK_Y);
         double raw_turn     =  gpad1.value(ManagedGamepad.AnalogInput.R_STICK_X);
 
-        boolean goBox       =  gpad1.just_pressed(ManagedGamepad.Button.L_TRIGGER);
-        boolean goPit       =  gpad1.just_pressed(ManagedGamepad.Button.R_TRIGGER);
-
-        if(goBox)
-        {
-            goToBox();
-            return;
-        }
-
-        if(goPit)
-        {
-            goToPit();
-            return;
-        }
+//        boolean goBox       =  gpad1.just_pressed(ManagedGamepad.Button.L_TRIGGER);
+//        boolean goPit       =  gpad1.just_pressed(ManagedGamepad.Button.R_TRIGGER);
+//
+//        if(goBox)
+//        {
+//            goToBox();
+//            return;
+//        }
+//
+//        if(goPit)
+//        {
+//            goToPit();
+//            return;
+//        }
 
         double shp_left  = ishaper.shape(raw_left,  0.1);
         double shp_right = ishaper.shape(raw_right, 0.1);
@@ -361,6 +328,7 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean raiseHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
         boolean lowerOne         = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
         boolean raiseOne         = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
+        double hldrSpd           = -gamepad2.left_stick_y;
         double moveDist          = 1.0;
 
         if(lowerHolder)
@@ -382,6 +350,10 @@ public class Teleop_Driver extends InitLinearOpMode
         {
             //Raises holder by one unit
             robot.moveHolder(moveDist);
+        }
+        else if (Math.abs(hldrSpd) > 0.1)
+        {
+            robot.setHolderSpeed(hldrSpd);
         }
     }
 
@@ -530,10 +502,10 @@ public class Teleop_Driver extends InitLinearOpMode
 //            gpad1.log(1);
 //            gpad2.log(2);
 
-            if(robot.relPitch != null)
+            if(robot.armPitch != null)
             {
-                dashboard.displayPrintf(5, "Rpitch cnt %d",
-                        robot.relPitch.getCurrentPosition());
+                dashboard.displayPrintf(5, "ArmPitch cnt %d",
+                        robot.armPitch.getCurrentPosition());
             }
             idle();
         }
@@ -601,11 +573,6 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private enum FlickerState { UP, DOWN }
     private FlickerState currentFlickerState = FlickerState.UP;
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private final double relClampOpenPos = 1.0;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final double relClampClosedPos = 0.0;
 
     private boolean pActive = false;
     private boolean eActive = false;

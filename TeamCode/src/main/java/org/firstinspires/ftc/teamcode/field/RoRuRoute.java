@@ -45,15 +45,17 @@ public class RoRuRoute extends Route
 
         boolean goForTwo = false;
 
+//        Point2d tmpPt = new Point2d("TMP", -12.5, 11.5);
         if(startPos == StartPos.START_1) {
             points.add(RoRuField.RLLP);
+//            addPoint(points, fwd, 0.5, 1.00, encType, drop, tmpPt);
             addPoint(points, fwd, 0.25, 1.00, colType, align, RoRuField.RLTP);
             addPoint(points, fwd, 0.35, 1.00, encType, scan,  RoRuField.RLTP);
             addPoint(points, fwd, 0.50, 1.00, encType, push,  RoRuField.RLM2);
             addPoint(points, rev, 0.50, 1.00, encType, none,  RoRuField.RLR1);
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLR2);
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLDT);
-            addPoint(points, fwd, 0.70, 1.00, encType, drop,  RoRuField.RLDP);
+            addPoint(points, fwd, 0.60, 1.00, encType, drop,  RoRuField.RLDP);
         if(goForTwo) {
             addPoint(points, rev, 0.70, 1.00, encType, push, RoRuField.RRM2);
             addPoint(points, fwd, 0.70, 1.00, encType, none, RoRuField.RLDP);
@@ -69,7 +71,7 @@ public class RoRuRoute extends Route
             addPoint(points, fwd, 0.50, 1.00, encType, push,  RoRuField.RRM2);
             addPoint(points, fwd, 0.60, 1.00, encType, drop,  RoRuField.RRDP);
             addPoint(points, rev, 0.60, 1.00, encType, none,  RoRuField.RRR1);
-            addPoint(points, rev, 0.70, 1.00, encType, park,  RoRuField.RRPP);
+            addPoint(points, rev, 0.60, 1.00, encType, park,  RoRuField.RRPP);
         }
 
         return points;
