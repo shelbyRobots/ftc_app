@@ -25,7 +25,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private void initPreStart()
     {
         robot.setName(pmgr.getBotName());
-        robot.curOpModeType = ShelbyBot.OpModeType.TELE;
+        RoRuBot.curOpModeType = ShelbyBot.OpModeType.TELE;
 
         /* Initialize the hardware variables. */
         RobotLog.dd(TAG, "Initialize robot");
@@ -56,8 +56,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void initPostStart()
     {
+        robot.zeroArmPitch();
         robot.threadputHolderAtPrelatch();
-        robot.stowHolder();
         robot.stowMarker();
         robot.stowParker();
     }
@@ -66,31 +66,45 @@ public class Teleop_Driver extends InitLinearOpMode
     {
         if(!robot.getCapability("arm")) return;
 
+        if(robot.armPitch == null) return;
+        if(robot.armExtend == null) return;
+
         double  aslide      = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
+        double  apitch      = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
         boolean pitchUp     =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
         boolean pitchDown   =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+        boolean pUpBig      =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
+        boolean pDownBig    =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
 
         aslide = ishaper.shape(aslide);
+        apitch = apitch * 0.5;
 
         int pitchDir = 1;
-        if(pitchDown) pitchDir = -1;
+        if(pitchDown || pDownBig) pitchDir = -1;
 
-        if((pitchDown || pitchUp) && robot.armPitch != null)
+        if((pitchDown || pitchUp || pUpBig || pDownBig))
         {
             int curPos = robot.armPitch.getCurrentPosition();
 
             double CNT_PER_PITCH_DEG = RoRuBot.ARM_CPD;
 
             int DEG_PER_STEP = 10;
+            int DEG_PER_BIGSTEP = 30;
+            int stepSize = DEG_PER_STEP;
 
-            int pitchInc = (int)(DEG_PER_STEP * CNT_PER_PITCH_DEG);
-            int newPos = prevRpitch + pitchDir * pitchInc;
+            if(pUpBig || pDownBig) stepSize = DEG_PER_BIGSTEP;
+
+            int pitchInc = (int)(stepSize * CNT_PER_PITCH_DEG);
+            int newPos = curPos + pitchDir * pitchInc;
             RobotLog.dd(TAG, "Moving Arm Pitch from %d to %d. CPD=%.2f",
                     curPos, newPos, CNT_PER_PITCH_DEG);
             robot.armPitch.setTargetPosition(newPos);
             robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.armPitch.setPower(0.7);
-            prevRpitch += pitchDir * pitchInc;
+        }
+        else
+        {
+            robot.setArmSpeed(apitch, false);
         }
 
         if(robot.armExtend != null)
@@ -101,6 +115,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void controlDrive()
     {
+        if(robot.leftMotors.size() == 0 && robot.rightMotors.size() == 0) return;
         // Run wheels in tank mode
         // (note: The joystick goes negative when pushed forwards, so negate it)
         boolean toggle_run_mode   = gpad1.just_pressed(ManagedGamepad.Button.X);
@@ -115,6 +130,7 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean fwd_step          = gpad1.pressed(ManagedGamepad.Button.D_UP);
         boolean back_step         = gpad1.pressed(ManagedGamepad.Button.D_DOWN);
         boolean fst_dtl           = gpad1.pressed(ManagedGamepad.Button.L_BUMP);
+        boolean xfst_dtl          = gpad1.pressed(ManagedGamepad.Button.L_TRIGGER);
 
         double raw_left     = -gpad1.value(ManagedGamepad.AnalogInput.L_STICK_Y);
         double raw_right    = -gpad1.value(ManagedGamepad.AnalogInput.R_STICK_Y);
@@ -154,8 +170,9 @@ public class Teleop_Driver extends InitLinearOpMode
         double fHdg = robot.getGyroFhdg();
         double detail_speed = 0.18;
         if(fst_dtl) detail_speed = 0.3;
+        if(xfst_dtl) detail_speed = 0.5;
 
-        double maxIPS = 45.0;
+        double maxIPS = 40.0;
         double maxRPS = maxIPS/(4.0*Math.PI);
         double maxDPS = maxRPS*360.0;
 
@@ -322,13 +339,14 @@ public class Teleop_Driver extends InitLinearOpMode
         }
     }
 
-    private void controlHolder() {
-
+    private void controlHolder()
+    {
         boolean lowerHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
         boolean raiseHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
         boolean lowerOne         = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
         boolean raiseOne         = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
         double hldrSpd           = -gamepad2.left_stick_y;
+        boolean overrideLims     = gpad2.pressed(ManagedGamepad.Button.L_BUMP);
         double moveDist          = 1.0;
 
         if(lowerHolder)
@@ -351,9 +369,9 @@ public class Teleop_Driver extends InitLinearOpMode
             //Raises holder by one unit
             robot.moveHolder(moveDist);
         }
-        else if (Math.abs(hldrSpd) > 0.1)
+        else if (Math.abs(hldrSpd) > 0.01)
         {
-            robot.setHolderSpeed(hldrSpd);
+            robot.setHolderSpeed(hldrSpd, overrideLims);
         }
     }
 
@@ -524,7 +542,8 @@ public class Teleop_Driver extends InitLinearOpMode
         {
             if(estimatePos)
             {
-                dtrn.setCurValues();
+                if (robot.leftMotors.size() > 0 && robot.rightMotors.size() >0)
+                    dtrn.setCurValues();
                 dtrn.logData();
             }
 

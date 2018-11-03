@@ -36,6 +36,8 @@ import ftclib.FtcChoiceMenu;
 import ftclib.FtcMenu;
 import ftclib.FtcValueMenu;
 
+import static org.firstinspires.ftc.teamcode.field.Route.ParkPos.DEFEND_PARK;
+
 //After starting on latch, opmode needs to lower/detach
 // Then
 //  - align (possibly with tape
@@ -260,6 +262,12 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         RobotLog.ii(TAG, "BOT      %s", robotName);
 
         Route pts = new RoRuRoute(startPos, alliance, robotName);
+        if(pts instanceof RoRuRoute && parkPos == DEFEND_PARK)
+        {
+            RobotLog.dd(TAG, "Setting up to go for two");
+            ((RoRuRoute) pts).setGoForTwo(true);
+        }
+
         pathSegs.addAll(Arrays.asList(pts.getSegments()));
 
         initHdg = pathSegs.get(0).getFieldHeading();
@@ -297,7 +305,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             roRuBot.zeroHolder();
 
             RobotLog.dd(TAG, "Stow Liftyboi");
-            roRuBot.putHolderAtStow();
+            //roRuBot.putHolderAtStow();
             RobotLog.dd(TAG, "Stow Marker");
             roRuBot.stowMarker();
             roRuBot.stowParker();
@@ -602,7 +610,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         {
             dhdgs[i]+=curHdg;
             RobotLog.dd(TAG, "doScanForward " + pos[i]);
-            if (i != 0) doGyroTurn(dhdgs[i], "scanAdj");
+            if (i != 0)
+            {
+                doEncoderTurn(dhdgs[i], "scanAdj");
+                doGyroTurn(dhdgs[i], "scanAdj");
+            }
 
             if(getMineralPos() == MineralDetector.Position.GOLDAHEAD)
             {
@@ -648,9 +660,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
 
         boolean goForTwo = false;
+        if(parkPos == DEFEND_PARK) goForTwo = true;
         //noinspection ConstantConditions
         if(startPos == Route.StartPos.START_1 & goForTwo)
         {
+            RobotLog.dd(TAG, "Adjusting points for go for Two");
             Segment sMin = pathSegs.get(segIdx + 1);
             Segment sRev = pathSegs.get(segIdx + 2);
             sMin.setEndPt(tgtMinPt2);
@@ -883,7 +897,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, parkMenu);
 
         parkMenu.addChoice("CENTER_PARK", Route.ParkPos.CENTER_PARK, delayMenu);
-        parkMenu.addChoice("DEFEND_PARK", Route.ParkPos.DEFEND_PARK, delayMenu);
+        parkMenu.addChoice("DEFEND_PARK", DEFEND_PARK, delayMenu);
 
         robotNameMenu.addChoice("GTO1", "GTO1", delayMenu);
         robotNameMenu.addChoice("GTO2", "GTO2", delayMenu);

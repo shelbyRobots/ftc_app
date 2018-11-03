@@ -61,9 +61,9 @@ public class RoRuField extends Field
     static final Point2d RRDP = new Point2d("RRDP",  58.0, -48.0);
     static final Point2d RRPP = new Point2d("RRPP",  60.0,  17.0);
 
-    static final Point2d BRM3 = new Point2d("BRM3", -45.0,  21.0);
+    static final Point2d BRM3 = new Point2d("BRM3", -44.0,  21.0);
     static final Point2d BRM2 = new Point2d("BRM2", -33.0,  33.0);
-    static final Point2d BRM1 = new Point2d("BRM1", -21.0,  45.0);
+    static final Point2d BRM1 = new Point2d("BRM1", -22.0,  45.0);
 
     public static Point2d getMineralPt(Alliance alnc,
                                        PositionOption startPos,

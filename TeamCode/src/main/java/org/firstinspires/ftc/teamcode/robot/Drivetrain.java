@@ -877,8 +877,8 @@ public class Drivetrain
 
     public void setCurValues()
     {
-        setPos(curLpositions, robot.leftMotors);
-        setPos(curRpositions, robot.rightMotors);
+        if(robot.leftMotors.size()  > 0) setPos(curLpositions, robot.leftMotors);
+        if(robot.rightMotors.size() > 0) setPos(curRpositions, robot.rightMotors);
         boolean printVals = false;
 
         if (datalogtimer.seconds() > 0.1)

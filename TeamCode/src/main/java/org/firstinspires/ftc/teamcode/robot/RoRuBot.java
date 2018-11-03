@@ -135,7 +135,7 @@ public class RoRuBot extends TilerunnerGtoBot {
             _liftyBoi = hwMap.dcMotor.get("liftyboi");
 
             _liftyBoi.setDirection(DcMotorSimple.Direction.REVERSE);
-            _liftyBoi.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            //_liftyBoi.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             _liftyBoi.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             _liftyBoi.setPower(0.0f);
             _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -168,6 +168,11 @@ public class RoRuBot extends TilerunnerGtoBot {
         } catch (Exception e) {
             RobotLog.ee(TAG, "ERROR get hardware map in initParker\n" + e.toString());
         }
+    }
+
+    public void zeroArmPitch()
+    {
+        armPitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public int getLiftyPos()
@@ -223,6 +228,7 @@ public class RoRuBot extends TilerunnerGtoBot {
         setHolderPos(ENC_COUNTS_HANGER_RELEASE);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void putHolderAtPrelatch()
     {
         //This puts the holder just below the latch
@@ -289,16 +295,15 @@ public class RoRuBot extends TilerunnerGtoBot {
                 break;
             }
         }
-        //_liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void setHolderSpeed(double spd)
+    public void setHolderSpeed(double spd, boolean overrideLims)
     {
+        if(_liftyBoi == null) return;
         if(Math.abs(spd) < 0.1)
         {
-            spd = 0.0;
-            _liftyBoi.setTargetPosition(_liftyBoi.getCurrentPosition());
-            _liftyBoi.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            _liftyBoi.setPower(0.0);
         }
         else
         {
@@ -312,7 +317,45 @@ public class RoRuBot extends TilerunnerGtoBot {
                 _liftyBoi.setPower(spd);
                 _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
+            else if(overrideLims)
+            {
+                _liftyBoi.setPower(spd);
+                _liftyBoi.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
             else _liftyBoi.setPower(0.0);
+        }
+    }
+
+    public void setArmSpeed(double spd, boolean overrideLims)
+    {
+        if(armPitch == null) return;
+        if(Math.abs(spd) < 0.1)
+        {
+            armPitch.setPower(0.0);
+            armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+        else
+        {
+            armPitch.setPower(spd);
+//            int aPitchMax = 10000; // Find real max pos
+//            int aPitchMin = 0; // Find real min pos
+//            if (spd >= 0.1 && armPitch.getCurrentPosition() < (aPitchMax))
+//            if (spd >= 0.1 && armPitch.getCurrentPosition() < (aPitchMax))
+//            {
+//                armPitch.setPower(spd);
+//                armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            }
+//            else if (spd <= -0.1 && armPitch.getCurrentPosition() > (aPitchMin))
+//            {
+//                armPitch.setPower(spd);
+//                armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            }
+//            else if(overrideLims)
+//            {
+//                armPitch.setPower(spd);
+//                armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            }
+//            else armPitch.setPower(0.0);
         }
     }
 

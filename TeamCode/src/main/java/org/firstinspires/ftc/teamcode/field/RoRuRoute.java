@@ -17,8 +17,8 @@ public class RoRuRoute extends Route
     @Override
     protected Vector<Point2d> initPoints()
     {
-        RobotLog.dd(TAG, "In RrRoute initPoints alliance=%s startPos=%s",
-                alliance, startPos);
+        RobotLog.dd(TAG, "In RoroRoute initPoints alliance=%s startPos=%s goForTwo=%s",
+                alliance, startPos, goForTwo);
         Vector<Point2d> points = new Vector<>(MAX_SEGMENTS);
 
         //convenience declarations to make call params shorter
@@ -42,8 +42,6 @@ public class RoRuRoute extends Route
 
         Point2d RRBs = new Point2d("RRBs", RrField.RRBS.getX() + fakeDist,
                                            RrField.RRBS.getY());
-
-        boolean goForTwo = false;
 
 //        Point2d tmpPt = new Point2d("TMP", -12.5, 11.5);
         if(startPos == StartPos.START_1) {
@@ -83,6 +81,13 @@ public class RoRuRoute extends Route
     {
         super(startPos, alliance);
         RrField.initField(robotName, 0);
+    }
+
+    private boolean goForTwo = false;
+
+    public void setGoForTwo(boolean goForTwo)
+    {
+        this.goForTwo = goForTwo;
     }
 
     protected Point2d convertRtoB(Point2d rpt)
