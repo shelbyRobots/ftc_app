@@ -61,22 +61,23 @@ public class RoRuBot extends TilerunnerGtoBot {
 
     private Servo _markerServo;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerStow = 0.78;
+    private double _markerStow = 0.98;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerDrop = 0.98;
+    private double _markerDrop = 0.78;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _markerPark = 0.78;
+    private double _markerPark = 0.78;
 
     private Servo _parkerServo;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _parkerStow = 0.00;
+    private double _parkerStow = 0.00;
     @SuppressWarnings("FieldCanBeLocal")
-    private final double _parkerPark = 1.00;
+    private double _parkerPark = 1.00;
 
     private static final int ARMP_COUNTS_PER_MOTOR_REV = 28;
     private static final int ARMP_GEAR_ONE = 188;
     private static final double ARMP_GEAR_TWO = 1;
     private static final double ARMP_CPR = ARMP_COUNTS_PER_MOTOR_REV * ARMP_GEAR_ONE * ARMP_GEAR_TWO;
+    @SuppressWarnings("unused")
     public static final double ARM_CPD = ARMP_CPR/360.0;
     public  DcMotor  armPitch   = null;
     public  DcMotor  armExtend   = null;
@@ -87,6 +88,33 @@ public class RoRuBot extends TilerunnerGtoBot {
         CAMERA_X_IN_BOT = 0.0f * (float) Units.MM_PER_INCH;
         CAMERA_Y_IN_BOT = 0.0f * (float) Units.MM_PER_INCH;
         CAMERA_Z_IN_BOT = 0.0f * (float) Units.MM_PER_INCH;
+    }
+
+    public RoRuBot(String name)
+    {
+        this();
+        this.name = name;
+
+        double mDrop = 0.78;
+        double mStow = 0.50;
+        double mPark = 0.78;
+        double pStow = 0.00;
+        double pPark = 1.00;
+
+        if(name.equals("GTO1"))
+        {
+            mStow = 0.50;
+            mDrop = 0.80;
+            mPark = 0.50;
+            pStow = 0.00;
+            pPark = 1.00;
+        }
+
+        _markerStow = mStow;
+        _markerDrop = mDrop;
+        _markerPark = mPark;
+        _parkerStow = pStow;
+        _parkerPark = pPark;
     }
 
     @Override
@@ -172,6 +200,7 @@ public class RoRuBot extends TilerunnerGtoBot {
 
     public void zeroArmPitch()
     {
+        if(armPitch == null) return;
         armPitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 

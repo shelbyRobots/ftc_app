@@ -186,7 +186,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
         else
         {
-            robot = new RoRuBot();
+            robot = new RoRuBot(robotName);
             roRuBot = (RoRuBot)robot;
         }
 
@@ -575,6 +575,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         RobotLog.dd(TAG, "doScan");
         double hdgAdj = 15.0;
+        Point2d cntMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.CENTER);
+        Point2d rgtMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.RIGHT);
+        Point2d curPt = pathSegs.get(segIdx).getTgtPt();
+        //Finish bisector
+
         double newHdg = robot.getGyroFhdg() - hdgAdj;
         doGyroTurn(newHdg, "scanAdj");
 

@@ -54,12 +54,15 @@ public class RoRuRoute extends Route
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLR2);
             addPoint(points, fwd, 0.60, 1.00, encType, none,  RoRuField.RLDT);
             addPoint(points, fwd, 0.60, 1.00, encType, drop,  RoRuField.RLDP);
-        if(goForTwo) {
-            addPoint(points, rev, 0.70, 1.00, encType, push, RoRuField.RRM2);
-            addPoint(points, fwd, 0.70, 1.00, encType, none, RoRuField.RLDP);
+            if(goForTwo) {
+                 addPoint(points, rev, 0.70, 1.00, encType, push, RoRuField.RRM2);
+            }
+            else
+            {
+                addPoint(points, fwd, 0.70, 1.00, encType, none, RoRuField.RLDP);
+                addPoint(points, rev, 0.70, 1.00, encType, none, RoRuField.RLDT);
+                addPoint(points, rev, 0.70, 1.00, encType, park, RoRuField.RLPP);
         }
-            addPoint(points, rev, 0.70, 1.00, encType, none,  RoRuField.RLDT);
-            addPoint(points, rev, 0.70, 1.00, encType, park,  RoRuField.RLPP);
         }
         else if(startPos == StartPos.START_2)
         {

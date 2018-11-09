@@ -208,7 +208,7 @@ public class Drivetrain
         int colOverCnt = 0;
         if(useCol)
         {
-            double colOverDist = 6.0;
+            double colOverDist = 3.0;
             colOverCnt = distanceToCounts(colOverDist);
             dst += colOverDist;
         }

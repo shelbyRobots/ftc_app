@@ -62,6 +62,8 @@ public class Teleop_Driver extends InitLinearOpMode
         robot.stowParker();
     }
 
+    private boolean useCnts = true;
+
     private void controlArm()
     {
         if(!robot.getCapability("arm")) return;
@@ -69,46 +71,75 @@ public class Teleop_Driver extends InitLinearOpMode
         if(robot.armPitch == null) return;
         if(robot.armExtend == null) return;
 
+        int stowCounts  = 0;
+        int dropCounts  = -700;
+        int hoverCounts = -2300;
+        int grabCounts  = -2400;
+
         double  aslide      = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
         double  apitch      = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
-        boolean pitchUp     =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
-        boolean pitchDown   =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-        boolean pUpBig      =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
-        boolean pDownBig    =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
+//        boolean pitchUp     =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+//        boolean pitchDown   =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+//        boolean pUpBig      =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
+//        boolean pDownBig    =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
 
+        boolean dStow       =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+        boolean dDrop       =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+        boolean dHover      =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
+        boolean dGrab       =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
+        boolean changeMode  =  gpad2.just_pressed(ManagedGamepad.Button.A);
         aslide = ishaper.shape(aslide);
-        apitch = apitch * 0.5;
+        apitch = apitch * 0.3;
+
+        if(changeMode) useCnts = !useCnts;
 
         int pitchDir = 1;
-        if(pitchDown || pDownBig) pitchDir = -1;
 
-        if((pitchDown || pitchUp || pUpBig || pDownBig))
+        int counts = -9999;
+        if(dDrop)       counts = dropCounts;
+        else if(dHover) counts = hoverCounts;
+        else if(dGrab)  counts = grabCounts;
+        else if(dStow)  counts = stowCounts;
+
+//        if(pitchDown || pDownBig) pitchDir = -1;
+//
+//        if((pitchDown || pitchUp || pUpBig || pDownBig))
+//        {
+//            int curPos = robot.armPitch.getCurrentPosition();
+//
+//            double CNT_PER_PITCH_DEG = RoRuBot.ARM_CPD;
+//
+//            int DEG_PER_STEP = 10;
+//            int DEG_PER_BIGSTEP = 30;
+//            int stepSize = DEG_PER_STEP;
+//
+//            if(pUpBig || pDownBig) stepSize = DEG_PER_BIGSTEP;
+//
+//            int pitchInc = (int)(stepSize * CNT_PER_PITCH_DEG);
+//            int newPos = curPos + pitchDir * pitchInc;
+//            RobotLog.dd(TAG, "Moving Arm Pitch from %d to %d. CPD=%.2f",
+//                    curPos, newPos, CNT_PER_PITCH_DEG);
+//            robot.armPitch.setTargetPosition(newPos);
+//            robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.armPitch.setPower(0.7);
+//        }
+        if(useCnts)
         {
-            int curPos = robot.armPitch.getCurrentPosition();
-
-            double CNT_PER_PITCH_DEG = RoRuBot.ARM_CPD;
-
-            int DEG_PER_STEP = 10;
-            int DEG_PER_BIGSTEP = 30;
-            int stepSize = DEG_PER_STEP;
-
-            if(pUpBig || pDownBig) stepSize = DEG_PER_BIGSTEP;
-
-            int pitchInc = (int)(stepSize * CNT_PER_PITCH_DEG);
-            int newPos = curPos + pitchDir * pitchInc;
-            RobotLog.dd(TAG, "Moving Arm Pitch from %d to %d. CPD=%.2f",
-                    curPos, newPos, CNT_PER_PITCH_DEG);
-            robot.armPitch.setTargetPosition(newPos);
-            robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.armPitch.setPower(0.7);
+            if(counts != -9999) {
+                robot.armPitch.setTargetPosition(counts);
+                robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.armPitch.setPower(0.4);
+            }
         }
         else
         {
+            robot.armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.setArmSpeed(apitch, false);
         }
 
         if(robot.armExtend != null)
         {
+            RobotLog.dd(TAG, "moving slide %4.3f", aslide);
             robot.armExtend.setPower(aslide);
         }
     }
