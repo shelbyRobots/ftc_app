@@ -96,16 +96,16 @@ public class RoRuBot extends TilerunnerGtoBot {
         this.name = name;
 
         double mDrop = 0.78;
-        double mStow = 0.50;
+        double mStow = 0.98;
         double mPark = 0.78;
         double pStow = 0.00;
         double pPark = 1.00;
 
         if(name.equals("GTO1"))
         {
-            mStow = 0.50;
+            mStow = 0.40;
             mDrop = 0.80;
-            mPark = 0.50;
+            mPark = 0.80;
             pStow = 0.00;
             pPark = 1.00;
         }

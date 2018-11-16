@@ -208,7 +208,7 @@ public class Drivetrain
         int colOverCnt = 0;
         if(useCol)
         {
-            double colOverDist = 3.0;
+            double colOverDist = 1.0;
             colOverCnt = distanceToCounts(colOverDist);
             dst += colOverDist;
         }
@@ -261,7 +261,6 @@ public class Drivetrain
                     curLpositions.get(0), curRpositions.get(0),
                     tgtLpositions.get(0), tgtRpositions.get(0));
 
-            int COLOR_THRESH = 300;
             double lRem = countsToDistance(Math.abs(tgtLpositions.get(0) -
                                                             curLpositions.get(0)));
             double rRem = countsToDistance(Math.abs(tgtRpositions.get(0) -
@@ -662,6 +661,11 @@ public class Drivetrain
     public int angleToCounts(double angle, double radius)
     {
         return distanceToCounts(Math.toRadians(angle) * radius);
+    }
+
+    public void setColorThresh(int thresh)
+    {
+        COLOR_THRESH = thresh;
     }
 
     private double countsToAngle(int counts, double radius)
@@ -1436,6 +1440,8 @@ public class Drivetrain
     private int rampCntL = 240;
     private int rampCntM = 480;
     private int rampCntH = 960;
+
+    private int COLOR_THRESH = 300;
 
     private boolean lFirst = true;
 

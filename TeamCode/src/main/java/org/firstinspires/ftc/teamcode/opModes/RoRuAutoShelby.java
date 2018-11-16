@@ -243,6 +243,9 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         drvTrn.init(robot);
         drvTrn.setRampUp(false);
+        int colThresh = 300;
+        if(robotName.equals("GTO1")) colThresh = 3000;
+        drvTrn.setColorThresh(colThresh);
 
         dashboard.displayPrintf(1, "DrvTrn Inited");
 
@@ -262,6 +265,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         RobotLog.ii(TAG, "BOT      %s", robotName);
 
         Route pts = new RoRuRoute(startPos, alliance, robotName);
+        //noinspection ConstantConditions
         if(pts instanceof RoRuRoute && parkPos == DEFEND_PARK)
         {
             RobotLog.dd(TAG, "Setting up to go for two");
@@ -577,9 +581,27 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         double hdgAdj = 15.0;
         Point2d cntMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.CENTER);
         Point2d rgtMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.RIGHT);
+        Point2d lftMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.LEFT);
+        RobotLog.dd(TAG, "Ctr Orig Offset Min Pt: " + cntMinPt.toString());
+        RobotLog.dd(TAG, "Rgt Orig Offset Min Pt: " + rgtMinPt.toString());
+        RobotLog.dd(TAG, "Lft Orig Offset Min Pt: " + lftMinPt.toString());
+        Point2d cntMinOPt = RoRuField.getMinOffsetPt(alliance, startPos, MineralDetector.Position.CENTER);
+        Point2d rgtMinOPt = RoRuField.getMinOffsetPt(alliance, startPos, MineralDetector.Position.RIGHT);
+        Point2d lftMinOPt = RoRuField.getMinOffsetPt(alliance, startPos, MineralDetector.Position.LEFT);
+        RobotLog.dd(TAG, "Ctr New Offset Min Pt: " + cntMinOPt.toString());
+        RobotLog.dd(TAG, "Rgt New Offset Min Pt: " + rgtMinOPt.toString());
+        RobotLog.dd(TAG, "Lft New Offset Min Pt: " + lftMinOPt.toString());
+        Point2d cntMinAPt = RoRuField.getMinActualPt(alliance, startPos, MineralDetector.Position.CENTER);
+        Point2d rgtMinAPt = RoRuField.getMinActualPt(alliance, startPos, MineralDetector.Position.RIGHT);
+        Point2d lftMinAPt = RoRuField.getMinActualPt(alliance, startPos, MineralDetector.Position.LEFT);
+        RobotLog.dd(TAG, "Ctr New Actual Min Pt: " + cntMinAPt.toString());
+        RobotLog.dd(TAG, "Rgt New Actual Min Pt: " + rgtMinAPt.toString());
+        RobotLog.dd(TAG, "Lft New Actual Min Pt: " + lftMinAPt.toString());
         Point2d curPt = pathSegs.get(segIdx).getTgtPt();
         //Finish bisector
 
+        double curAng = pathSegs.get(segIdx).angle();
+//        double newHdg = curAng - hdgAdj;
         double newHdg = robot.getGyroFhdg() - hdgAdj;
         doGyroTurn(newHdg, "scanAdj");
 
@@ -980,12 +1002,12 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     private static Field.Alliance alliance = Field.Alliance.RED;
 
     private static PositionOption parkPos = Route.ParkPos.CENTER_PARK;
-
-    private int RED_THRESH = 15;
-    private int GRN_THRESH = 15;
-    private int BLU_THRESH = 15;
-    @SuppressWarnings("FieldCanBeLocal")
-    private int COLOR_THRESH = 20;
+//
+//    private int RED_THRESH = 15;
+//    private int GRN_THRESH = 15;
+//    private int BLU_THRESH = 15;
+//    @SuppressWarnings("FieldCanBeLocal")
+//    private int COLOR_THRESH = 20;
 
     private double delay = 0.0;
 

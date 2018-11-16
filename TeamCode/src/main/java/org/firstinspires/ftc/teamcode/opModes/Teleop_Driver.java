@@ -73,8 +73,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
         int stowCounts  = 0;
         int dropCounts  = -700;
-        int hoverCounts = -2300;
-        int grabCounts  = -2400;
+        int hoverCounts = -2000;
+        int grabCounts  = -2200;
 
         double  aslide      = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
         double  apitch      = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
@@ -89,7 +89,10 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean dGrab       =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
         boolean changeMode  =  gpad2.just_pressed(ManagedGamepad.Button.A);
         aslide = ishaper.shape(aslide);
-        apitch = apitch * 0.3;
+        apitch = ishaper.shape(apitch);
+        double MAX_APITCH = 0.3;
+        apitch = Math.min(apitch, MAX_APITCH);
+        apitch = Math.max(apitch, -MAX_APITCH);
 
         if(changeMode) useCnts = !useCnts;
 
@@ -380,6 +383,8 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean overrideLims     = gpad2.pressed(ManagedGamepad.Button.L_BUMP);
         double moveDist          = 1.0;
 
+        lowerHolder = false;
+        raiseHolder = false;
         if(lowerHolder)
         {
             //setting to false lowers holder which raises the bot

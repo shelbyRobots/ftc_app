@@ -85,22 +85,21 @@ public class MineralDetector extends Detector {
         ArrayList<MatOfPoint> goldcntrs;
         ArrayList<MatOfPoint> silvercntrs;
 
-
         if (pitScan)
         {
             gpl.processPit(sizedImage);
 
 //            RobotLog.dd(TAG, "Saving pitBlur image");
 //            saveImage(gpl.blurOutput(), "pitBlur");
-            RobotLog.dd(TAG, "Saving pitThres image");
-            saveImage(gpl.hsvThresholdOutput(), "pitThresh");
-
-            pitcntrs = gpl.convexHullsOutput();
-
-            RobotLog.dd(TAG, "Finding pit mask");
-            Rect pitMask = gpl.findMask(pitcntrs);
+//            RobotLog.dd(TAG, "Saving pitThres image");
+//            saveImage(gpl.hsvThresholdOutput(), "pitThresh");
+//
+//            pitcntrs = gpl.filterContoursOutput();
+//
+//            RobotLog.dd(TAG, "Finding pit mask");
+//            Rect pitMask = gpl.findMask(pitcntrs);
             Rect ctrMask = gpl.centerMask();
-            Imgproc.rectangle(sizedImage, pitMask.tl(), pitMask.br(), new Scalar(0, 0, 0), -1);
+            //Imgproc.rectangle(sizedImage, pitMask.tl(), pitMask.br(), new Scalar(0, 0, 0), -1);
             Imgproc.rectangle(sizedImage, ctrMask.tl(), ctrMask.br(), new Scalar(0, 0, 0), -1);
         }
 
@@ -124,23 +123,21 @@ public class MineralDetector extends Detector {
         RobotLog.dd(TAG, "Saving minThresh image");
         saveImage(gpl.hsvThresholdOutput(), "minThresh");
 
-        goldcntrs = gpl.convexHullsOutput();
+        goldcntrs = gpl.filterContoursOutput();
 
         Iterator<MatOfPoint> each = goldcntrs.iterator();
-
-
 
         Rect bounded_box;
         int found_x_ptr = 0;
         foundPosition = Position.LEFT;
 
-        RobotLog.dd(TAG, "Processing contours");
+        RobotLog.dd(TAG, "Processing %d contours", goldcntrs.size());
         if(ctrScan)
         {
             if(goldcntrs.size() == 0)
             {
                 gpl.processSilver(sizedImage);
-                silvercntrs = gpl.convexHullsOutput();
+                silvercntrs = gpl.filterContoursOutput();
 
                 if(silvercntrs.size() == 0)
                 {
@@ -161,7 +158,7 @@ public class MineralDetector extends Detector {
             }
             return;
         }
-        else
+        else // pitScan
         {
             if (goldcntrs.size() == 0)
             {
@@ -171,32 +168,35 @@ public class MineralDetector extends Detector {
             }
             else if (goldcntrs.size() > 1)
             {
-                RobotLog.ee(TAG, "Too Many Countours.  I don't know which is gold");
+                RobotLog.ee(TAG, "Too Many Countours=%d.  I don't know which is gold",
+                        goldcntrs.size());
                 foundPosition = Position.CENTER;
                 return;
             }
-        }
+            else //goldcntrs.size() == 1
+            {
+                for (MatOfPoint pts : goldcntrs)
+                {
+                    MatOfPoint contour = each.next();
+                    bounded_box = Imgproc.boundingRect(contour);
+                    found_x_ptr = (bounded_box.width/2 + bounded_box.x);
+                }
 
-        for (MatOfPoint pts : goldcntrs)
-        {
-            MatOfPoint contour = each.next();
-            bounded_box = Imgproc.boundingRect(contour);
-            found_x_ptr = (bounded_box.width/2 + bounded_box.x);
-        }
+                RobotLog.dd(TAG, "Center of Gold = " + found_x_ptr);
 
-        RobotLog.dd(TAG, "Center of Gold = " + found_x_ptr);
+                int midX = gpl.cvDilateOutput().width()/2;
 
-        int midX = gpl.cvDilateOutput().width()/2;
-
-        if (found_x_ptr < midX)
-        {
-            foundPosition = MineralDetector.Position.CENTER;
-            //Yay it in deh center!!!!!!!!!!
-        }
-        else
-        {
-            foundPosition = MineralDetector.Position.RIGHT;
-            //Yay it in deh right!!!!!!!!!!!
+                if (found_x_ptr < midX)
+                {
+                    foundPosition = MineralDetector.Position.CENTER;
+                    //Yay it in deh center!!!!!!!!!!
+                }
+                else
+                {
+                    foundPosition = MineralDetector.Position.RIGHT;
+                    //Yay it in deh right!!!!!!!!!!!
+                }
+            }
         }
     }
 }

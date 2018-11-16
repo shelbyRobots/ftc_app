@@ -43,8 +43,8 @@ public class GripPipelineLonger
 	public void sizeSource(Mat source0)
 	{
 		RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.cols(), source0.rows());
-		roiMat = new Mat(source0, new Rect(0, (int)(0.4 * source0.height()),
-				source0.width(), source0.height()/3));
+		roiMat = new Mat(source0, new Rect(0, (int)(0.54 * source0.height()),
+				source0.width(), source0.height()/4));
 		RobotLog.dd(TAG, " roiMat image WXH= %dx%d", roiMat.cols(), roiMat.rows());
 
 		int resizeImageWidth = 512;
