@@ -32,7 +32,7 @@ public class RoRuField extends Field
     static final Point2d RLTP = new Point2d("RLTP", -16.0,  -16.0);
     //includes offset for veh center. actual
     // RLM1 -46, -24; RLM2 -36, -36; RLM3 -25, -46
-    static final Point2d RLM1 = new Point2d("RLM1", -45.0,  -21.0); //R
+    static final Point2d RLM1 = new Point2d("RLM1", -43.0,  -23.0); //R
     static final Point2d RLM2 = new Point2d("RLM2", -33.0,  -33.0); //C
     static final Point2d RLM3 = new Point2d("RLM3", -21.0,  -45.0); //L
 
@@ -56,7 +56,7 @@ public class RoRuField extends Field
     static final Point2d RRDP = new Point2d("RRDP",  57.0, -54.0);
     static final Point2d RRPP = new Point2d("RRPP",  59.0,  16.0);
 
-    static final Point2d BLM1 = new Point2d("BLM1",  45.0,  21.0); //R
+    static final Point2d BLM1 = new Point2d("BLM1",  43.0,  23.0); //R
     static final Point2d BLM2 = new Point2d("BLM2",  33.0,  33.0); //C
     static final Point2d BLM3 = new Point2d("BLM3",  21.0,  45.0); //L
 

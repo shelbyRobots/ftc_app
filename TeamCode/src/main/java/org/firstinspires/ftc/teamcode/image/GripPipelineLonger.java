@@ -143,9 +143,9 @@ public class GripPipelineLonger
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
-		double[] hsvThresholdHue = {0.0, 55.0};
-		double[] hsvThresholdSaturation = {0.0, 78.0};
-		double[] hsvThresholdValue = {168.0, 255.0};
+		double[] hsvThresholdHue = {5.0, 53.0};
+		double[] hsvThresholdSaturation = {0.0, 60.0};
+		double[] hsvThresholdValue = {180.0, 255.0};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_erode0:

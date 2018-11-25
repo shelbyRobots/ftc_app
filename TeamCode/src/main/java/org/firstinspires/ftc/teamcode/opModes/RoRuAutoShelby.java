@@ -622,7 +622,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
     {
         double curHdg = robot.getGyroFhdg();
 
-        double dhdgs[] = { 0.0, -35.2, 35.2};
+        double dhdgs[] = { 0.0, -27.7, 27.7};
         MineralDetector.Position pos[] =
                 {
                         MineralDetector.Position.CENTER,

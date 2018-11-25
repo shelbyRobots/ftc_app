@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.image;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.CommonUtil;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
@@ -12,7 +11,6 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import hallib.HalDashboard;
 
@@ -69,7 +67,7 @@ public class MineralDetector extends Detector {
 
     private void extract()
     {
-        RobotLog.dd(TAG, "MineralDetector.extractDoubleMineral()");
+        RobotLog.dd(TAG, "MineralDetector.extract()");
         //GripPipeline gpl = new GripPipeline();
         GripPipelineLonger gpl = new GripPipelineLonger();
 
@@ -131,18 +129,20 @@ public class MineralDetector extends Detector {
         int found_x_ptr = 0;
         foundPosition = Position.LEFT;
 
-        RobotLog.dd(TAG, "Processing %d contours", goldcntrs.size());
+        RobotLog.dd(TAG, "Processing %d gold contours", goldcntrs.size());
         if(ctrScan)
         {
             if(goldcntrs.size() == 0)
             {
+                RobotLog.dd(TAG, "Digging for silver");
                 gpl.processSilver(sizedImage);
                 silvercntrs = gpl.filterContoursOutput();
+                RobotLog.dd(TAG, "Processing %d silver contours", silvercntrs.size());
 
                 if(silvercntrs.size() == 0)
                 {
                     foundPosition = Position.NONE;
-                    RobotLog.dd(TAG, "No Countours in center scan.");
+                    RobotLog.dd(TAG, "No Silver Countours in center scan.");
                 }
                 else
                 {
@@ -156,7 +156,6 @@ public class MineralDetector extends Detector {
                 foundPosition = Position.GOLDAHEAD;
                 RobotLog.dd(TAG, "In ctrScan mode and %d countours found", goldcntrs.size());
             }
-            return;
         }
         else // pitScan
         {
@@ -164,14 +163,12 @@ public class MineralDetector extends Detector {
             {
                 foundPosition = Position.LEFT;
                 RobotLog.dd(TAG, "No Countours.  Assuming left is gold");
-                return;
             }
             else if (goldcntrs.size() > 1)
             {
                 RobotLog.ee(TAG, "Too Many Countours=%d.  I don't know which is gold",
                         goldcntrs.size());
                 foundPosition = Position.CENTER;
-                return;
             }
             else //goldcntrs.size() == 1
             {
