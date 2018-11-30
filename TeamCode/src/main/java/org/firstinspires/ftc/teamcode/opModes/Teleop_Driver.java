@@ -71,17 +71,22 @@ public class Teleop_Driver extends InitLinearOpMode
         if(robot.armPitch == null) return;
         if(robot.armExtend == null) return;
 
+        if(robot.isElevTouchPressed() && !lastArmTouchPressed)
+        {
+            robot.armPitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
+
+        lastArmTouchPressed = robot.isElevTouchPressed();
+
         int stowCounts  = 0;
-        int dropCounts  = -700;
-        int hoverCounts = -2000;
-        int grabCounts  = -2200;
+        int dropCounts  = (int)(10 * robot.ARM_CPD);
+        int hoverCounts = (int)(20 * robot.ARM_CPD);
+        int grabCounts  = (int)(30 * robot.ARM_CPD);
+
+        double stowAngle = robot.ARM_ZERO_ANGLE;
 
         double  aslide      = -gpad2.value(ManagedGamepad.AnalogInput.L_STICK_Y);
         double  apitch      = -gpad2.value(ManagedGamepad.AnalogInput.R_STICK_Y);
-//        boolean pitchUp     =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
-//        boolean pitchDown   =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-//        boolean pUpBig      =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
-//        boolean pDownBig    =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
 
         boolean dStow       =  gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
         boolean dDrop       =  gpad2.just_pressed(ManagedGamepad.Button.D_UP);
@@ -104,28 +109,6 @@ public class Teleop_Driver extends InitLinearOpMode
         else if(dGrab)  counts = grabCounts;
         else if(dStow)  counts = stowCounts;
 
-//        if(pitchDown || pDownBig) pitchDir = -1;
-//
-//        if((pitchDown || pitchUp || pUpBig || pDownBig))
-//        {
-//            int curPos = robot.armPitch.getCurrentPosition();
-//
-//            double CNT_PER_PITCH_DEG = RoRuBot.ARM_CPD;
-//
-//            int DEG_PER_STEP = 10;
-//            int DEG_PER_BIGSTEP = 30;
-//            int stepSize = DEG_PER_STEP;
-//
-//            if(pUpBig || pDownBig) stepSize = DEG_PER_BIGSTEP;
-//
-//            int pitchInc = (int)(stepSize * CNT_PER_PITCH_DEG);
-//            int newPos = curPos + pitchDir * pitchInc;
-//            RobotLog.dd(TAG, "Moving Arm Pitch from %d to %d. CPD=%.2f",
-//                    curPos, newPos, CNT_PER_PITCH_DEG);
-//            robot.armPitch.setTargetPosition(newPos);
-//            robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//            robot.armPitch.setPower(0.7);
-//        }
         if(useCnts)
         {
             if(counts != -9999) {
@@ -631,6 +614,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private boolean pActive = false;
     private boolean eActive = false;
+
+    private boolean lastArmTouchPressed = false;
 
     @SuppressWarnings("FieldCanBeLocal")
     private boolean estimatePos = true;

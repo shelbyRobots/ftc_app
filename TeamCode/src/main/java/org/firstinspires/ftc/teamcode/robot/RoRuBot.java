@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -73,12 +74,12 @@ public class RoRuBot extends TilerunnerGtoBot {
     @SuppressWarnings("FieldCanBeLocal")
     private double _parkerPark = 1.00;
 
-    private static final int ARMP_COUNTS_PER_MOTOR_REV = 28;
-    private static final int ARMP_GEAR_ONE = 188;
-    private static final double ARMP_GEAR_TWO = 1;
-    private static final double ARMP_CPR = ARMP_COUNTS_PER_MOTOR_REV * ARMP_GEAR_ONE * ARMP_GEAR_TWO;
-    @SuppressWarnings("unused")
-    public static final double ARM_CPD = ARMP_CPR/360.0;
+    private DigitalChannel armIndexSensor = null;
+
+    @SuppressWarnings({"unused", "WeakerAccess"})
+    public double ARM_CPD;
+    @SuppressWarnings({"unused", "WeakerAccess"})
+    public double ARM_ZERO_ANGLE = 0.0;
     public  DcMotor  armPitch   = null;
     public  DcMotor  armExtend   = null;
 
@@ -101,6 +102,13 @@ public class RoRuBot extends TilerunnerGtoBot {
         double pStow = 0.00;
         double pPark = 1.00;
 
+        int ARMP_COUNTS_PER_MOTOR_REV = 28;
+        int ARMP_GEAR_ONE;
+        //Yellow jacket 43 RPM Motor; 2570 oz-in stall torque; 138:1, 3892 counts per gbox output rev
+        //Yellow jacket 30 RPM Motor; 3470 oz-in stall torque; 188:1, 5264 counts per gbox output rev
+        double ARMP_GEAR_TWO;
+        double ARMP_CPR;
+
         if(name.equals("GTO1"))
         {
             mStow = 0.40;
@@ -108,6 +116,14 @@ public class RoRuBot extends TilerunnerGtoBot {
             mPark = 0.80;
             pStow = 0.00;
             pPark = 1.00;
+
+            ARMP_GEAR_ONE = 138;
+            ARMP_GEAR_TWO = 2;
+        }
+        else
+        {
+            ARMP_GEAR_ONE = 188;
+            ARMP_GEAR_TWO = 2;
         }
 
         _markerStow = mStow;
@@ -115,6 +131,9 @@ public class RoRuBot extends TilerunnerGtoBot {
         _markerPark = mPark;
         _parkerStow = pStow;
         _parkerPark = pPark;
+
+        ARMP_CPR = ARMP_COUNTS_PER_MOTOR_REV * ARMP_GEAR_ONE * ARMP_GEAR_TWO;
+        ARM_CPD = ARMP_CPR/360.0;
     }
 
     @Override
@@ -141,6 +160,14 @@ public class RoRuBot extends TilerunnerGtoBot {
     public void initPushers() {
     }
 
+    public boolean isElevTouchPressed()
+    {
+        boolean touch = false;
+        if(armIndexSensor != null)
+            touch = !armIndexSensor.getState();
+        return touch;
+    }
+
     @Override
     public void initArm() {
         RobotLog.dd(TAG, "GTO initArm");
@@ -153,6 +180,16 @@ public class RoRuBot extends TilerunnerGtoBot {
         catch(Exception e)
         {
             RobotLog.ee(TAG, "ERROR get hardware map in initArm\n" + e.toString());
+        }
+
+        try
+        {
+            armIndexSensor = hwMap.get(DigitalChannel.class, "armTouch");
+            armIndexSensor.setMode(DigitalChannel.Mode.INPUT);
+        }
+        catch (Exception e)
+        {
+            RobotLog.ww(TAG, "WARNING initArm - no armTouch");
         }
     }
 
