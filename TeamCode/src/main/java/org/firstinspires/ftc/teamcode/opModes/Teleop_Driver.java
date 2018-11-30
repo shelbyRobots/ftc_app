@@ -93,29 +93,39 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean dHover      =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
         boolean dGrab       =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
         boolean changeMode  =  gpad2.just_pressed(ManagedGamepad.Button.A);
-        aslide = ishaper.shape(aslide);
-        apitch = ishaper.shape(apitch);
+        boolean toggleIntk  =  gpad2.just_pressed(ManagedGamepad.Button.L_BUMP);
+//        aslide = ishaper.shape(aslide);
+//        apitch = ishaper.shape(apitch);
         double MAX_APITCH = 0.3;
         apitch = Math.min(apitch, MAX_APITCH);
         apitch = Math.max(apitch, -MAX_APITCH);
 
-        if(changeMode) useCnts = !useCnts;
+        int counts = 0;
+
+        if(changeMode)
+        {
+            useCnts = !useCnts;
+        }
 
         int pitchDir = 1;
 
-        int counts = -9999;
-        if(dDrop)       counts = dropCounts;
-        else if(dHover) counts = hoverCounts;
-        else if(dGrab)  counts = grabCounts;
-        else if(dStow)  counts = stowCounts;
+        if(toggleIntk)
+        {
+            intakeOpen = !intakeOpen;
+            if(intakeOpen) robot.openIntake();
+            else robot.closeIntake();
+        }
 
         if(useCnts)
         {
-            if(counts != -9999) {
-                robot.armPitch.setTargetPosition(counts);
-                robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.armPitch.setPower(0.4);
-            }
+            if(changeMode)  counts = robot.armPitch.getCurrentPosition();
+            else if(dDrop)  counts = dropCounts;
+            else if(dHover) counts = hoverCounts;
+            else if(dGrab)  counts = grabCounts;
+            else if(dStow)  counts = stowCounts;
+            robot.armPitch.setTargetPosition(counts);
+            robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.armPitch.setPower(0.5);
         }
         else
         {
@@ -358,27 +368,27 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void controlHolder()
     {
-        boolean lowerHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
-        boolean raiseHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
+//        boolean lowerHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
+//        boolean raiseHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_UP);
         boolean lowerOne         = gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
         boolean raiseOne         = gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
         double hldrSpd           = -gamepad2.left_stick_y;
         boolean overrideLims     = gpad2.pressed(ManagedGamepad.Button.L_BUMP);
         double moveDist          = 1.0;
 
-        lowerHolder = false;
-        raiseHolder = false;
-        if(lowerHolder)
-        {
-            //setting to false lowers holder which raises the bot
-            robot.putHolderAtStow();
-        }
-        else if (raiseHolder)
-        {
-            //setting to true raises holder
-            robot.putHolderAtLatch();
-        }
-        else if(lowerOne)
+//        lowerHolder = false;
+//        raiseHolder = false;
+//        if(lowerHolder)
+//        {
+//            //setting to false lowers holder which raises the bot
+//            robot.putHolderAtStow();
+//        }
+//        else if (raiseHolder)
+//        {
+//            //setting to true raises holder
+//            robot.putHolderAtLatch();
+//        }
+        if(lowerOne)
         {
             //Lowers holder by one unit
             robot.moveHolder(-moveDist);
@@ -611,6 +621,8 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private enum FlickerState { UP, DOWN }
     private FlickerState currentFlickerState = FlickerState.UP;
+
+    private boolean intakeOpen = false;
 
     private boolean pActive = false;
     private boolean eActive = false;

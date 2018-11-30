@@ -74,6 +74,10 @@ public class RoRuBot extends TilerunnerGtoBot {
     @SuppressWarnings("FieldCanBeLocal")
     private double _parkerPark = 1.00;
 
+    private Servo intakeServo;
+    private double intakeClosed = 0.8;
+    private double intakeOpened = 0.2;
+
     private DigitalChannel armIndexSensor = null;
 
     @SuppressWarnings({"unused", "WeakerAccess"})
@@ -112,8 +116,8 @@ public class RoRuBot extends TilerunnerGtoBot {
         if(name.equals("GTO1"))
         {
             mStow = 0.40;
-            mDrop = 0.80;
-            mPark = 0.80;
+            mDrop = 0.10; //0.80;
+            mPark = 0.10;
             pStow = 0.00;
             pPark = 1.00;
 
@@ -149,6 +153,7 @@ public class RoRuBot extends TilerunnerGtoBot {
         initHolder();
         initMarker();
         initParker();
+        initIntake();
         initCapabilities();
     }
 
@@ -182,6 +187,8 @@ public class RoRuBot extends TilerunnerGtoBot {
             RobotLog.ee(TAG, "ERROR get hardware map in initArm\n" + e.toString());
         }
 
+        armPitch.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         try
         {
             armIndexSensor = hwMap.get(DigitalChannel.class, "armTouch");
@@ -190,6 +197,17 @@ public class RoRuBot extends TilerunnerGtoBot {
         catch (Exception e)
         {
             RobotLog.ww(TAG, "WARNING initArm - no armTouch");
+        }
+    }
+
+    private void initIntake()
+    {
+        try
+        {
+            intakeServo = hwMap.servo.get("intake");
+            capMap.put("intake", true);
+        } catch (Exception e) {
+            RobotLog.ee(TAG, "ERROR get hardware map in initIntake\n" + e.toString());
         }
     }
 
@@ -395,7 +413,7 @@ public class RoRuBot extends TilerunnerGtoBot {
     public void setArmSpeed(double spd, boolean overrideLims)
     {
         if(armPitch == null) return;
-        if(Math.abs(spd) < 0.1)
+        if(Math.abs(spd) < 0.05)
         {
             armPitch.setPower(0.0);
             armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -453,5 +471,17 @@ public class RoRuBot extends TilerunnerGtoBot {
     {
         if(_parkerServo == null) return;
         _parkerServo.setPosition(_parkerStow);
+    }
+
+    public void closeIntake()
+    {
+        if(intakeServo == null) return;
+        intakeServo.setPosition(intakeClosed);
+    }
+
+    public void openIntake()
+    {
+        if(intakeServo == null) return;
+        intakeServo.setPosition(intakeOpened);
     }
 }
