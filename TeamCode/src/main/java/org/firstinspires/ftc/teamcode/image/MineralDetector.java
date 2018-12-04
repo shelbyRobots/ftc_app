@@ -24,19 +24,30 @@ public class MineralDetector extends Detector {
 //        private static final int BINS = 8;
 //        private static final float MIN_VALUE = 0.0f;
 //        private static final float MAX_VALUE = 255.0f;
-        private static MineralDetector.Position foundPosition = MineralDetector.Position.NONE;
 
-        private HalDashboard dashboard;
-        private static final String TAG = "SJH_MCD";
+    private String bName = "GTO1";
 
-        public enum Position {
-            CENTER, RIGHT, LEFT, NONE, GOLDAHEAD, SILVERAHEAD
-        }
+    private static MineralDetector.Position foundPosition = MineralDetector.Position.NONE;
+
+    private HalDashboard dashboard;
+    private static final String TAG = "SJH_MCD";
+
+    public enum Position
+    {
+        CENTER, RIGHT, LEFT, NONE, GOLDAHEAD, SILVERAHEAD
+    }
 
     public MineralDetector()
-        {
-            dashboard = CommonUtil.getInstance().getDashboard();
-        }
+    {
+        name = "MineralDetector";
+        dashboard = CommonUtil.getInstance().getDashboard();
+    }
+
+    public MineralDetector(String name)
+    {
+        this();
+        this.bName = name;
+    }
 
     public void logTelemetry()
     {
@@ -70,6 +81,7 @@ public class MineralDetector extends Detector {
         RobotLog.dd(TAG, "MineralDetector.extract()");
         //GripPipeline gpl = new GripPipeline();
         GripPipelineLonger gpl = new GripPipelineLonger();
+        gpl.setName(bName);
 
 //        RobotLog.dd(TAG, "Saving source image");
 //        saveImage(showImg, "source");

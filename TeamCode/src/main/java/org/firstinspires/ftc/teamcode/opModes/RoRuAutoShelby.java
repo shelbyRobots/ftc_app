@@ -207,6 +207,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         dashboard.displayPrintf(7, "OR ALIGN TO FIRST SEG THEN HIT Y TO SKIP");
         ElapsedTime gyroTimer = new ElapsedTime();
         boolean gyroSetToField = false;
+        boolean gyroSetToSeg   = false;
         boolean botInit = false;
         while(gyroTimer.seconds() < 10.0)
         {
@@ -218,6 +219,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             }
             if(gpad1.just_pressed(ManagedGamepad.Button.Y))
             {
+                gyroSetToSeg = true;
                 break;
             }
         }
@@ -250,6 +252,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         dashboard.displayPrintf(1, "DrvTrn Inited");
 
         det = new MineralDetector();
+        det.setName(robotName);
         RobotLog.dd(TAG, "Setting up vuforia");
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RoRu);
 
@@ -578,7 +581,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         }
 
         RobotLog.dd(TAG, "doScan");
-        double hdgAdj = 15.0;
+        double hdgAdj = 14.0;
         Point2d cntMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.CENTER);
         Point2d rgtMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.RIGHT);
         Point2d lftMinPt = RoRuField.getMineralPt(alliance, startPos, MineralDetector.Position.LEFT);
@@ -923,8 +926,8 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         allianceMenu.addChoice("RED",  Field.Alliance.RED,  parkMenu);
         allianceMenu.addChoice("BLUE", Field.Alliance.BLUE, parkMenu);
 
-        parkMenu.addChoice("CENTER_PARK", Route.ParkPos.CENTER_PARK, delayMenu);
-        parkMenu.addChoice("DEFEND_PARK", DEFEND_PARK, delayMenu);
+        parkMenu.addChoice("CENTER_PARK", Route.ParkPos.CENTER_PARK, robotNameMenu);
+        parkMenu.addChoice("DEFEND_PARK", DEFEND_PARK, robotNameMenu);
 
         robotNameMenu.addChoice("GTO1", "GTO1", delayMenu);
         robotNameMenu.addChoice("GTO2", "GTO2", delayMenu);
@@ -938,11 +941,12 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         parkPos   = parkMenu.getCurrentChoiceObject();
         delay     = delayMenu.getCurrentValue();
 
-        int lnum = 3;
-        dashboard.displayPrintf(lnum++, "START: %s", startPos);
-        dashboard.displayPrintf(lnum++, "ALLIANCE: %s", alliance);
-        //noinspection UnusedAssignment
+        int lnum = 2;
         dashboard.displayPrintf(lnum++, "NAME: %s", robotName);
+        dashboard.displayPrintf(lnum++, "ALLIANCE: %s", alliance);
+        dashboard.displayPrintf(lnum++, "START: %s", startPos);
+        //noinspection UnusedAssignment
+        dashboard.displayPrintf(lnum++, "Pref Delay: %.2f", delay);
     }
 
     private void setupLogger()

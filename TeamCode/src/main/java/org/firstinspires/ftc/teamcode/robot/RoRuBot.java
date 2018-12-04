@@ -75,8 +75,10 @@ public class RoRuBot extends TilerunnerGtoBot {
     private double _parkerPark = 1.00;
 
     private Servo intakeServo;
-    private double intakeClosed = 0.8;
-    private double intakeOpened = 0.2;
+    private final double INTK_IN  = 1.0;
+    private final double INTK_OUT = 0.0;
+    private final double INTK_STP = 0.5;
+    private double lastIntakeRate = -1.0;
 
     private DigitalChannel armIndexSensor = null;
 
@@ -100,9 +102,9 @@ public class RoRuBot extends TilerunnerGtoBot {
         this();
         this.name = name;
 
-        double mDrop = 0.78;
-        double mStow = 0.98;
-        double mPark = 0.78;
+        double mDrop = 0.50;
+        double mStow = 0.80 ;
+        double mPark = 0.50;
         double pStow = 0.00;
         double pPark = 1.00;
 
@@ -115,7 +117,7 @@ public class RoRuBot extends TilerunnerGtoBot {
 
         if(name.equals("GTO1"))
         {
-            mStow = 0.40;
+            mStow = 0.50;
             mDrop = 0.10; //0.80;
             mPark = 0.10;
             pStow = 0.00;
@@ -473,15 +475,28 @@ public class RoRuBot extends TilerunnerGtoBot {
         _parkerServo.setPosition(_parkerStow);
     }
 
-    public void closeIntake()
+    public void intakeOut()
     {
         if(intakeServo == null) return;
-        intakeServo.setPosition(intakeClosed);
+        setIntakeRate(INTK_OUT);
     }
 
-    public void openIntake()
+    public void intakeIn()
     {
         if(intakeServo == null) return;
-        intakeServo.setPosition(intakeOpened);
+        setIntakeRate(INTK_IN);
+    }
+
+    public void intakeStop()
+    {
+        if(intakeServo == null) return;
+        setIntakeRate(INTK_STP);
+    }
+
+    private void setIntakeRate(double rate)
+    {
+        if(intakeServo == null) return;
+        if(rate != lastIntakeRate) intakeServo.setPosition(rate);
+        lastIntakeRate = rate;
     }
 }

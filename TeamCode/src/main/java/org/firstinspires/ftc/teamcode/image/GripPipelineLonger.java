@@ -40,10 +40,20 @@ public class GripPipelineLonger
 	private ArrayList<MatOfPoint> convexHullsOutput = new ArrayList<>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<>();
 
+	private String name = "GTO1";
+
+	public void setName(String name) {this.name = name;}
+
+	double GTO1_TOP = 0.54;
+	double GTO2_TOP = 0.45;
+
 	public void sizeSource(Mat source0)
 	{
 		RobotLog.dd(TAG, "Processing image WXH= %dx%d", source0.cols(), source0.rows());
-		roiMat = new Mat(source0, new Rect(0, (int)(0.54 * source0.height()),
+
+		double top = GTO1_TOP;
+		if(name.equals("GTO2")) top = GTO2_TOP;
+		roiMat = new Mat(source0, new Rect(0, (int)(top * source0.height()),
 				source0.width(), source0.height()/4));
 		RobotLog.dd(TAG, " roiMat image WXH= %dx%d", roiMat.cols(), roiMat.rows());
 

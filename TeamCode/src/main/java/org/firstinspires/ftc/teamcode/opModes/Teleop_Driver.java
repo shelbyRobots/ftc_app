@@ -25,6 +25,7 @@ public class Teleop_Driver extends InitLinearOpMode
     private void initPreStart()
     {
         robot.setName(pmgr.getBotName());
+        prevOpModeType = RoRuBot.curOpModeType;
         RoRuBot.curOpModeType = ShelbyBot.OpModeType.TELE;
 
         /* Initialize the hardware variables. */
@@ -57,12 +58,14 @@ public class Teleop_Driver extends InitLinearOpMode
     private void initPostStart()
     {
         robot.zeroArmPitch();
-        robot.threadputHolderAtPrelatch();
-        robot.stowMarker();
+        if(prevOpModeType == ShelbyBot.OpModeType.AUTO) robot.threadputHolderAtPrelatch();
+        //robot.stowMarker();
         robot.stowParker();
     }
 
     private boolean useCnts = true;
+
+    int counts = 0;
 
     private void controlArm()
     {
@@ -79,9 +82,9 @@ public class Teleop_Driver extends InitLinearOpMode
         lastArmTouchPressed = robot.isElevTouchPressed();
 
         int stowCounts  = 0;
-        int dropCounts  = (int)(10 * robot.ARM_CPD);
-        int hoverCounts = (int)(20 * robot.ARM_CPD);
-        int grabCounts  = (int)(30 * robot.ARM_CPD);
+        int dropCounts  = -250; //-(int)(10 * robot.ARM_CPD);
+        int hoverCounts = -500; //-(int)(20 * robot.ARM_CPD);
+        int grabCounts  = -750; //-(int)(30 * robot.ARM_CPD);
 
         double stowAngle = robot.ARM_ZERO_ANGLE;
 
@@ -93,14 +96,13 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean dHover      =  gpad2.just_pressed(ManagedGamepad.Button.D_LEFT);
         boolean dGrab       =  gpad2.just_pressed(ManagedGamepad.Button.D_RIGHT);
         boolean changeMode  =  gpad2.just_pressed(ManagedGamepad.Button.A);
-        boolean toggleIntk  =  gpad2.just_pressed(ManagedGamepad.Button.L_BUMP);
+        boolean intakeIn    =  gpad2.pressed(ManagedGamepad.Button.L_BUMP);
+        boolean intakeOut   =  gpad2.pressed(ManagedGamepad.Button.L_TRIGGER);
 //        aslide = ishaper.shape(aslide);
 //        apitch = ishaper.shape(apitch);
         double MAX_APITCH = 0.3;
         apitch = Math.min(apitch, MAX_APITCH);
         apitch = Math.max(apitch, -MAX_APITCH);
-
-        int counts = 0;
 
         if(changeMode)
         {
@@ -109,12 +111,9 @@ public class Teleop_Driver extends InitLinearOpMode
 
         int pitchDir = 1;
 
-        if(toggleIntk)
-        {
-            intakeOpen = !intakeOpen;
-            if(intakeOpen) robot.openIntake();
-            else robot.closeIntake();
-        }
+        if(intakeIn)       robot.intakeIn();
+        else if(intakeOut) robot.intakeOut();
+        else               robot.intakeStop();
 
         if(useCnts)
         {
@@ -123,9 +122,9 @@ public class Teleop_Driver extends InitLinearOpMode
             else if(dHover) counts = hoverCounts;
             else if(dGrab)  counts = grabCounts;
             else if(dStow)  counts = stowCounts;
-            robot.armPitch.setTargetPosition(counts);
-            robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.armPitch.setPower(0.5);
+            //robot.armPitch.setTargetPosition(counts);
+            //robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //robot.armPitch.setPower(0.5);
         }
         else
         {
@@ -133,9 +132,17 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.setArmSpeed(apitch, false);
         }
 
+        dashboard.displayPrintf(4, "extcounts %d", robot.armExtend.getCurrentPosition());
+        dashboard.displayPrintf(5, "tgtcounts %d", counts);
+        dashboard.displayPrintf(6, "armcounts %d", robot.armPitch.getCurrentPosition());
+
         if(robot.armExtend != null)
         {
             RobotLog.dd(TAG, "moving slide %4.3f", aslide);
+            int ENC_SAFE = 10;
+            if(robot.armExtend.getCurrentPosition() < (0 + ENC_SAFE) && aslide < 0.0)
+                return;
+
             robot.armExtend.setPower(aslide);
         }
     }
@@ -308,9 +315,9 @@ public class Teleop_Driver extends InitLinearOpMode
             robot.rightMotors.get(0).setPower(out_right);
         }
 
-        dashboard.displayPrintf(4, "TURN  %4.2f", turn);
-        dashboard.displayPrintf(5, "L_OUT %4.2f", left);
-        dashboard.displayPrintf(6, "R_OUT %4.2f", right);
+        //dashboard.displayPrintf(4, "TURN  %4.2f", turn);
+        //dashboard.displayPrintf(5, "L_OUT %4.2f", left);
+        //dashboard.displayPrintf(6, "R_OUT %4.2f", right);
         dashboard.displayPrintf(7, "L_CNT %d", robot.leftMotor.getCurrentPosition());
         dashboard.displayPrintf(8, "R_CNT %d", robot.rightMotor.getCurrentPosition());
         dashboard.displayPrintf(9, "DTYPE " + driveType);
@@ -633,6 +640,8 @@ public class Teleop_Driver extends InitLinearOpMode
     private boolean estimatePos = true;
 
     private int prevRpitch = 0;
+
+    ShelbyBot.OpModeType prevOpModeType = ShelbyBot.OpModeType.UNKNOWN;
 
     private ElapsedTime timer = new ElapsedTime();
 
