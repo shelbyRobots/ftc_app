@@ -251,8 +251,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         dashboard.displayPrintf(1, "DrvTrn Inited");
 
-        det = new MineralDetector();
-        det.setName(robotName);
+        det = new MineralDetector(robotName);
         RobotLog.dd(TAG, "Setting up vuforia");
         tracker = new ImageTracker(VuforiaInitializer.Challenge.RoRu);
 

@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.field.Field;
-import org.firstinspires.ftc.teamcode.field.RrField;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.RoRuBot;
 import org.firstinspires.ftc.teamcode.robot.ShelbyBot;
@@ -58,14 +56,18 @@ public class Teleop_Driver extends InitLinearOpMode
     private void initPostStart()
     {
         robot.zeroArmPitch();
-        if(prevOpModeType == ShelbyBot.OpModeType.AUTO) robot.threadputHolderAtPrelatch();
+        robot.zeroArmExtend();
+        robot.armExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //if(prevOpModeType == ShelbyBot.OpModeType.AUTO) robot.threadputHolderAtPrelatch();
         //robot.stowMarker();
         robot.stowParker();
     }
 
     private boolean useCnts = true;
 
-    int counts = 0;
+    private int counts = 0;
+    private int oldCounts = 0;
 
     private void controlArm()
     {
@@ -76,7 +78,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(robot.isElevTouchPressed() && !lastArmTouchPressed)
         {
-            robot.armPitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.zeroArmPitch();
         }
 
         lastArmTouchPressed = robot.isElevTouchPressed();
@@ -85,6 +87,7 @@ public class Teleop_Driver extends InitLinearOpMode
         int dropCounts  = -250; //-(int)(10 * robot.ARM_CPD);
         int hoverCounts = -500; //-(int)(20 * robot.ARM_CPD);
         int grabCounts  = -750; //-(int)(30 * robot.ARM_CPD);
+        int maxCounts   = -8000;
 
         double stowAngle = robot.ARM_ZERO_ANGLE;
 
@@ -98,11 +101,13 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean changeMode  =  gpad2.just_pressed(ManagedGamepad.Button.A);
         boolean intakeIn    =  gpad2.pressed(ManagedGamepad.Button.L_BUMP);
         boolean intakeOut   =  gpad2.pressed(ManagedGamepad.Button.L_TRIGGER);
+        boolean override    =  gpad2.pressed(ManagedGamepad.Button.R_BUMP);
 //        aslide = ishaper.shape(aslide);
 //        apitch = ishaper.shape(apitch);
-        double MAX_APITCH = 0.3;
-        apitch = Math.min(apitch, MAX_APITCH);
-        apitch = Math.max(apitch, -MAX_APITCH);
+        double MAX_APITCH_SPD = 0.3;
+        //apitch = Math.min(apitch,  MAX_APITCH_SPD);
+        //apitch = Math.max(apitch, -MAX_APITCH_SPD);
+        apitch *= MAX_APITCH_SPD;
 
         if(changeMode)
         {
@@ -115,22 +120,32 @@ public class Teleop_Driver extends InitLinearOpMode
         else if(intakeOut) robot.intakeOut();
         else               robot.intakeStop();
 
+        int curArmCounts = robot.armPitch.getCurrentPosition();
         if(useCnts)
         {
-            if(changeMode)  counts = robot.armPitch.getCurrentPosition();
+            if(changeMode)  counts = curArmCounts;
             else if(dDrop)  counts = dropCounts;
             else if(dHover) counts = hoverCounts;
             else if(dGrab)  counts = grabCounts;
             else if(dStow)  counts = stowCounts;
-            //robot.armPitch.setTargetPosition(counts);
-            //robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            //robot.armPitch.setPower(0.5);
+            if(counts  != oldCounts)
+            {
+                RobotLog.dd(TAG, "Moving to arm pos %d from %d", counts, curArmCounts);
+                robot.armPitch.setTargetPosition(counts);
+                robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.armPitch.setPower(0.2);
+            }
+            oldCounts = counts;
         }
         else
         {
             robot.armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            if(curArmCounts > 100 && !override) apitch = 0.0;
+            if(curArmCounts < maxCounts) apitch = 0.0;
             robot.setArmSpeed(apitch, false);
         }
+
+        RobotLog.dd(TAG, "ArmPitch = %d", curArmCounts);
 
         dashboard.displayPrintf(4, "extcounts %d", robot.armExtend.getCurrentPosition());
         dashboard.displayPrintf(5, "tgtcounts %d", counts);
@@ -138,9 +153,13 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(robot.armExtend != null)
         {
-            RobotLog.dd(TAG, "moving slide %4.3f", aslide);
+            int curArmExtend = robot.armExtend.getCurrentPosition();
+            if(aslide != 0.0)
+            {
+                RobotLog.dd(TAG, "moving slide %4.3f at %d", aslide, curArmExtend);
+            }
             int ENC_SAFE = 10;
-            if(robot.armExtend.getCurrentPosition() < (0 + ENC_SAFE) && aslide < 0.0)
+            if(curArmExtend < (ENC_SAFE) && aslide < 0.0)
                 return;
 
             robot.armExtend.setPower(aslide);
@@ -216,37 +235,29 @@ public class Teleop_Driver extends InitLinearOpMode
 
         if(fwd_step)
         {
-            RobotLog.dd(TAG, "In fwd_step");
             left  = detail_speed;
             right = detail_speed;
             //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.FORWARD);
-            RobotLog.dd(TAG, "Done fwd_step");
         }
         else if(back_step)
         {
-            RobotLog.dd(TAG, "In back_step");
             left  = -detail_speed;
             right = -detail_speed;
             //dtrn.driveDistanceLinear(step_dist, step_spd, Drivetrain.Direction.REVERSE);
-            RobotLog.dd(TAG, "Done back_step");
         }
         else if(left_step)
         {
-            RobotLog.dd(TAG, "In left_step");
             left  = -detail_speed;
             right =  detail_speed;
             //dtrn.setInitValues();
             //dtrn.ctrTurnToHeading(fHdg + step_ang, step_spd);
-            RobotLog.dd(TAG, "Done left_step");
         }
         else if(right_step)
         {
-            RobotLog.dd(TAG, "In right_step");
             left  =  detail_speed;
             right = -detail_speed;
             //dtrn.setInitValues();
             //dtrn.ctrTurnToHeading(fHdg - step_ang, step_spd);
-            RobotLog.dd(TAG, "Done right_step");
         }
         else
         {
@@ -373,6 +384,7 @@ public class Teleop_Driver extends InitLinearOpMode
         }
     }
 
+    private boolean joyHolder = false;
     private void controlHolder()
     {
 //        boolean lowerHolder      = gpad2.just_pressed(ManagedGamepad.Button.D_DOWN);
@@ -395,17 +407,22 @@ public class Teleop_Driver extends InitLinearOpMode
 //            //setting to true raises holder
 //            robot.putHolderAtLatch();
 //        }
+
+        if(Math.abs(hldrSpd) > 0.01) joyHolder = true;
+
         if(lowerOne)
         {
             //Lowers holder by one unit
+            joyHolder = false;
             robot.moveHolder(-moveDist);
         }
         else if (raiseOne)
         {
             //Raises holder by one unit
+            joyHolder = false;
             robot.moveHolder(moveDist);
         }
-        else if (Math.abs(hldrSpd) > 0.01)
+        else if (joyHolder)
         {
             robot.setHolderSpeed(hldrSpd, overrideLims);
         }
@@ -428,36 +445,6 @@ public class Teleop_Driver extends InitLinearOpMode
     private void processDriverInputs()
     {
         controlDrive();
-    }
-
-    private void goToBox()
-    {
-        Point2d curPt = dtrn.getEstPos();
-        Field.Alliance alliance = robot.getAlliance();
-        double box_y = RrField.getTTy();
-        if (alliance == Field.Alliance.BLUE) box_y = -box_y;
-        Point2d boxPt = new Point2d("BXPT", RrField.getTTx(), box_y);
-        Segment seg = new Segment("toBox", curPt, boxPt);
-        seg.setSpeed(0.6);
-        RobotLog.dd(TAG, "goToBox seg=%s", seg.toString());
-        doEncoderTurn(seg.getFieldHeading(), "box");
-        doGyroTurn(seg.getFieldHeading(), "box");
-        doMove(seg);
-    }
-
-    private void goToPit()
-    {
-        Point2d curPt = dtrn.getEstPos();
-        Field.Alliance alliance = robot.getAlliance();
-        double ppy = RrField.getPPy1();
-        if (alliance == Field.Alliance.BLUE) ppy = -ppy;
-        Point2d pitPt = new Point2d("PTPT", RrField.getPPx(), ppy);
-        Segment seg = new Segment("toPit", curPt, pitPt);
-        seg.setSpeed(0.6);
-        RobotLog.dd(TAG, "goToHome seg=%s", seg.toString());
-        doEncoderTurn(seg.getFieldHeading(), "pit");
-        doGyroTurn(seg.getFieldHeading(), "pit");
-        doMove(seg);
     }
 
     private void doMove(Segment seg)
@@ -641,7 +628,7 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private int prevRpitch = 0;
 
-    ShelbyBot.OpModeType prevOpModeType = ShelbyBot.OpModeType.UNKNOWN;
+    private ShelbyBot.OpModeType prevOpModeType = ShelbyBot.OpModeType.UNKNOWN;
 
     private ElapsedTime timer = new ElapsedTime();
 

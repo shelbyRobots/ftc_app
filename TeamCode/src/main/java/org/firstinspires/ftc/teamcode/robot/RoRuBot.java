@@ -75,8 +75,8 @@ public class RoRuBot extends TilerunnerGtoBot {
     private double _parkerPark = 1.00;
 
     private Servo intakeServo;
-    private final double INTK_IN  = 1.0;
-    private final double INTK_OUT = 0.0;
+    private final double INTK_IN  = 0.0;
+    private final double INTK_OUT = 1.0;
     private final double INTK_STP = 0.5;
     private double lastIntakeRate = -1.0;
 
@@ -123,7 +123,7 @@ public class RoRuBot extends TilerunnerGtoBot {
             pStow = 0.00;
             pPark = 1.00;
 
-            ARMP_GEAR_ONE = 138;
+            ARMP_GEAR_ONE = 188; //138;
             ARMP_GEAR_TWO = 2;
         }
         else
@@ -137,6 +137,7 @@ public class RoRuBot extends TilerunnerGtoBot {
         _markerPark = mPark;
         _parkerStow = pStow;
         _parkerPark = pPark;
+
 
         ARMP_CPR = ARMP_COUNTS_PER_MOTOR_REV * ARMP_GEAR_ONE * ARMP_GEAR_TWO;
         ARM_CPD = ARMP_CPR/360.0;
@@ -259,6 +260,12 @@ public class RoRuBot extends TilerunnerGtoBot {
     {
         if(armPitch == null) return;
         armPitch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public void zeroArmExtend()
+    {
+        if(armExtend == null) return;
+        armExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public int getLiftyPos()
