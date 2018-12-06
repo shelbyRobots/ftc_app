@@ -84,8 +84,8 @@ public class Teleop_Driver extends InitLinearOpMode
         lastArmTouchPressed = robot.isElevTouchPressed();
 
         int stowCounts  = 0;
-        int dropCounts  = -250; //-(int)(10 * robot.ARM_CPD);
-        int hoverCounts = -500; //-(int)(20 * robot.ARM_CPD);
+        int dropCounts  = -1800; //-(int)(10 * robot.ARM_CPD);
+        int hoverCounts = -3000; //-(int)(20 * robot.ARM_CPD);
         int grabCounts  = -750; //-(int)(30 * robot.ARM_CPD);
         int maxCounts   = -8000;
 
@@ -108,6 +108,8 @@ public class Teleop_Driver extends InitLinearOpMode
         //apitch = Math.min(apitch,  MAX_APITCH_SPD);
         //apitch = Math.max(apitch, -MAX_APITCH_SPD);
         apitch *= MAX_APITCH_SPD;
+
+        aslide *= -1;
 
         if(changeMode)
         {
@@ -140,8 +142,8 @@ public class Teleop_Driver extends InitLinearOpMode
         else
         {
             robot.armPitch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            if(curArmCounts > 100 && !override) apitch = 0.0;
-            if(curArmCounts < maxCounts) apitch = 0.0;
+//            if(curArmCounts > 100 && !override) apitch = 0.0;
+//            if(curArmCounts < maxCounts) apitch = 0.0;
             robot.setArmSpeed(apitch, false);
         }
 
@@ -159,8 +161,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "moving slide %4.3f at %d", aslide, curArmExtend);
             }
             int ENC_SAFE = 10;
-            if(curArmExtend < (ENC_SAFE) && aslide < 0.0)
-                return;
+            //if(curArmExtend < (ENC_SAFE) && aslide < 0.0 && !override) aslide = 0.0;
 
             robot.armExtend.setPower(aslide);
         }
