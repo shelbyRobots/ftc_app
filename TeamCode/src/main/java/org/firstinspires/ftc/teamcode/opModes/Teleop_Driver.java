@@ -429,6 +429,8 @@ public class Teleop_Driver extends InitLinearOpMode
         }
     }
 
+    private boolean lastShift = false;
+
     private void processControllerInputs()
     {
         boolean shiftControls = gpad2.pressed(ManagedGamepad.Button.R_TRIGGER);
@@ -436,11 +438,18 @@ public class Teleop_Driver extends InitLinearOpMode
         if(!shiftControls)
         {
             controlHolder();
+            if(lastShift)
+            {
+                robot.setArmSpeed(0.0, false);
+                robot.armExtend.setPower(0.0);
+            }
         }
         else
         {
             controlArm();
         }
+
+        lastShift = shiftControls;
     }
 
     private void processDriverInputs()
