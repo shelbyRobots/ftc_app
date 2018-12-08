@@ -441,7 +441,8 @@ public class Teleop_Driver extends InitLinearOpMode
             if(lastShift)
             {
                 robot.setArmSpeed(0.0, false);
-                robot.armExtend.setPower(0.0);
+                if(robot.armExtend != null) robot.armExtend.setPower(0.0);
+                robot.intakeStop();
             }
         }
         else
