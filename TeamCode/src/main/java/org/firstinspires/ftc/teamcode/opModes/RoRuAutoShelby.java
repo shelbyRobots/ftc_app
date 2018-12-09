@@ -107,7 +107,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             {
                 double shdg = robot.getGyroHdg();
                 double fhdg = robot.getGyroFhdg();
-                dashboard.displayPrintf(9, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
+                dashboard.displayPrintf(0, "HDG %4.2f FHDG %4.2f", shdg, fhdg);
                 dashboard.displayPrintf(10, "GyroReady %s", gyroReady);
                 dashboard.displayPrintf(11, "RGyroReady %s", robot.gyroReady);
                 if (robot.leftMotor != null)
@@ -245,7 +245,7 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
 
         drvTrn.init(robot);
         drvTrn.setRampUp(false);
-        int colThresh = 300;
+        int colThresh = 450;
         if(robotName.equals("GTO1")) colThresh = 3000;
         drvTrn.setColorThresh(colThresh);
 
