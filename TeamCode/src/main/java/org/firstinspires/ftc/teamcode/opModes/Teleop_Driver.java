@@ -64,7 +64,7 @@ public class Teleop_Driver extends InitLinearOpMode
         robot.stowParker();
     }
 
-    private boolean useCnts = true;
+    private boolean useCnts = false;
 
     private int counts = 0;
     private int oldCounts = 0;
@@ -84,9 +84,9 @@ public class Teleop_Driver extends InitLinearOpMode
         lastArmTouchPressed = robot.isElevTouchPressed();
 
         int stowCounts  = 0;
-        int dropCounts  = -1800; //-(int)(10 * robot.ARM_CPD);
-        int hoverCounts = -3000; //-(int)(20 * robot.ARM_CPD);
-        int grabCounts  = -750; //-(int)(30 * robot.ARM_CPD);
+        int dropCounts  = -2400; //-(int)(10 * robot.ARM_CPD);
+        int hoverCounts = -4500; //-(int)(20 * robot.ARM_CPD);
+        int grabCounts  = -4500; //-(int)(30 * robot.ARM_CPD);
         int maxCounts   = -8000;
 
         double stowAngle = robot.ARM_ZERO_ANGLE;
@@ -104,7 +104,8 @@ public class Teleop_Driver extends InitLinearOpMode
         boolean override    =  gpad2.pressed(ManagedGamepad.Button.R_BUMP);
 //        aslide = ishaper.shape(aslide);
 //        apitch = ishaper.shape(apitch);
-        double MAX_APITCH_SPD = 0.3;
+        double THE_ANSWER_TO_LIFE_THE_UNIVERSE_AND_EVERYTHING = 0.42;
+        double MAX_APITCH_SPD = THE_ANSWER_TO_LIFE_THE_UNIVERSE_AND_EVERYTHING;
         //apitch = Math.min(apitch,  MAX_APITCH_SPD);
         //apitch = Math.max(apitch, -MAX_APITCH_SPD);
         apitch *= MAX_APITCH_SPD;
@@ -135,7 +136,7 @@ public class Teleop_Driver extends InitLinearOpMode
                 RobotLog.dd(TAG, "Moving to arm pos %d from %d", counts, curArmCounts);
                 robot.armPitch.setTargetPosition(counts);
                 robot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.armPitch.setPower(0.2);
+                robot.armPitch.setPower(0.5);
             }
             oldCounts = counts;
         }
