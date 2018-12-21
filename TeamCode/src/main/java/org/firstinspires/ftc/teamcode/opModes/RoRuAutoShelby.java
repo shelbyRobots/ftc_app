@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.vuforia.CameraDevice;
@@ -315,6 +316,11 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
             RobotLog.dd(TAG, "Stow Marker");
             roRuBot.stowMarker();
             roRuBot.stowParker();
+
+            roRuBot.zeroArmPitch();
+            roRuBot.zeroArmExtend();
+            roRuBot.armExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            roRuBot.armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         if (startPos == Route.StartPos.START_1)
@@ -706,7 +712,15 @@ public class RoRuAutoShelby extends InitLinearOpMode implements FtcMenu.MenuButt
         RobotLog.dd(TAG, "Parking bot");
         if(roRuBot != null)
         {
+            int stowCounts  = 0;
+            int dropCounts  = -2400; //-(int)(10 * robot.ARM_CPD);
+            int hoverCounts = -5000; //-(int)(20 * robot.ARM_CPD);
             roRuBot.parkMarker();
+
+            RobotLog.dd(TAG, "Moving to arm pos %d from %d", hoverCounts, 0);
+            roRuBot.armPitch.setTargetPosition(hoverCounts);
+            roRuBot.armPitch.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            roRuBot.armPitch.setPower(0.5);
         }
         else
         {

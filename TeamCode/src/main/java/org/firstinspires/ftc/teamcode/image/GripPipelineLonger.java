@@ -44,7 +44,7 @@ public class GripPipelineLonger
 
 	public void setName(String name) {this.name = name;}
 
-	double GTO1_TOP = 0.54;
+	double GTO1_TOP = 0.45; //Changed to 0.48, was: 0.54
 	double GTO2_TOP = 0.45;
 
 	public void sizeSource(Mat source0)
@@ -153,9 +153,9 @@ public class GripPipelineLonger
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
-		double[] hsvThresholdHue = {0.0, 180.0};
-		double[] hsvThresholdSaturation = {0.0, 60.0};
-		double[] hsvThresholdValue = {180.0, 255.0};
+		double[] hsvThresholdHue = {0.0, 132.0}; //OLD: {0.0, 180.0}
+		double[] hsvThresholdSaturation = {0.0, 60.0}; //OLD: {0.0, 60.0}
+		double[] hsvThresholdValue = {209.0, 255.0}; //OLD: {180.0, 255.0}
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_erode0:

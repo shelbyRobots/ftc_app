@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.Units;
 
+@SuppressWarnings({"FieldCanBeLocal", "unused", "WeakerAccess"})
 public class RoRuBot extends TilerunnerGtoBot {
     private final String TAG = "SJH RoRuRobot";
 
@@ -75,9 +76,13 @@ public class RoRuBot extends TilerunnerGtoBot {
     private double _parkerPark = 1.00;
 
     private Servo intakeServo;
+    private DcMotor intakeMotor;
     private final double INTK_IN  = 0.0;
     private final double INTK_OUT = 1.0;
     private final double INTK_STP = 0.5;
+    private final double INTK_MOTOR_IN  =  0.5;
+    private final double INTK_MOTOR_OUT = -0.5;
+    private final double INTK_MOTOR_STP =  0.0;
     private double lastIntakeRate = -1.0;
 
     private DigitalChannel armIndexSensor = null;
@@ -201,6 +206,8 @@ public class RoRuBot extends TilerunnerGtoBot {
         {
             RobotLog.ww(TAG, "WARNING initArm - no armTouch");
         }
+
+        armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private void initIntake()
@@ -210,7 +217,15 @@ public class RoRuBot extends TilerunnerGtoBot {
             intakeServo = hwMap.servo.get("intake");
             capMap.put("intake", true);
         } catch (Exception e) {
-            RobotLog.ee(TAG, "ERROR get hardware map in initIntake\n" + e.toString());
+            RobotLog.ee(TAG, "ERROR get hardware map in initIntake servo\n" + e.toString());
+        }
+
+        try
+        {
+            intakeMotor = hwMap.dcMotor.get("intakemotor");
+            capMap.put("intake", true);
+        } catch (Exception e) {
+            RobotLog.ee(TAG, "ERROR get hardware map in initIntake motor\n" + e.toString());
         }
     }
 
@@ -484,26 +499,33 @@ public class RoRuBot extends TilerunnerGtoBot {
 
     public void intakeOut()
     {
-        if(intakeServo == null) return;
-        setIntakeRate(INTK_OUT);
+        if(intakeServo != null) setIntakeRate(INTK_OUT);
+        else if (intakeMotor != null) setIntakeRate(INTK_MOTOR_OUT);
     }
 
     public void intakeIn()
     {
-        if(intakeServo == null) return;
-        setIntakeRate(INTK_IN);
+        if(intakeServo != null) setIntakeRate(INTK_IN);
+        else if (intakeMotor != null) setIntakeRate(INTK_MOTOR_IN);
     }
 
     public void intakeStop()
     {
-        if(intakeServo == null) return;
-        setIntakeRate(INTK_STP);
+        if(intakeServo != null) setIntakeRate(INTK_STP);
+        else if (intakeMotor != null) setIntakeRate(INTK_MOTOR_STP);
     }
 
     private void setIntakeRate(double rate)
     {
-        if(intakeServo == null) return;
-        if(rate != lastIntakeRate) intakeServo.setPosition(rate);
-        lastIntakeRate = rate;
+        if(intakeServo != null)
+        {
+            if (rate != lastIntakeRate) intakeServo.setPosition(rate);
+            lastIntakeRate = rate;
+        }
+        else if (intakeMotor != null)
+        {
+            if (rate != lastIntakeRate) intakeMotor.setPower(rate);
+            lastIntakeRate = rate;
+        }
     }
 }

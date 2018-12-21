@@ -55,10 +55,10 @@ public class Teleop_Driver extends InitLinearOpMode
 
     private void initPostStart()
     {
-        robot.zeroArmPitch();
-        robot.zeroArmExtend();
-        robot.armExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        robot.zeroArmPitch();
+//        robot.zeroArmExtend();
+//        robot.armExtend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        robot.armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //if(prevOpModeType == ShelbyBot.OpModeType.AUTO) robot.threadputHolderAtPrelatch();
         //robot.stowMarker();
         robot.stowParker();
